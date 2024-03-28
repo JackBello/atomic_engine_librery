@@ -1,0 +1,9 @@
+{
+	"devDependencies": {
+		"vue": "^3.4.21"
+	},
+	"dependencies": {
+		"@lukeed/uuid": "^2.0.1",
+		"uid": "^2.0.2"
+	}
+}
