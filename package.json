@@ -1,9 +1,36 @@
 {
-	"devDependencies": {
-		"vue": "^3.4.21"
-	},
-	"dependencies": {
-		"@lukeed/uuid": "^2.0.1",
-		"uid": "^2.0.2"
-	}
+  "name": "atomic-core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --p ./tsconfig.build.json && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/wicg-file-system-access": "^2023.10.5",
+    "typescript": "^5.4.4",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1",
+    "vue": "^3.4.21"
+  },
+  "dependencies": {
+    "@lukeed/uuid": "^2.0.1",
+    "uid": "^2.0.2",
+    "vite-plugin-mkcert": "^1.17.5",
+    "yaml": "^2.4.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/atomic-core.es.js",
+      "require": "./dist/atomic-core.umd.js"
+    }
+  },
+  "main": "./dist/atomic-core.umd.js",
+  "module": "./dist/atomic-core.es.js",
+  "types": "./dist/index.d.ts"
 }

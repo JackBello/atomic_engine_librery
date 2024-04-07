@@ -1,0 +1,6 @@
+export const NodeSelectionDefault = Symbol("NodeSelectionDefault")
+export const NodeControlEditionDefault = Symbol("NodeControlEditionDefault")
+export const PrepareExport = Symbol("PrepareExport")
+export const SetUUIDNode = Symbol("SetUUID")
+export const SetAttributesNode = Symbol("SetAttributesNode")
+export const SetParentNode = Symbol("SetParentNode")

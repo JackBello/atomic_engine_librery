@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + TS</title>
+
+  <style>
+    body {
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    [data-canvas] {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <label>
+    Velocity
+    <input type="number" data-id="inputVelocity">
+  </label>
+  <input type="button" value="upload dir" data-id="uploadDirectory" />
+
+  <input type="button" value="Play" data-id="buttonPlay">
+  <input type="button" value="Pause" data-id="buttonPause">
+  <div data-canvas></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
