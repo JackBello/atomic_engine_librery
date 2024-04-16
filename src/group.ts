@@ -12,7 +12,7 @@ for (let i = 0; i < numElementos; i++) {
 
 const radioAgrupamiento = 50 // Define el radio de agrupamiento
 
-let vr = 0.00009
+let vr = 0.0005
 let radius = 0
 function agruparElementos() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)

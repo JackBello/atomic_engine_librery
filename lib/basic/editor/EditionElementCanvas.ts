@@ -1,10 +1,16 @@
-import { AtomicCore } from "../atomic-core"
-import { NodeControlEditionDefault, NodeSelectionDefault } from "../../const"
+import {
+  DispatchEventObserver,
+  NodeControlEditionDefault,
+  NodeSelectionDefault,
+  SetCore
+} from "../../const"
+import { ControllerGlobal } from "../../controllers/controller-global"
 import { TEventCanvas } from "../../types"
 import { MainCanvas } from "../canvas/canvas"
-import { Node2D, BasicNode, EmptyNode } from "../nodes/2d/node"
+import { BasicNode } from "../nodes/2d/basic"
+import { EmptyNode } from "../nodes/2d/empty"
+import { Node2D } from "../nodes/2d/node"
 import { TCursorOptions } from "../nodes/types"
-import { AtomicGlobal } from "../atomic-global"
 
 /*
 // Obtén una referencia al elemento canvas
@@ -86,7 +92,7 @@ function isInsidePolygon(x, y, poligono) {
 */
 
 export class EditionElementCanvas {
-  public static $core: AtomicCore
+  protected static $core: any
 
   protected static _mouseCoords = {
     x: 0,
@@ -99,7 +105,7 @@ export class EditionElementCanvas {
       x: number
       y: number
     }
-    node?: Node2D | BasicNode | EmptyNode
+    node?: Node2D
   } = {
     isDragging: false,
     startCoords: {
@@ -110,15 +116,13 @@ export class EditionElementCanvas {
   }
 
   protected static getCanvasEditor() {
-    return (this.$core.$canvasEditor.getCanvas("editor") as MainCanvas).canvas
+    return (this.$core.$canvas.getCanvas("editor") as MainCanvas).canvas
   }
 
-  protected static validationPositionNode(
-    node: Node2D | BasicNode | EmptyNode
-  ) {
-    const zoomScale = AtomicGlobal.ZOOM.scale
-    const panX = AtomicGlobal.PAN.translateX
-    const panY = AtomicGlobal.PAN.translateY
+  protected static validationPositionNode(node: Node2D) {
+    const zoomScale = this.$core.$global.ZOOM.scale
+    const panX = this.$core.$global.PAN.translateX
+    const panY = this.$core.$global.PAN.translateY
 
     const X = node.x - (node.width * node.scaleX) / 2
     const Y = node.y - (node.height * node.scaleY) / 2
@@ -163,35 +167,35 @@ export class EditionElementCanvas {
     if (direction === "ArrowLeft") node.x -= 2
     if (direction === "ArrowRight") node.x += 2
 
-    this.$core.$canvasEditor.dispatchEvent("canvas/node:modified", node)
-    this.$core.$canvasEditor.dispatchEvent("canvas/node:moving", node)
+    this.$core.$canvas[DispatchEventObserver]("canvas/node:modified", node)
+    this.$core.$canvas[DispatchEventObserver]("canvas/node:moving", node)
   }
 
   protected static moveMouseNode(node: Node2D | BasicNode | EmptyNode) {
     node.x =
-      (this._mouseCoords.x - AtomicGlobal.PAN.translateX) /
-        AtomicGlobal.ZOOM.scale -
+      (this._mouseCoords.x - this.$core.$global.PAN.translateX) /
+        this.$core.$global.ZOOM.scale -
       this._control.startCoords.x
     node.y =
-      (this._mouseCoords.y - AtomicGlobal.PAN.translateY) /
-        AtomicGlobal.ZOOM.scale -
+      (this._mouseCoords.y - this.$core.$global.PAN.translateY) /
+        this.$core.$global.ZOOM.scale -
       this._control.startCoords.y
 
-    this.$core.$canvasEditor.dispatchEvent("canvas/node:modified", node)
-    this.$core.$canvasEditor.dispatchEvent("canvas/node:moving", node)
+    this.$core.$canvas[DispatchEventObserver]("canvas/node:modified", node)
+    this.$core.$canvas[DispatchEventObserver]("canvas/node:moving", node)
   }
 
   public static mousedown(event: MouseEvent) {
     this.getPosition(event)
 
-    let select: Node2D | BasicNode | EmptyNode | undefined
+    let select: Node2D | undefined
     let minDistance = Number.MAX_VALUE
     let canvasEvent: TEventCanvas = "canvas/node:unselect"
 
     if (event.button !== 0) return
 
-    if (this.$core.$scenesGame.currentScene) {
-      const nodes = this.$core.$scenesGame.currentScene.getNodes()
+    if (this.$core.$scenes.currentScene) {
+      const nodes = this.$core.$scenes.currentScene.getNodes()
 
       for (let index = nodes.length - 1; index >= 0; index--) {
         const node = nodes[index]
@@ -217,12 +221,12 @@ export class EditionElementCanvas {
           canvasEvent = "canvas/node:select"
 
           this._control.startCoords.x =
-            (this._mouseCoords.x - AtomicGlobal.PAN.translateX) /
-              AtomicGlobal.ZOOM.scale -
+            (this._mouseCoords.x - ControllerGlobal.PAN.translateX) /
+              ControllerGlobal.ZOOM.scale -
             node.x
           this._control.startCoords.y =
-            (this._mouseCoords.y - AtomicGlobal.PAN.translateY) /
-              AtomicGlobal.ZOOM.scale -
+            (this._mouseCoords.y - ControllerGlobal.PAN.translateY) /
+              ControllerGlobal.ZOOM.scale -
             node.y
 
           break
@@ -231,29 +235,29 @@ export class EditionElementCanvas {
     }
 
     if (canvasEvent === "canvas/node:select" && select) {
-      AtomicGlobal.NODES[NodeControlEditionDefault].setOptions({
+      this.$core.$global.NODES[NodeControlEditionDefault].setOptions({
         x: select.x,
         y: select.y,
         width: select.width,
         height: select.height,
         scaleX: select.scaleX,
         scaleY: select.scaleY,
-        padding: AtomicGlobal.CONTROL.padding,
-        border: AtomicGlobal.CONTROL.border,
-        borderWidth: AtomicGlobal.CONTROL.borderWidth,
-        borderColor: AtomicGlobal.CONTROL.borderColor,
-        cornerSize: AtomicGlobal.CONTROL.cornerSize,
-        cornerColor: AtomicGlobal.CONTROL.cornerColor,
-        cornerBorder: AtomicGlobal.CONTROL.cornerBorder,
-        cornerColorBorder: AtomicGlobal.CONTROL.cornerColorBorder,
-        showCorner: AtomicGlobal.CONTROL.showCorner
+        padding: ControllerGlobal.CONTROL.padding,
+        border: ControllerGlobal.CONTROL.border,
+        borderWidth: ControllerGlobal.CONTROL.borderWidth,
+        borderColor: ControllerGlobal.CONTROL.borderColor,
+        cornerSize: ControllerGlobal.CONTROL.cornerSize,
+        cornerColor: ControllerGlobal.CONTROL.cornerColor,
+        cornerBorder: ControllerGlobal.CONTROL.cornerBorder,
+        cornerColorBorder: ControllerGlobal.CONTROL.cornerColorBorder,
+        showCorner: ControllerGlobal.CONTROL.showCorner
       })
-      AtomicGlobal.CONTROL.active = true
+      this.$core.$global.CONTROL.active = true
     }
 
     if (canvasEvent === "canvas/node:unselect") {
-      AtomicGlobal.CONTROL.active = false
-      AtomicGlobal.NODES[NodeControlEditionDefault].setOptions({
+      this.$core.$global.CONTROL.active = false
+      this.$core.$global.NODES[NodeControlEditionDefault].setOptions({
         x: 0,
         y: 0,
         width: 0,
@@ -273,21 +277,21 @@ export class EditionElementCanvas {
     }
 
     this._control.node = select
-    this.$core.$canvasEditor.dispatchEvent(canvasEvent, select)
+    this.$core.$canvas[DispatchEventObserver](canvasEvent, select)
 
     if (!select) {
       this._control.startCoords.x =
-        this._mouseCoords.x - AtomicGlobal.PAN.translateX
+        this._mouseCoords.x - this.$core.$global.PAN.translateX
       this._control.startCoords.y =
-        this._mouseCoords.y - AtomicGlobal.PAN.translateY
+        this._mouseCoords.y - this.$core.$global.PAN.translateY
       this._control.isDragging = true
-      AtomicGlobal.SELECTION.active = true
-      AtomicGlobal.NODES[NodeSelectionDefault].setOptions({
-        startX: this._mouseCoords.x - AtomicGlobal.PAN.translateX,
-        startY: this._mouseCoords.y - AtomicGlobal.PAN.translateY
+      this.$core.$global.SELECTION.active = true
+      this.$core.$global.NODES[NodeSelectionDefault].setOptions({
+        startX: this._mouseCoords.x - this.$core.$global.PAN.translateX,
+        startY: this._mouseCoords.y - this.$core.$global.PAN.translateY
       })
 
-      this.$core.$canvasEditor.dispatchEvent("canvas/selection:start")
+      this.$core.$canvas[DispatchEventObserver]("canvas/selection:start")
     }
   }
 
@@ -298,11 +302,11 @@ export class EditionElementCanvas {
 
     if (this._control.isDragging) {
       this._control.isDragging = false
-      AtomicGlobal.SELECTION.active = false
+      this.$core.$global.SELECTION.active = false
 
-      this.$core.$canvasEditor.dispatchEvent("canvas/selection:end")
+      this.$core.$canvas[DispatchEventObserver]("canvas/selection:end")
 
-      AtomicGlobal.NODES[NodeSelectionDefault].setOptions({
+      this.$core.$global.NODES[NodeSelectionDefault].setOptions({
         background: "",
         radius: 0,
         border: false,
@@ -314,8 +318,8 @@ export class EditionElementCanvas {
         y: 0,
         startX: 0,
         startY: 0,
-        endX: this._mouseCoords.x - AtomicGlobal.PAN.translateX,
-        endY: this._mouseCoords.y - AtomicGlobal.PAN.translateY
+        endX: this._mouseCoords.x - this.$core.$global.PAN.translateX,
+        endY: this._mouseCoords.y - this.$core.$global.PAN.translateY
       })
     }
   }
@@ -325,14 +329,14 @@ export class EditionElementCanvas {
 
     let cursor: TCursorOptions = "default"
 
-    if (!this._control.isDragging && this.$core.$scenesGame.currentScene) {
-      const nodes = this.$core.$scenesGame.currentScene.getNodes()
+    if (!this._control.isDragging && this.$core.$scenes.currentScene) {
+      const nodes = this.$core.$scenes.currentScene.getNodes()
 
       for (let index = nodes.length - 1; index >= 0; index--) {
         const node = nodes[index]
         if (this.validationPositionNode(node)) {
-          cursor = "pointer"
-          this.$core.$canvasEditor.dispatchEvent("canvas/node:hover", node)
+          cursor = "move"
+          this.$core.$canvas[DispatchEventObserver]("canvas/node:hover", node)
           break
         }
       }
@@ -341,55 +345,57 @@ export class EditionElementCanvas {
     if (
       this._control.node &&
       this._control.isDragging &&
-      this.$core.$scenesGame.currentScene
+      this.$core.$scenes.currentScene
     ) {
       cursor = "move"
       this.moveMouseNode(this._control.node)
-      AtomicGlobal.NODES[NodeControlEditionDefault].setOptions({
+      this.$core.$global.NODES[NodeControlEditionDefault].setOptions({
         x: this._control.node.x,
         y: this._control.node.y,
         width: this._control.node.width,
         height: this._control.node.height,
         scaleX: this._control.node.scaleX,
         scaleY: this._control.node.scaleY,
-        padding: AtomicGlobal.CONTROL.padding,
-        border: AtomicGlobal.CONTROL.border,
-        borderWidth: AtomicGlobal.CONTROL.borderWidth,
-        borderColor: AtomicGlobal.CONTROL.borderColor,
-        cornerSize: AtomicGlobal.CONTROL.cornerSize,
-        cornerColor: AtomicGlobal.CONTROL.cornerColor,
-        cornerBorder: AtomicGlobal.CONTROL.cornerBorder,
-        cornerColorBorder: AtomicGlobal.CONTROL.cornerColorBorder,
-        showCorner: AtomicGlobal.CONTROL.showCorner
+        padding: this.$core.$global.CONTROL.padding,
+        border: this.$core.$global.CONTROL.border,
+        borderWidth: this.$core.$global.CONTROL.borderWidth,
+        borderColor: this.$core.$global.CONTROL.borderColor,
+        cornerSize: this.$core.$global.CONTROL.cornerSize,
+        cornerColor: this.$core.$global.CONTROL.cornerColor,
+        cornerBorder: this.$core.$global.CONTROL.cornerBorder,
+        cornerColorBorder: this.$core.$global.CONTROL.cornerColorBorder,
+        showCorner: this.$core.$global.CONTROL.showCorner
       })
     }
 
     if (!this._control.node && this._control.isDragging) {
-      AtomicGlobal.NODES[NodeSelectionDefault].setOptions({
-        background: AtomicGlobal.SELECTION.background,
-        radius: AtomicGlobal.SELECTION.radius,
-        border: AtomicGlobal.SELECTION.border,
-        borderColor: AtomicGlobal.SELECTION.borderColor,
-        borderWidth: AtomicGlobal.SELECTION.borderWidth,
+      this.$core.$global.NODES[NodeSelectionDefault].setOptions({
+        background: this.$core.$global.SELECTION.background,
+        radius: this.$core.$global.SELECTION.radius,
+        border: this.$core.$global.SELECTION.border,
+        borderColor: this.$core.$global.SELECTION.borderColor,
+        borderWidth: this.$core.$global.SELECTION.borderWidth,
         width:
           this._mouseCoords.x -
-          AtomicGlobal.PAN.translateX -
+          this.$core.$global.PAN.translateX -
           this._control.startCoords.x,
         height:
           this._mouseCoords.y -
-          AtomicGlobal.PAN.translateY -
+          this.$core.$global.PAN.translateY -
           this._control.startCoords.y,
         x: this._control.startCoords.x,
         y: this._control.startCoords.y,
-        endX: this._mouseCoords.x - AtomicGlobal.PAN.translateX,
-        endY: this._mouseCoords.y - AtomicGlobal.PAN.translateY
+        endX: this._mouseCoords.x - this.$core.$global.PAN.translateX,
+        endY: this._mouseCoords.y - this.$core.$global.PAN.translateY
       })
 
-      AtomicGlobal.NODES[NodeSelectionDefault].selectionElements()
+      this.$core.$global.NODES[NodeSelectionDefault].selectionElements(
+        this.$core.$scenes.currentScene.getNodes()
+      )
 
-      this.$core.$canvasEditor.dispatchEvent(
+      this.$core.$canvas[DispatchEventObserver](
         "canvas/selection:moving",
-        AtomicGlobal.NODES[NodeSelectionDefault].nodesSelected
+        this.$core.$global.NODES[NodeSelectionDefault].nodesSelected
       )
     }
 
@@ -405,4 +411,8 @@ export class EditionElementCanvas {
   public static keyup(event: KeyboardEvent) {}
 
   public static keypress(event: KeyboardEvent) {}
+
+  static [SetCore](core: any) {
+    EditionElementCanvas.$core = core
+  }
 }

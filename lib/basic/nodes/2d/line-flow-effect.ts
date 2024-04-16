@@ -1,18 +1,28 @@
-import { DEFAULT_CONFIG_NODE_TEXT } from "../../../configs/nodes/2D/text"
+import { DEFAULT_CONFIG_NODE_LINE_FLOW_EFFECT } from "../../../configs/nodes/2D/line-flow-effect"
 import { TFunction } from "../../../types"
-import { IOptionsNodeText } from "../types"
-import { Node2D } from "./node"
+import { IOptionsNodeLineFlowEffect } from "../types"
+import { EmptyNode } from "./empty"
 
-export class NodeText extends Node2D {
-  protected _options: IOptionsNodeText
+export class NodeLineFlowEffect extends EmptyNode {
+  protected _options: IOptionsNodeLineFlowEffect
+  protected _effect: string
 
-  constructor(options: Partial<IOptionsNodeText> = {}) {
-    super({ ...DEFAULT_CONFIG_NODE_TEXT, ...options })
-    this._options = { ...DEFAULT_CONFIG_NODE_TEXT, ...options }
-    this._type = NodeText.name
+  constructor(options: Partial<IOptionsNodeLineFlowEffect> = {}) {
+    super({ ...DEFAULT_CONFIG_NODE_LINE_FLOW_EFFECT, ...options })
+    this._options = { ...DEFAULT_CONFIG_NODE_LINE_FLOW_EFFECT, ...options }
+    this._type = NodeLineFlowEffect.name
+    this._effect = "line-flow"
   }
 
-  public setOptions(options: Partial<IOptionsNodeText>) {
+  get radius() {
+    return this._options.radius
+  }
+
+  set radius(value: number) {
+    this._options.radius = value
+  }
+
+  public setOptions(options: Partial<IOptionsNodeLineFlowEffect>) {
     this._redraw = true
     this._options = { ...this._options, ...options }
   }
@@ -26,8 +36,9 @@ export class NodeText extends Node2D {
   public render(): void {
     this.getCore().execute("canvas:save", this._canvas)
 
-    this.getCore().execute("draw:text", this._canvas, {
-      ...this._options
+    this.getCore().execute("draw:effect", this._canvas, {
+      ...this._options,
+      effect: this._effect
     })
 
     if (
@@ -54,8 +65,9 @@ export class NodeText extends Node2D {
   }): void {
     this.getCore().execute("canvas:save", this._canvas)
 
-    this.getCore().execute("draw:text", this._canvas, {
-      ...this._options
+    this.getCore().execute("draw:effect", this._canvas, {
+      ...this._options,
+      effect: this._effect
     })
 
     if (

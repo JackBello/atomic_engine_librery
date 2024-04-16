@@ -7,8 +7,6 @@ export const draw_control_edition_context_2D = (
   context: CanvasRenderingContext2D,
   options: IOptionsNodeControlEdition & TOptionsBasic
 ) => {
-  context.save()
-
   context.translate(options.translateX, options.translateY)
   context.rotate((options.rotation * Math.PI) / 180)
 
@@ -101,6 +99,4 @@ export const draw_control_edition_context_2D = (
   }
 
   context.closePath()
-
-  context.restore()
 }

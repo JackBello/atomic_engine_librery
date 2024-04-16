@@ -1,9 +1,10 @@
-import { AtomicCore } from "../atomic-core"
-import { AtomicGlobal } from "../atomic-global"
+import { SetCore } from "../../const"
+import { ControllerGlobal } from "../../controllers/controller-global"
+import { AtomicEditor } from "../atomic-editor"
 import { MainCanvas } from "../canvas/canvas"
 
 export class PanAndZoomElementCanvas {
-  public static $core: AtomicCore
+  protected static $core: AtomicEditor
 
   protected static _mouseCoords = {
     x: 0,
@@ -29,7 +30,7 @@ export class PanAndZoomElementCanvas {
   }
 
   protected static getCanvasEditor() {
-    return (this.$core.$canvasEditor.getCanvas("editor") as MainCanvas).canvas
+    return (this.$core.$canvas.getCanvas("editor") as MainCanvas).canvas
   }
 
   protected static getPosition(event: MouseEvent) {
@@ -47,14 +48,14 @@ export class PanAndZoomElementCanvas {
       y
     }
 
-    AtomicGlobal.PAN.translateX = x
-    AtomicGlobal.PAN.translateY = y
+    this.$core.$global.PAN.translateX = x
+    this.$core.$global.PAN.translateY = y
   }
 
   public static zoom(scale: number) {
     this._control.zoom.scale = scale
 
-    AtomicGlobal.ZOOM.scale = scale
+    this.$core.$global.ZOOM.scale = scale
   }
 
   public static mousedown(event: MouseEvent) {
@@ -87,8 +88,8 @@ export class PanAndZoomElementCanvas {
     this._control.pan.x += dx
     this._control.pan.y += dy
 
-    AtomicGlobal.PAN.translateX = this._control.pan.x
-    AtomicGlobal.PAN.translateY = this._control.pan.y
+    this.$core.$global.PAN.translateX = this._control.pan.x
+    this.$core.$global.PAN.translateY = this._control.pan.y
 
     this._control.startCoords.x = event.clientX
     this._control.startCoords.y = event.clientY
@@ -103,6 +104,10 @@ export class PanAndZoomElementCanvas {
       Math.min(this._control.zoom.max, this._control.zoom.scale)
     )
 
-    AtomicGlobal.ZOOM.scale = this._control.zoom.scale
+    this.$core.$global.ZOOM.scale = this._control.zoom.scale
+  }
+
+  static [SetCore](core: any) {
+    PanAndZoomElementCanvas.$core = core
   }
 }

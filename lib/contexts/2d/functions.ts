@@ -2,6 +2,36 @@ export { draw_rectangle_context_2D } from "./rectangle"
 export { draw_selection_context_2D } from "./selection"
 export { draw_text_context_2D } from "./text"
 export { draw_control_edition_context_2D } from "./control-edition"
+export { draw_effect_context_2D } from "./effect"
+
+export const validColor = (
+  color: string,
+  context: CanvasRenderingContext2D,
+  options: any
+) => {
+  if (color.indexOf("linear-gradient") !== -1) {
+    const convertColor = color
+      .replace("linear-gradient(", "")
+      .slice(0, -1)
+      .split(",")
+
+    const linearGradient = context.createLinearGradient(
+      0,
+      0,
+      options.width,
+      options.height
+    )
+
+    convertColor.forEach((colors) => {
+      const value = colors.trim().split(" ")
+      linearGradient.addColorStop(Number(value[0]), value[1])
+    })
+
+    return linearGradient
+  } else {
+    return color
+  }
+}
 
 export const applyBackground = (background: string | CanvasGradient) => {
   background
@@ -98,7 +128,7 @@ export const _makeAxisCoords2D = (
   context.closePath()
 }
 
-export const grid_make_contest_2D = (
+export const grid_make_context_2D = (
   context: CanvasRenderingContext2D,
   options: any
 ) => {

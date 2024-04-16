@@ -1,7 +1,9 @@
 import { DEFAULT_CONFIG_NODE_SELECTION } from "../../../configs/nodes/2D/selection"
-import { AtomicGlobal } from "../../atomic-global"
+import { TFunction } from "../../../types"
 import { IOptionsNodeSelection } from "../types"
-import { BasicNode, EmptyNode, Node2D } from "./node"
+import { BasicNode } from "./basic"
+import { EmptyNode } from "./empty"
+import { Node2D } from "./node"
 
 export class NodeSelection extends Node2D {
   protected _options: IOptionsNodeSelection
@@ -120,42 +122,10 @@ export class NodeSelection extends Node2D {
     }
   }
 
-  public render(): void {
-    if (this._redraw) {
-      this.getCore().execute("draw:selection", "editor", {
-        ...this._options
-      })
-
-      // this._redraw = false
-    }
-
-    if (
-      this._functions?._ready &&
-      (AtomicGlobal.MODE === "preview" || AtomicGlobal.MODE === "game")
-    )
-      this._functions._ready()
-  }
-
-  public update(frame: number, time: number): void {
-    if (this._redraw) {
-      this.getCore().execute("draw:selection", "editor", {
-        ...this._options
-      })
-
-      // this._redraw = false
-    }
-
-    if (
-      this._functions?._process &&
-      (AtomicGlobal.MODE === "preview" || AtomicGlobal.MODE === "game")
-    )
-      this._functions._process(frame, time)
-  }
-
-  protected validationPositionNode(node: BasicNode | Node2D | EmptyNode) {
-    const zoomScale = AtomicGlobal.ZOOM.scale
-    const panX = AtomicGlobal.PAN.translateX
-    const panY = AtomicGlobal.PAN.translateY
+  protected validationPositionNode(node: Node2D) {
+    const zoomScale = this.getCore().$global.ZOOM.scale
+    const panX = this.getCore().$global.PAN.translateX
+    const panY = this.getCore().$global.PAN.translateY
 
     const nodeX = (node.x - (node.width * node.scaleX) / 2 - panX) / zoomScale
     const nodeY = (node.y - (node.height * node.scaleY) / 2 - panY) / zoomScale
@@ -183,15 +153,63 @@ export class NodeSelection extends Node2D {
     )
   }
 
-  public selectionElements(nodes?: BasicNode[] | Node2D[] | EmptyNode[]) {
-    if (!this.getCurrentScene()) return
-
-    if (!nodes) nodes = this.getCurrentScene().getNodes()
-
-    for (let childNode of nodes) {
+  public selectionElements(nodes: BasicNode[] | Node2D[] | EmptyNode[]) {
+    for (let childNode of nodes as any) {
       if (this.validationPositionNode(childNode))
         this._selectedNodes.add(childNode)
       else this._selectedNodes.delete(childNode)
     }
+  }
+
+  public render(): void {
+    this.getCore().execute("canvas:save", this._canvas)
+
+    this.getCore().execute("draw:selection", this._canvas, {
+      ...this._options
+    })
+
+    if (
+      this.hasFunction("_ready") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_ready") as TFunction)()
+
+    if (
+      this.hasFunction("_draw") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_draw") as TFunction)()
+
+    this.getCore().execute("canvas:restore", this._canvas)
+  }
+
+  public update(object: {
+    timestamp: number
+    deltaTime: number
+    frame: number
+  }): void {
+    this.getCore().execute("canvas:save", this._canvas)
+
+    this.getCore().execute("draw:selection", this._canvas, {
+      ...this._options
+    })
+
+    if (
+      this.hasFunction("_draw") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_draw") as TFunction)()
+
+    if (
+      this.hasFunction("_process") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_process") as TFunction)(object)
+
+    this.getCore().execute("canvas:restore", this._canvas)
   }
 }

@@ -1,10 +1,10 @@
 import {
   IOptionsEmptyNode,
-  IOptionsNode,
+  IOptionsBasicNode,
   IOptionsNode2D
 } from "../../../basic/nodes/types"
 
-export const DEFAULT_CONFIG_BASIC_NODE: IOptionsNode = {
+export const DEFAULT_CONFIG_BASIC_NODE: IOptionsBasicNode = {
   cursor: "default",
   deep: "0",
   name: "BasicNode",

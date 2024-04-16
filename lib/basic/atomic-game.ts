@@ -1,21 +1,23 @@
-import { ControllerAnimationFrame } from "../controllers/controller-animation-frame"
-import { ControllerScenes } from "../controllers/controller-scenes"
 import {
   IOptionsGame,
   TCanvasType,
+  TFunction,
   TOptionsType,
   TTypeCanvasActions,
   TTypeDraws,
   TTypeEditor,
   TTypeGrid
 } from "../types"
-import { BasicNode } from "./nodes/2d/node"
+import { ControllerAnimation } from "../controllers/controller-animation"
+import { ControllerCanvasGame } from "../controllers/controller-canvas-game"
+import { ControllerScenes } from "../controllers/controller-scenes"
+import { DispatchEventObserver, SetCore } from "../const"
+import { ControllerGlobal } from "../controllers/controller-global"
+import EventObserver from "../utils/observer"
+import { BasicNode } from "./nodes/2d/basic"
+import { DEFAULT_CONFIG_GAME } from "../configs/game"
 
 export class AtomicGame {
-  public static Scenes: ControllerScenes
-
-  protected _animationController: ControllerAnimationFrame
-  protected _canvasGameController: any
   protected _options: IOptionsGame = {
     context: "2d",
     dimension: "2D",
@@ -28,24 +30,12 @@ export class AtomicGame {
     position_y: 500
   }
 
-  constructor(options: Partial<IOptionsGame>) {
-    this._options = { ...this._options, ...options }
+  protected _animationController: ControllerAnimation
+  protected _scenesController: ControllerScenes
+  protected _canvasController: ControllerCanvasGame
+  protected _globalController: typeof ControllerGlobal
 
-    this.registerInstance()
-
-    this._animationController = new ControllerAnimationFrame()
-    this._canvasGameController = {}
-
-    this.initConfigAnimation()
-  }
-
-  get $canvasGame() {
-    return this._canvasGameController
-  }
-
-  get $animation() {
-    return this._animationController
-  }
+  protected _eventObserver: EventObserver
 
   get width() {
     return this._options.width
@@ -55,54 +45,114 @@ export class AtomicGame {
     return this._options.height
   }
 
-  protected initConfigAnimation() {
-    this.$animation.delay = 1000
-    this._animationController.fps = 60
+  get $scenes() {
+    return this._scenesController
   }
 
-  protected registerInstance() {
-    BasicNode.$game = this
+  get $animation() {
+    return this._animationController
+  }
+
+  get $canvas() {
+    return this._canvasController
+  }
+
+  get $global() {
+    return this._globalController
+  }
+
+  constructor(options: Partial<IOptionsGame>) {
+    this._options = { ...this._options, ...options }
+
+    this._eventObserver = new EventObserver()
+
+    const self = this as any
+
+    ControllerAnimation[SetCore](self)
+    ControllerScenes[SetCore](self)
+    ControllerCanvasGame[SetCore](self)
+    ControllerGlobal[SetCore](self)
+
+    BasicNode[SetCore](self)
+
+    ControllerGlobal.setOptions(DEFAULT_CONFIG_GAME)
+
+    this._globalController = ControllerGlobal
+    this._animationController = new ControllerAnimation()
+    this._scenesController = new ControllerScenes()
+    this._canvasController = new ControllerCanvasGame({
+      background: this._options.background,
+      width: this._options.width,
+      height: this._options.height,
+      context: this._options.context
+    })
+
+    this.$animation.setDelayFrames(this.$global.FPS.delay)
+    this.$animation.setVelocityFrames(this.$global.FPS.velocity)
+
+    this.$canvas.create()
+    this.$canvas.load()
+
+    this.renderScene()
+
+    this.$animation.animation = ({ frame, timestamp, deltaTime }) => {
+      deltaTime
+      this.clearSelective()
+      this.updateScene(frame, timestamp)
+    }
+
+    this.$animation.play()
+  }
+
+  public setSize(width: number, height: number) {
+    this._options.width = width
+    this._options.height = height
+
+    this._canvasController.setSize(width, height)
   }
 
   public execute<
     T extends TTypeDraws | TTypeCanvasActions | TTypeGrid | TTypeEditor
   >(action: T, canvas: TCanvasType, options?: Partial<TOptionsType[T]>) {
-    action
-    canvas
-    options
-    // this._canvasEditorController.on({
-    //   action: action,
-    //   canvas: canvas,
-    //   options: options,
-    // })
+    this._canvasController.execute({
+      action: action,
+      canvas: canvas,
+      options: options
+    })
   }
 
-  public render(frame: number = 0, time = 0) {
-    this.execute("canvas:clear", "background")
-    this.execute("canvas:clear", "scene")
-    this.execute("canvas:clear", "ui")
+  public draw(accessor: string, ...args: any[]) {
+    this.$canvas.draw(accessor, args)
+  }
 
+  public on(name: any, callback: TFunction) {
+    this._eventObserver.addEventListener(name, callback)
+  }
+
+  public clearSelective() {
+    this.execute("canvas:clear", "background")
+    this.execute("canvas:clear", "ui")
+  }
+
+  public renderScene() {
+    this.execute("canvas:clear", "scene")
     this.execute("canvas:save", "scene")
 
-    AtomicGame.Scenes.update(frame, time)
+    this.$scenes.render()
 
     this.execute("canvas:restore", "scene")
   }
 
-  public start() {
-    this.$canvasGame.create()
-    this.$canvasGame.load()
+  public updateScene(frame: number = 0, time = 0) {
+    this.execute("canvas:clear", "scene")
+    this.execute("canvas:save", "scene")
 
-    this.$animation.handler(({ frame, time }) => {
-      this.render(frame, time)
-    })
+    this.$scenes.update(frame, time)
+
+    this.execute("canvas:restore", "scene")
   }
 
-  public play() {
-    this.$animation.play()
-  }
-
-  public pause() {
-    this.$animation.pause()
+  [DispatchEventObserver](name: any, ...args: any[]) {
+    this._eventObserver.emitEvent(name, args)
   }
 }

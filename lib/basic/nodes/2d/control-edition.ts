@@ -1,5 +1,5 @@
 import { DEFAULT_CONFIG_NODE_CONTROL_EDITION } from "../../../configs/nodes/2D/control-edition"
-import { AtomicGlobal } from "../../atomic-global"
+import { TFunction } from "../../../types"
 import { IOptionsNodeControlEdition } from "../types"
 import { Node2D } from "./node"
 
@@ -24,42 +24,62 @@ export class NodeControlEdition extends Node2D {
   }
 
   public render(): void {
-    if (this._redraw) {
-      const { translateX, translateY } = this.processNode()
+    const { translateX, translateY } = this.processNode()
 
-      this.getCore().execute("draw:control-edition", "editor", {
-        ...this._options,
-        translateX,
-        translateY
-      })
+    this.getCore().execute("canvas:save", this._canvas)
 
-      // this._redraw = false
-    }
+    this.getCore().execute("draw:control-edition", this._canvas, {
+      ...this._options,
+      translateX,
+      translateY
+    })
 
     if (
-      this._functions?._ready &&
-      (AtomicGlobal.MODE === "preview" || AtomicGlobal.MODE === "game")
+      this.hasFunction("_ready") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
     )
-      this._functions._ready()
+      (this.getFunction("_ready") as TFunction)()
+
+    if (
+      this.hasFunction("_draw") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_draw") as TFunction)()
+
+    this.getCore().execute("canvas:restore", this._canvas)
   }
 
-  public update(frame: number, time: number): void {
-    if (this._redraw) {
-      const { translateX, translateY } = this.processNode()
+  public update(object: {
+    timestamp: number
+    deltaTime: number
+    frame: number
+  }): void {
+    const { translateX, translateY } = this.processNode()
 
-      this.getCore().execute("draw:control-edition", "editor", {
-        ...this._options,
-        translateX,
-        translateY
-      })
+    this.getCore().execute("canvas:save", this._canvas)
 
-      // this._redraw = false
-    }
+    this.getCore().execute("draw:control-edition", this._canvas, {
+      ...this._options,
+      translateX,
+      translateY
+    })
 
     if (
-      this._functions?._process &&
-      (AtomicGlobal.MODE === "preview" || AtomicGlobal.MODE === "game")
+      this.hasFunction("_draw") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
     )
-      this._functions._process(frame, time)
+      (this.getFunction("_draw") as TFunction)()
+
+    if (
+      this.hasFunction("_process") &&
+      (this.getCore().$global.MODE === "preview" ||
+        this.getCore().$global.MODE === "game")
+    )
+      (this.getFunction("_process") as TFunction)(object)
+
+    this.getCore().execute("canvas:restore", this._canvas)
   }
 }

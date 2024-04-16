@@ -1,9 +1,15 @@
+import { BasicNode } from "./basic/nodes/2d/basic"
+import { EmptyNode } from "./basic/nodes/2d/empty"
+import { GlobalNode } from "./basic/nodes/2d/global"
+import { Node2D } from "./basic/nodes/2d/node"
 import {
   IOptionsNodeControlEdition,
   IOptionsNodeRectangle,
   IOptionsNodeText,
   TOptionsBasic
 } from "./basic/nodes/types"
+
+export type TNode = GlobalNode | BasicNode | Node2D | EmptyNode
 
 export type ValueOf<T> = T[keyof T]
 
@@ -74,13 +80,9 @@ export type TContextCanvasName = "2d" | "web-gl" | "web-gl2"
 
 export type TContextCanvas = ValueOf<TContextObject>
 
-export type TCanvasType =
-  | "scene"
-  | "editor"
-  | "grid"
-  | "ui"
-  | "game"
-  | "background"
+export type TCanvasType = "scene" | "editor" | "grid" | "ui" | "background"
+
+export type TCanvasTypeGame = "ui" | "scene" | "background"
 
 export type TCanvasTypeEdition =
   | "scene"
@@ -102,12 +104,15 @@ export type TTypeCanvasActions =
   | "canvas:clear"
   | "canvas:translate"
   | "canvas:scale"
+
+export type TTypeInertNodes = "node:2d" | "node:basic" | "node:empty"
 export type TTypeDraws =
   | "draw:rectangle"
   | "draw:circle"
   | "draw:selection"
   | "draw:text"
   | "draw:control-edition"
+  | "draw:effect"
 
 export type TOptionsType = {
   [key: string]: any

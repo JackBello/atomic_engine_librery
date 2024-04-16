@@ -4,8 +4,6 @@ export const draw_rectangle_context_2D = (
   context: CanvasRenderingContext2D,
   options: IOptionsNodeRectangle & TOptionsBasic
 ) => {
-  context.save()
-
   context.translate(options.translateX, options.translateY)
   context.rotate((options.rotation * Math.PI) / 180)
 
@@ -62,6 +60,4 @@ export const draw_rectangle_context_2D = (
   options.border ? context.stroke() : 0
 
   context.closePath()
-
-  context.restore()
 }

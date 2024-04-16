@@ -1,18 +1,15 @@
-import { DEFAULT_CONFIG_NODE_TEXT } from "../../../configs/nodes/2D/text"
+import { DEFAULT_CONFIG_EMPTY_NODE } from "../../../configs/nodes/2D/node"
 import { TFunction } from "../../../types"
-import { IOptionsNodeText } from "../types"
-import { Node2D } from "./node"
+import { IOptionsEmptyNode } from "../types"
+import { BasicNode } from "./basic"
 
-export class NodeText extends Node2D {
-  protected _options: IOptionsNodeText
-
-  constructor(options: Partial<IOptionsNodeText> = {}) {
-    super({ ...DEFAULT_CONFIG_NODE_TEXT, ...options })
-    this._options = { ...DEFAULT_CONFIG_NODE_TEXT, ...options }
-    this._type = NodeText.name
+export class EmptyNode extends BasicNode {
+  constructor(options: Partial<IOptionsEmptyNode> = {}) {
+    super({ ...DEFAULT_CONFIG_EMPTY_NODE, ...options })
+    this._type = EmptyNode.name
   }
 
-  public setOptions(options: Partial<IOptionsNodeText>) {
+  public setOptions(options: Partial<IOptionsEmptyNode> = {}) {
     this._redraw = true
     this._options = { ...this._options, ...options }
   }
@@ -25,10 +22,6 @@ export class NodeText extends Node2D {
 
   public render(): void {
     this.getCore().execute("canvas:save", this._canvas)
-
-    this.getCore().execute("draw:text", this._canvas, {
-      ...this._options
-    })
 
     if (
       this.hasFunction("_ready") &&
@@ -53,10 +46,6 @@ export class NodeText extends Node2D {
     frame: number
   }): void {
     this.getCore().execute("canvas:save", this._canvas)
-
-    this.getCore().execute("draw:text", this._canvas, {
-      ...this._options
-    })
 
     if (
       this.hasFunction("_draw") &&

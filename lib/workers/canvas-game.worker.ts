@@ -1,25 +1,16 @@
 import { useFunctionsContext } from "../contexts/functions"
-import { TCanvasTypeEdition, TContextCanvasName } from "../types"
+import { TCanvasTypeGame, TContextCanvasName } from "../types"
 
 let globalContext: TContextCanvasName
-let layers: Record<TCanvasTypeEdition, OffscreenCanvas> = {} as any
+let layers: Record<TCanvasTypeGame, OffscreenCanvas> = {} as any
 
-const loadLayer = (options: Record<TCanvasTypeEdition, OffscreenCanvas>) => {
-  if (
-    !options.grid &&
-    !options.background &&
-    !options.scene &&
-    !options.ui &&
-    !options.editor
-  )
-    return
+const loadLayer = (options: Record<TCanvasTypeGame, OffscreenCanvas>) => {
+  if (!options.background && !options.scene && !options.ui) return
 
   layers = {
-    grid: options.grid,
     background: options.background,
-    scene: options.scene,
     ui: options.ui,
-    editor: options.editor
+    scene: options.scene
   }
 }
 
@@ -30,23 +21,38 @@ const loadContext = (options: { context: TContextCanvasName }) => {
 const resize = (options: any) => {
   if (!options.size) return
 
-  layers.grid.width = options.size.width
-  layers.grid.height = options.size.height
-  layers.background.width = options.size.width
-  layers.background.height = options.size.height
-  layers.scene.width = options.size.width
-  layers.scene.height = options.size.height
-  layers.ui.width = options.size.width
-  layers.ui.height = options.size.height
-  layers.editor.width = options.size.width
-  layers.editor.height = options.size.height
+  if (layers.background) {
+    layers.background.width = options.size.width
+    layers.background.height = options.size.height
+  }
+
+  if (layers.scene) {
+    layers.scene.width = options.size.width
+    layers.scene.height = options.size.height
+  }
+
+  if (layers.ui) {
+    layers.ui.width = options.size.width
+    layers.ui.height = options.size.height
+  }
 }
 
 const handleActions = (
   action: string,
-  canvas: TCanvasTypeEdition,
+  canvas: TCanvasTypeGame,
   options: any
 ) => {
+  if (!layers[canvas]) return
+
+  const bufferCanvas = new OffscreenCanvas(
+    layers[canvas].width,
+    layers[canvas].height
+  )
+
+  const drawerBuffer = bufferCanvas.getContext(
+    globalContext.replace("-", "") as any
+  ) as any
+
   const drawer = layers[canvas].getContext(
     globalContext.replace("-", "") as any
   ) as any
@@ -68,7 +74,13 @@ const handleActions = (
 
   const exec = actions[action]
 
-  if (exec) exec(drawer, options)
+  drawerBuffer.imageSmoothingEnabled = false
+
+  console.log(drawerBuffer)
+
+  if (exec) exec(drawerBuffer, options)
+
+  drawer.drawImage(drawerBuffer, 0, 0)
 }
 
 self.onmessage = function (event) {

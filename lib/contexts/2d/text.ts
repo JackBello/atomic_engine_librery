@@ -4,8 +4,6 @@ export const draw_text_context_2D = (
   context: CanvasRenderingContext2D,
   options: IOptionsNodeText & TOptionsBasic
 ) => {
-  context.save()
-
   context.translate(options.translateX, options.translateY)
   context.rotate((options.rotation * Math.PI) / 180)
 
@@ -34,6 +32,4 @@ export const draw_text_context_2D = (
   } else {
     context.fillText(options.text, options.x, options.y)
   }
-
-  context.restore()
 }

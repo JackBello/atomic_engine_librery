@@ -1,3 +1,10 @@
+export type TAttributes = {
+  value: any
+  type: "string" | "int" | "float" | "boolean"
+  input: "text" | "number" | "slider" | "checkbox" | "radio" | "file" | "color"
+  options: {}
+}
+
 export type TCursorOptions =
   | "default"
   | "pointer"
@@ -32,18 +39,20 @@ export type TOptionsBasic = {
   translateY: number
 }
 
-export interface IOptionsNode {
-  x: number
-  y: number
+export interface IOptionsGlobalNode {
   cursor: TCursorOptions
-  deep: string
-  visible: boolean
-  selectable: boolean
-  lock: boolean
   name: string
 }
 
-export interface IOptionsNode2D extends IOptionsNode {
+export interface IOptionsBasicNode extends IOptionsGlobalNode {
+  x: number
+  y: number
+  visible: boolean
+  selectable: boolean
+  lock: boolean
+}
+
+export interface IOptionsNode2D extends IOptionsBasicNode {
   width: number
   height: number
   centerScale: boolean
@@ -62,7 +71,7 @@ export interface IOptionsNode2D extends IOptionsNode {
   rotation: number
 }
 
-export interface IOptionsEmptyNode extends IOptionsNode {}
+export interface IOptionsEmptyNode extends IOptionsBasicNode {}
 
 export interface IOptionsNodeRectangle extends IOptionsNode2D {
   background: string
@@ -114,6 +123,14 @@ export interface IOptionsNodeControlEdition extends IOptionsNode2D {
 }
 
 export type TSize = "px" | "em" | "pc" | "cm" | "rem" | "%"
+
+export interface IOptionsNodeLineFlowEffect extends IOptionsEmptyNode {
+  cellSize: number
+  lineWidth: number
+  spacing: number
+  color: string
+  radius: number
+}
 
 export interface IOptionsNodeText extends IOptionsNode2D {
   text: string
@@ -173,4 +190,4 @@ export interface IOptionsNodeText extends IOptionsNode2D {
   color: string
 }
 
-export interface IOptionsScene2D extends IOptionsNode2D {}
+export interface IOptionsScene2D extends IOptionsGlobalNode {}
