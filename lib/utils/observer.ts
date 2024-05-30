@@ -1,4 +1,4 @@
-import { TFunction } from "../types"
+import { TFunction } from "../types.ts"
 
 export default class EventObserver {
   protected _eventListeners: Record<string, TFunction[]> = {}

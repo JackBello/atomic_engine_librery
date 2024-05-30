@@ -1,6 +1,13 @@
-import { IOptionsScene2D } from "../../../basic/nodes/types"
+import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
 
-export const DEFAULT_CONFIG_SCENE_2D: IOptionsScene2D = {
-  cursor: "default",
-  name: "Scene2D"
+export const DEFAULT_CONFIG_SCENE_2D: Omit<
+  IControlEdition,
+  "cursor" | "selectable"
+> &
+  IControlEditor = {
+  name: "Scene2D",
+  description: "",
+  title: "",
+  lock: false,
+  visible: true
 }

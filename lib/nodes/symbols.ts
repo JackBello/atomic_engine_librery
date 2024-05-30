@@ -1,0 +1,13 @@
+export const PropFunctions = Symbol("PropFunctions")
+export const PropAttributes = Symbol("PropAttributes")
+export const PropMetaKeys = Symbol("PropMetaKeys")
+export const PropNodes = Symbol("PropNodes")
+
+export const MethodSetParent = Symbol("MethodSetParent")
+export const MethodSetUUID = Symbol("MethodSetUUID")
+export const MethodSetFunctions = Symbol("MethodSetFunctions")
+export const MethodSetAttributes = Symbol("MethodSetAttributes")
+export const MethodSetMetaKeys = Symbol("MethodSetMetaKeys")
+export const MethodSetCore = Symbol("MethodSetCore")
+export const MethodSetIndex = Symbol("MethodSetIndex")
+export const MethodSetNodes = Symbol("MethodSetNodes")

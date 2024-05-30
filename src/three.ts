@@ -18,7 +18,6 @@ for (let x = 0; x < 1000; x += 1) {
   const geometry = new THREE.BoxGeometry(0.4, 0.4, 0.4)
   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
   const cube = new THREE.Mesh(geometry, material)
-  console.log(-x * 0.001)
   cube.position.x = -x
   cubes.push(cube)
   scene.add(cube)

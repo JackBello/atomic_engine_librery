@@ -11,6 +11,7 @@
   "devDependencies": {
     "@types/three": "^0.163.0",
     "@types/wicg-file-system-access": "^2023.10.5",
+    "@webgpu/types": "^0.1.40",
     "typescript": "^5.4.4",
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1",
