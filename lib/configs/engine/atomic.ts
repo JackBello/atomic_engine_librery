@@ -10,13 +10,23 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsEngine = {
   },
   game: {
     full_screen: false,
-    full_size: true,
+    full_size: false,
     height: 400,
     width: 400,
-    position_x: 400,
-    position_y: 400
+    x: 0,
+    y: 0,
+    icon: null,
+    center: true,
+    title: undefined,
+    resizable: false
   },
   height: 500,
   width: 500,
-  selector: "#canvas"
+  selector: "[data-canvas]",
+  export: {
+    exclude: [],
+    format: "JSON",
+    include: []
+  },
+  mode: "editor"
 }

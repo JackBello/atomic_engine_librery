@@ -69,6 +69,7 @@ export const rectangle_2D = (
       calculate.scaleFactor.height
     )
   }
+
   context.fill()
   options.border ? context.stroke() : 0
 

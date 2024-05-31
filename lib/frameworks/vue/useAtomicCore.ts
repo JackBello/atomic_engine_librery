@@ -1,16 +1,16 @@
 import { ref, onMounted, onBeforeUnmount } from "vue"
-import { IOptionsAtomCoreGame } from "../../../lib-old/types"
-import { AtomicEditor } from "../../../lib-old"
+import { AtomicEngine } from "../../index"
+import { IOptionsEngine } from "../../types"
 
-export const useAtomicCore = (options: Partial<IOptionsAtomCoreGame>) => {
-  const app = ref<AtomicEditor>()
+export const useAtomicCore = (options?: Partial<IOptionsEngine>) => {
+  const app = ref<AtomicEngine | null>()
 
   onMounted(() => {
-    app.value = new AtomicEditor(options)
+    app.value = new AtomicEngine(options)
   })
 
   onBeforeUnmount(() => {
-    app.value
+    app.value = null
   })
 
   return app

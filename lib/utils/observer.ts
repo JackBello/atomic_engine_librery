@@ -23,6 +23,10 @@ export default class EventObserver {
     })
   }
 
+  public hasEventListener(event: string) {
+    return event in this._eventListeners
+  }
+
   public clearListeners() {
     for (const event in this._eventListeners) this._eventListeners[event] = []
   }

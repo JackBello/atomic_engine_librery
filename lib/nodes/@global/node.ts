@@ -1,4 +1,5 @@
 import * as YAML from "yaml"
+import JSON5 from "json5"
 import { AbstractNode } from "../abstract/node.abstract"
 import {
   IControlEditor,
@@ -32,7 +33,12 @@ import { v4 } from "@lukeed/uuid"
 import { handleScript } from "../../utils/script"
 import { DEFAULT_CONFIG_GLOBAL_NODE } from "../../configs/nodes/@global/node"
 import { TEventGlobalNode } from "../event.type"
-import { MethodDispatchEvent, MethodExport } from "../../symbols"
+import {
+  MethodDispatchEvent,
+  MethodDispatchScript,
+  MethodExport
+} from "../../symbols"
+import { omitKeys } from "@/utils/json"
 
 export class GlobalNode
   extends AbstractNode
@@ -340,16 +346,6 @@ export class GlobalNode
     this[PropMetaKeys].clear()
   }
 
-  async runScript(): Promise<void> {
-    if (!this.$_script) return
-
-    const response = await handleScript(this.$_script as string, this)
-
-    const functions: [string, TFunction][] = Object.entries(response.$functions)
-
-    this.$_functions = new Map(functions)
-  }
-
   emit(event: TEventGlobalNode, callback: TFunction): void {
     return this._events.addEventListener(event, callback)
   }
@@ -365,9 +361,21 @@ export class GlobalNode
   }
 
   toObject(): IControlEditor {
-    return {
-      ...this
-    }
+    return omitKeys(
+      {
+        ...this
+      },
+      [
+        "_initial",
+        "_events",
+        "_parent",
+        "_uuid",
+        "_index",
+        "hierarchy",
+        "type",
+        "script"
+      ]
+    )
   }
 
   set(property: keyof IControlEditor, value: any): void
@@ -385,12 +393,12 @@ export class GlobalNode
   export(format: "JSON" | "YAML" = "JSON"): string {
     return format === "YAML"
       ? YAML.stringify(this[MethodExport]())
-      : JSON.stringify(this[MethodExport]())
+      : JSON5.stringify(this[MethodExport]())
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
     const structure: TExportNode<IControlEditor> =
-      format === "YAML" ? YAML.parse(data) : JSON.parse(data)
+      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as GlobalNode
   }
@@ -427,6 +435,16 @@ export class GlobalNode
     return this._events.emitEvent(event, ...args)
   }
 
+  async [MethodDispatchScript]() {
+    if (this.script === null) return
+
+    const response = await handleScript(this.script as string, this)
+
+    const functions: [string, TFunction][] = Object.entries(response.$functions)
+
+    this[PropFunctions] = new Map(functions)
+  }
+
   [MethodExport](
     childNode: boolean = true
   ): TExportNode<IControlEditor> & TOptionalNodes<"children"> {
@@ -444,8 +462,9 @@ export class GlobalNode
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.type,
       hierarchy: this.hierarchy,
-      script: this.script,
-      parent: this.parent,
+      script: this.script
+        ? (this.script as string).replace(/(\r\n|\n|\r)/gm, "")
+        : null,
       deep: this.deep,
       index: this.index,
       nodes,

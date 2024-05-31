@@ -9,27 +9,25 @@ let bufferDrawer: TContextObject[TContextName]
 let workerCanvas: OffscreenCanvas
 let workerDrawer: TContextObject[TContextName]
 
-const loadCanvas = ({
-  canvas,
-  width,
-  height
-}: {
-  canvas: OffscreenCanvas
-  width: number
-  height: number
-}) => {
-  if (!workerCanvas) return
+const loadContext = ({ context }: { context: TContextName }) => {
+  if (globalContext !== undefined) return
 
-  workerCanvas = canvas
-  bufferCanvas = new OffscreenCanvas(width, height)
+  globalContext = context
 }
 
-const loadContext = ({ context }: { context: TContextName }) => {
-  if (context) globalContext = context
+const loadCanvas = ({ canvas }: { canvas: OffscreenCanvas }) => {
+  if (canvas === undefined) return
+
+  if (workerCanvas) return
+
+  workerCanvas = canvas
+  bufferCanvas = new OffscreenCanvas(canvas.width, canvas.height)
 }
 
 const loadDrawers = () => {
-  if (!workerCanvas) return
+  if (workerCanvas === undefined) return
+
+  if (workerDrawer !== undefined) return
 
   const context = globalContext.replace("-", "") as
     | "2d"
@@ -79,6 +77,7 @@ self.onmessage = function (event) {
   loadDrawers()
   resizeCanvas(event.data)
 
-  if (event.data.settings)
-    handleActions(event.data.settings.action, event.data.settings.options)
+  const setting = event.data.setting
+
+  if (setting) handleActions(setting.action, setting.options)
 }

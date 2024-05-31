@@ -1,4 +1,5 @@
 import * as YAML from "yaml"
+import JSON5 from "json5"
 import { TCanvasType } from "../../../canvas/canvas.types"
 import {
   ICoords2D,
@@ -20,6 +21,8 @@ import { Node2D } from "../node"
 import { makerNodes2D } from "../../maker-2d"
 import { DEFAULT_CONFIG_TEXT_2D } from "../../../configs/nodes/2D/interface/text"
 import { MethodExport } from "../../../symbols"
+import { executeOnlyOne } from "../../../utils/functions"
+import { omitKeys } from "@/utils/json"
 
 export class Text2D extends Node2D implements IText2D {
   protected _initial: IControlEditor &
@@ -146,65 +149,39 @@ export class Text2D extends Node2D implements IText2D {
     this.color = this._initial.color
   }
 
-  render(canvas: TCanvasType): void {
-    this.getApp().execute("canvas:save", canvas)
-
-    this.getApp().execute("draw:text", canvas, {
-      ...this.toObject()
-    })
-
-    const _draw = this.getFunction("_draw")
-    const _ready = this.getFunction("_ready")
-
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
-
-    if (_ready && mode) _ready()
-    if (_draw && mode) _draw()
-
-    this.getApp().execute("canvas:restore", canvas)
-  }
-
-  update(
-    canvas: TCanvasType,
-    animation: {
+  async process(): Promise<void>
+  async process(
+    canvas?: TCanvasType,
+    animation?: {
       timestamp: number
       deltaTime: number
       frame: number
     }
-  ): void {
-    this.getApp().execute("canvas:save", canvas)
+  ): Promise<void> {
+    if (canvas === undefined && animation !== undefined) return
 
-    this.getApp().execute("draw:text", canvas, {
-      ...this.toObject()
+    this.getApp().execute("canvas:save", true)
+
+    this.getApp().execute("draw:2D/text", {
+      ...this.toObject(),
+      calculate: this._calculate
     })
 
-    const _draw = this.getFunction("_draw")
-    const _process = this.getFunction("_process")
+    if (this.script) {
+      const _draw = this.getFunction("_draw")
+      const _ready = this.getFunction("_ready")
+      const _process = this.getFunction("_process")
 
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
+      const mode =
+        this.getApp().useGlobal("mode") === "preview" ||
+        this.getApp().useGlobal("mode") === "game"
 
-    if (_draw && mode) _draw()
-    if (_process && mode) _process(animation)
+      if (_draw && mode) _draw()
+      if (_ready && mode) executeOnlyOne(_ready).call(null)
+      if (_process && mode) _process(animation)
+    }
 
-    this.getApp().execute("canvas:restore", canvas)
-  }
-
-  destroy(canvas: TCanvasType): void {
-    this.getApp().execute("canvas:save", canvas)
-
-    const _destroyed = this.getFunction("_destroyed")
-
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
-
-    if (_destroyed && mode) _destroyed()
-
-    this.getApp().execute("canvas:restore", canvas)
+    this.getApp().execute("canvas:restore", true)
   }
 
   reset(
@@ -241,9 +218,22 @@ export class Text2D extends Node2D implements IText2D {
     INode2D &
     IBorder2D &
     IText2D {
-    return {
-      ...this
-    }
+    return omitKeys(
+      {
+        ...this
+      },
+      [
+        "_initial",
+        "_events",
+        "_parent",
+        "_uuid",
+        "_index",
+        "_calculate",
+        "hierarchy",
+        "type",
+        "script"
+      ]
+    )
   }
 
   set(
@@ -284,7 +274,7 @@ export class Text2D extends Node2D implements IText2D {
         INode2D &
         IBorder2D &
         IText2D
-    > = format === "YAML" ? YAML.parse(data) : JSON.parse(data)
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Text2D
   }
@@ -304,7 +294,7 @@ export class Text2D extends Node2D implements IText2D {
     const nodes = []
 
     if (childNode)
-      for (const node of this.getNodes()) {
+      for (const node of this.nodes) {
         nodes.push(node[MethodExport]())
       }
 
@@ -316,7 +306,6 @@ export class Text2D extends Node2D implements IText2D {
       type: this.type,
       hierarchy: this.hierarchy,
       script: this.script,
-      parent: this.parent,
       deep: this.deep,
       index: this.index,
       nodes,

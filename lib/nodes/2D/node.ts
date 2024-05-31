@@ -1,4 +1,5 @@
 import * as YAML from "yaml"
+import JSON5 from "json5"
 import { DEFAULT_CONFIG_NODE_2D } from "../../configs/nodes/2D/node"
 import { makerNodes2D } from "../maker-2d"
 import { GlobalNode } from "../@global/node"
@@ -25,8 +26,9 @@ import {
 import { PropAttributes, PropFunctions, PropMetaKeys } from "../symbols"
 import { TEventGlobalNode, TEventNode2D } from "../event.type"
 import { TFunction } from "../../types"
-import { TCanvasType } from "../../canvas/canvas.types"
 import { MethodExport } from "../../symbols"
+import { executeOnlyOne } from "../../utils/functions"
+import { omitKeys } from "@/utils/json"
 
 export class Node2D
   extends GlobalNode
@@ -211,62 +213,36 @@ export class Node2D
     }
 
     this._calculate.middleScaleFactor = {
-      width: this._calculate.middleScaleFactor.width / 2,
-      height: this._calculate.middleScaleFactor.height / 2
+      width: this._calculate.scaleFactor.width / 2,
+      height: this._calculate.scaleFactor.height / 2
     }
   }
 
-  render(canvas: TCanvasType): void {
-    this.getApp().execute("canvas:save", canvas)
+  async process(): Promise<void>
+  async process(animation?: {
+    timestamp: number
+    deltaTime: number
+    frame: number
+  }): Promise<void> {
+    if (animation !== undefined) return
 
-    const _draw = this.getFunction("_draw")
-    const _ready = this.getFunction("_ready")
+    this.getApp().execute("canvas:save", true)
 
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
+    if (this.script) {
+      const _draw = this.getFunction("_draw")
+      const _ready = this.getFunction("_ready")
+      const _process = this.getFunction("_process")
 
-    if (_ready && mode) _ready()
-    if (_draw && mode) _draw()
+      const mode =
+        this.getApp().useGlobal("mode") === "preview" ||
+        this.getApp().useGlobal("mode") === "game"
 
-    this.getApp().execute("canvas:restore", canvas)
-  }
-
-  update(
-    canvas: TCanvasType,
-    animation: {
-      timestamp: number
-      deltaTime: number
-      frame: number
+      if (_draw && mode) _draw()
+      if (_ready && mode) executeOnlyOne(_ready).call(null)
+      if (_process && mode) _process(animation)
     }
-  ): void {
-    this.getApp().execute("canvas:save", canvas)
 
-    const _draw = this.getFunction("_draw")
-    const _process = this.getFunction("_process")
-
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
-
-    if (_draw && mode) _draw()
-    if (_process && mode) _process(animation)
-
-    this.getApp().execute("canvas:restore", canvas)
-  }
-
-  destroy(canvas: TCanvasType): void {
-    this.getApp().execute("canvas:save", canvas)
-
-    const _destroyed = this.getFunction("_destroyed")
-
-    const mode =
-      this.getApp().$global.MODE === "preview" ||
-      this.getApp().$global.MODE === "game"
-
-    if (_destroyed && mode) _destroyed()
-
-    this.getApp().execute("canvas:restore", canvas)
+    this.getApp().execute("canvas:restore", true)
   }
 
   emit(event: TEventGlobalNode & TEventNode2D, callback: TFunction): void {
@@ -297,9 +273,22 @@ export class Node2D
   }
 
   toObject(): IControlEditor & IControlEdition & ICoords2D & ISize2D & INode2D {
-    return {
-      ...this
-    }
+    return omitKeys(
+      {
+        ...this
+      },
+      [
+        "_initial",
+        "_events",
+        "_parent",
+        "_uuid",
+        "_index",
+        "_calculate",
+        "hierarchy",
+        "type",
+        "script"
+      ]
+    )
   }
 
   set(
@@ -326,7 +315,7 @@ export class Node2D
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
     const structure: TExportNode<
       IControlEditor & IControlEdition & ICoords2D & ISize2D & INode2D
-    > = format === "YAML" ? YAML.parse(data) : JSON.parse(data)
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Node2D
   }
@@ -340,7 +329,7 @@ export class Node2D
     const nodes = []
 
     if (childNode)
-      for (const node of this.getNodes()) {
+      for (const node of this.nodes) {
         nodes.push(node[MethodExport]())
       }
 
@@ -352,7 +341,6 @@ export class Node2D
       type: this.type,
       hierarchy: this.hierarchy,
       script: this.script,
-      parent: this.parent,
       deep: this.deep,
       index: this.index,
       nodes,

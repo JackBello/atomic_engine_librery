@@ -9,9 +9,22 @@ export default defineConfig({
     copyPublicDir: false,
     lib: {
       entry: resolve(__dirname, "lib/index.ts"),
-      name: "AtomicEngine",
+      name: "Atomic",
       formats: ["umd", "cjs", "iife", "es"],
       fileName: (format) => "atomic-engine." + format + ".js"
+    },
+    rollupOptions: {
+      output: {
+        format: "es"
+      }
+    }
+  },
+  worker: {
+    format: "es"
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "lib")
     }
   }
 })

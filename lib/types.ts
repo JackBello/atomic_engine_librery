@@ -26,11 +26,29 @@ export interface IOptionsFramePerSecond {
   velocity: number
 }
 
+export type TPropsAtomic =
+  | "scenes"
+  | "$plugins"
+  | "$configs"
+  | "$providers"
+  | "$controls"
+  | "$nodes"
+  | "$global"
+export interface IOptionsExport {
+  format: "JSON" | "YAML"
+  include?: TPropsAtomic[]
+  exclude?: TPropsAtomic[]
+}
+
 export interface IOptionsGame extends ISize2D {
-  full_size: boolean
-  full_screen: boolean
-  position_x: number
-  position_y: number
+  full_size?: boolean
+  full_screen?: boolean
+  x: number
+  y: number
+  center?: boolean
+  title?: string
+  icon?: string | URL | null
+  resizable?: boolean
 }
 export interface IOptionsEngine extends ISize2D {
   background: string
@@ -39,4 +57,6 @@ export interface IOptionsEngine extends ISize2D {
   dimension: TDimension
   game: IOptionsGame
   fps: IOptionsFramePerSecond
+  export: IOptionsExport
+  mode: "editor" | "game"
 }

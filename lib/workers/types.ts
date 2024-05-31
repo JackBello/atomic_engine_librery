@@ -1,4 +1,3 @@
-import { TCanvasType } from "../canvas/canvas.types"
 import {
   IBorder2D,
   ICalculate,
@@ -12,7 +11,7 @@ import {
   IText2D
 } from "../nodes/nodes-2d.types"
 import { IControlEdition, IControlEditor } from "../nodes/nodes.types"
-import { TContextName } from "../types"
+import { TContextName, TDimension } from "../types"
 
 export type TCanvasActions =
   | "canvas:clear"
@@ -24,7 +23,7 @@ export type TCanvasActionsContext2D = "canvas:save" | "canvas:restore"
 
 export type TOptionalCanvasActionsContext2D<T> = T extends "2d"
   ? TCanvasActionsContext2D
-  : ""
+  : "canvas:any"
 
 export type TDrawsContext2D =
   | "draw:2D/rectangle"
@@ -40,8 +39,27 @@ export type TOptionalDrawsContext<D> = D extends "2D"
   : TDrawsContext3D
 
 export type TOptionsDraw = {
-  "canvas:save": any
-  "canvas:restore": any
+  "canvas:any": boolean
+
+  "canvas:save": boolean
+  "canvas:restore": boolean
+
+  "canvas:clear": {
+    width?: number
+    height?: number
+  }
+
+  "canvas:translate": {
+    x: number
+    y: number
+  }
+  "canvas:scale": {
+    x: number
+    y: number
+  }
+  "canvas:rotation": {
+    value: number
+  }
 
   "draw:2D/rectangle": IControlEditor &
     IControlEdition &
@@ -88,12 +106,20 @@ export type TOptionsDraw = {
     IBorder2D &
     IControlEdition2D &
     ICalculate
+
+  "draw:3D/cube": {
+    x: number
+    y: number
+    z: number
+  }
 }
 
-export type TOptionsRenderCanvasWorker<D> = {
+export type TOptionsRenderCanvasWorker = {
+  dimension: TDimension
   context: TContextName
-  canvas: TCanvasType
-  action: TOptionalDrawsContext<D> &
-    TOptionalCanvasActionsContext2D<TOptionsRenderCanvasWorker<D>["context"]>
-  options?: Partial<TOptionsDraw[TOptionsRenderCanvasWorker<D>["action"]]>
+  action:
+    | TOptionalDrawsContext<TOptionsRenderCanvasWorker["dimension"]>
+    | TOptionalCanvasActionsContext2D<TOptionsRenderCanvasWorker["context"]>
+    | TCanvasActions
+  options?: TOptionsDraw[TOptionsRenderCanvasWorker["action"]]
 }

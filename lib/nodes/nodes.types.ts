@@ -1,4 +1,3 @@
-import { TCanvasType } from "../canvas/canvas.types"
 import { TFunction } from "../types"
 import {
   MethodSetAttributes,
@@ -71,7 +70,6 @@ export type TExportNode<O> = {
   type: TTypeNode | TTypeNode2D | TTypeNode3D
   hierarchy: "children" | "not-children"
   script: string | URL | null
-  parent?: any
   deep: string
   index: number
   options: O
@@ -103,21 +101,13 @@ export interface IControlEdition {
   cursor: TCursorOptions
 }
 
-export interface IHandleSystemDraw {
-  process(): void
-}
-
 export interface IHandleDraw {
-  render(canvas: TCanvasType): void
-  update(
-    canvas: TCanvasType,
-    animation: {
-      timestamp: number
-      deltaTime: number
-      frame: number
-    }
-  ): void
-  destroy(canvas: TCanvasType): void
+  process(): void
+  process(animation?: {
+    timestamp: number
+    deltaTime: number
+    frame: number
+  }): void
 }
 
 export interface IHandleFunctions {

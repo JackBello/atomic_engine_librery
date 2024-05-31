@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://localhost:5173/atomic-engine.iife.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
   <title>Vite + TS</title>
 
   <style>
@@ -12,9 +14,9 @@
       box-sizing: border-box;
     }
 
-    [data-canvas] {
-      height: 100%;
+    [data-canvas] section {
       box-sizing: border-box;
+      border: solid 1px black;
     }
 
     * {
@@ -30,11 +32,15 @@
     <input type="number" data-id="inputVelocity">
   </label>
   <input type="button" value="upload dir" data-id="uploadDirectory" />
+  <input type="file" value="upload game" data-id="uploadGame" aria-label="s" />
+
+  <input type="button" value="add rect" data-id="addRect">
+
+  <input type="button" value="preview" data-id="preview">
+  <input type="button" value="edition" data-id="edition">
 
   <input type="button" value="Play" data-id="buttonPlay">
-  <input type="button" value="Pause" data-id="buttonPause">
   <div data-canvas></div>
-  <canvas width="1000" height="1000" id="myCanvas"></canvas>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

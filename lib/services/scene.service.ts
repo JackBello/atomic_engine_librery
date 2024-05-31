@@ -1,21 +1,29 @@
 import * as YAML from "yaml"
-import { TCanvasType } from "../canvas/canvas.types"
+import JSON5 from "json5"
 import { Scene2D } from "../nodes/2D/scene"
 import EventObserver from "../utils/observer"
 import { TFunction } from "../types"
 import { IControlEditor, TExportNode } from "../nodes/nodes.types"
 import { makerNodes2D } from "../nodes/maker-2d"
 import { TEventScenes } from "./event.type"
-import { MethodDispatchEvent, MethodExport } from "../symbols"
+import {
+  MethodDispatchEvent,
+  MethodDispatchScript,
+  MethodExport
+} from "../symbols"
+import { AtomicEngine } from "../atomic"
 
 export class SceneService<T extends Scene2D> {
-  protected _scenes = new Map<string, T>()
-  protected _scene!: T
-  protected _events: EventObserver = new EventObserver()
-  protected _canvas: TCanvasType
+  private $app: AtomicEngine
 
-  constructor(canvas: TCanvasType) {
-    this._canvas = canvas
+  protected _scenes = new Map<string, T>()
+  protected _scene?: T
+  protected _events: EventObserver = new EventObserver()
+
+  constructor(app: AtomicEngine) {
+    this.$app = app
+
+    this.$app
   }
 
   get currentScene() {
@@ -33,119 +41,56 @@ export class SceneService<T extends Scene2D> {
     this._scene = this.get(uuid)
   }
 
-  changeAndRender(uuid: string) {
-    this._scene = this.get(uuid)
-    this.executeRender()
+  add(...scenes: T[]) {
+    for (let scene of scenes) {
+      this._scenes.set(scene.uuid, scene)
+    }
   }
 
-  changeAndReset(uuid: string) {
-    this.executeReset()
-    this._scene = this.get(uuid)
-  }
-
-  changeComplete(uuid: string) {
-    this.executeReset()
-    this._scene = this.get(uuid)
-    this.executeRender()
-  }
-
-  add(scene: T) {
-    this._scenes.set(scene.uuid, scene)
-  }
-
-  public delete(uuid: string) {
+  delete(uuid: string) {
     this._scenes.delete(uuid)
-    if (uuid === this.currentScene?.uuid) this._scene = undefined as any
+
+    if (uuid === this.currentScene?.uuid) this._scene = undefined
   }
 
-  resetAndRender() {
-    this.executeReset()
-    this.executeRender()
+  process(
+    animation?: { timestamp: number; deltaTime: number; frame: number },
+    reset: boolean = false
+  ) {
+    if (this._scene) this.executeProcess(this._scene, animation, reset)
   }
 
-  update(animation: { timestamp: number; deltaTime: number; frame: number }) {
-    if (this._scene) this.executeUpdate(this._scene, animation)
-  }
-
-  render() {
-    if (this._scene) this.executeRender()
-  }
-
-  reset() {
-    if (this._scene) this.executeReset()
-  }
-
-  async script() {
-    if (this._scene) await this.executeScript()
-  }
-
-  protected executeUpdate(
+  protected executeProcess(
     node: any = this._scene,
-    animation: {
+    animation?: {
       timestamp: number
       deltaTime: number
       frame: number
-    }
+    },
+    reset: boolean = false
   ) {
-    if (node?.process) node.process()
-    if (node?.visible) node.update(this._canvas, animation)
+    if (reset && node.visible) node.reset()
+    if (node.visible) node.process(animation)
 
-    if (node.getNodes().length)
-      for (let childNode of node.getNodes()) {
-        this.executeUpdate(childNode, animation)
+    if (node.nodes.length)
+      for (const childNode of node.nodes) {
+        this.executeProcess(childNode as any, animation, reset)
       }
-  }
-
-  protected executeReset(node: any = this._scene) {
-    if (node?.process) node.process()
-    if (node?.visible) node.reset()
-
-    if (node.getNodes().length)
-      for (let childNode of node.getNodes()) {
-        this.executeReset(childNode)
-      }
-  }
-
-  protected executeRender(node: any = this._scene) {
-    if (node?.process) node.process()
-    if (node?.visible) node.render(this._canvas)
-
-    if (node.getNodes().length)
-      for (let childNode of node.getNodes()) {
-        this.executeRender(childNode)
-      }
-  }
-
-  protected async executeScript(node: any = this._scene) {
-    if (node.script) await node.runScript()
-
-    if (node.getNodes().length)
-      for (let childNode of node.getNodes()) {
-        this.executeScript(childNode)
-      }
-  }
-
-  getScenesName() {
-    return [...this._scenes.values()].map((scene) => scene.name)
   }
 
   getScenes() {
     return [...this._scenes.values()]
   }
 
-  getQuantityScene() {
-    return this._scenes.size
-  }
-
   export(format: "JSON" | "YAML" = "JSON") {
     return format === "YAML"
       ? YAML.stringify(this[MethodExport]())
-      : JSON.stringify(this[MethodExport]())
+      : JSON5.stringify(this[MethodExport]())
   }
 
   import(data: string, format: "JSON" | "YAML" = "JSON") {
     const structure: TExportNode<IControlEditor>[] =
-      format === "YAML" ? YAML.parse(data) : JSON.parse(data)
+      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     const scenes = (makerNodes2D(structure) as T[]).map((scene) => [
       scene.uuid,
@@ -157,6 +102,15 @@ export class SceneService<T extends Scene2D> {
 
   emit(name: TEventScenes, callback: TFunction) {
     this._events.addEventListener(name, callback)
+  }
+
+  [MethodDispatchScript](node: any = this._scene) {
+    node[MethodDispatchScript]()
+
+    if (node.nodes.length)
+      for (const childNode of node.nodes) {
+        this[MethodDispatchScript](childNode)
+      }
   }
 
   [MethodDispatchEvent](name: any, ...args: any[]) {

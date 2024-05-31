@@ -23,16 +23,18 @@ import {
 import EventObserver from "../../utils/observer"
 import {
   MethodDispatchEvent,
+  MethodDispatchScript,
   MethodExport,
   MethodStaticSetApp
 } from "../../symbols"
+import { AtomicEngine } from "../../atomic"
 
 export abstract class AbstractNode
   implements IHandleFunctions, IHandleAttributes, IHandleMetaKey
 {
   [key: string]: any
 
-  protected static app: any
+  protected static $app: AtomicEngine
 
   protected abstract _initial: any
   protected abstract _events: EventObserver
@@ -92,8 +94,6 @@ export abstract class AbstractNode
 
   abstract clearMetaKeys(): void
 
-  abstract runScript(): any
-
   abstract emit(event: any, callback: TFunction): void
 
   abstract reset(): void
@@ -112,7 +112,7 @@ export abstract class AbstractNode
   }
 
   protected getApp() {
-    return AbstractNode.app
+    return AbstractNode.$app
   }
 
   abstract [MethodSetParent](node: any): void
@@ -129,10 +129,12 @@ export abstract class AbstractNode
 
   abstract [MethodDispatchEvent](event: any, ...args: any[]): void
 
+  abstract [MethodDispatchScript](): void
+
   abstract [MethodExport](): any
   abstract [MethodExport](children: boolean): any
 
-  static [MethodStaticSetApp](app: any): void {
-    AbstractNode.app = app
+  static [MethodStaticSetApp](app: AtomicEngine): void {
+    AbstractNode.$app = app
   }
 }

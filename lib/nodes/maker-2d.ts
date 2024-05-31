@@ -37,6 +37,7 @@ export const makerNodes2D = (
 
     if (parent) abstract[MethodSetParent](parent)
 
+    abstract.script = node.script
     abstract[MethodSetUUID](node.uuid)
     abstract[MethodSetIndex](node.index)
     abstract[MethodSetAttributes](node.attributes)

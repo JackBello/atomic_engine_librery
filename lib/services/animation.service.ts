@@ -1,9 +1,12 @@
+import { AtomicEngine } from "../atomic"
 import { MethodDispatchEvent } from "../symbols"
 import { TFunction } from "../types"
 import EventObserver from "../utils/observer"
 import { TEventAnimation } from "./event.type"
 
 export class AnimationService {
+  private $app: AtomicEngine
+
   protected _ref!: number
   protected _events: EventObserver = new EventObserver()
   protected _framesPerSeconds = {
@@ -23,7 +26,7 @@ export class AnimationService {
     fps: 0
   }
 
-  protected _animation: (object: {
+  protected _func: (object: {
     timestamp: number
     deltaTime: number
     frame: number
@@ -52,18 +55,14 @@ export class AnimationService {
     })
   }
 
-  get animation() {
-    return this._animation
-  }
-
-  set animation(
-    animation: (object: {
+  set callback(
+    func: (object: {
       timestamp: number
       deltaTime: number
       frame: number
     }) => void
   ) {
-    this._animation = animation
+    this._func = func
   }
 
   get isPlaying() {
@@ -72,6 +71,12 @@ export class AnimationService {
 
   get isPause() {
     return this._status.pause
+  }
+
+  constructor(app: AtomicEngine) {
+    this.$app = app
+
+    this.$app
   }
 
   protected calculateFPS() {
@@ -105,7 +110,7 @@ export class AnimationService {
 
       this.calculateFPS()
 
-      this.animation({
+      this._func({
         timestamp,
         deltaTime: this._deltaTime,
         frame: this._frame
@@ -115,7 +120,7 @@ export class AnimationService {
     this._ref = window.requestAnimationFrame(this.loop.bind(this))
   }
 
-  public play() {
+  play() {
     if (!this._status.playing) {
       this._status.playing = true
       this._status.pause = false
@@ -124,7 +129,7 @@ export class AnimationService {
     }
   }
 
-  public pause() {
+  pause() {
     if (this._status.playing) {
       window.cancelAnimationFrame(this._ref)
 
@@ -137,21 +142,21 @@ export class AnimationService {
     }
   }
 
-  public setDelayFrames(value: number) {
+  setDelayFrames(value: number) {
     this._framesPerSeconds.delay = value
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
   }
 
-  public setVelocityFrames(value: number) {
+  setVelocityFrames(value: number) {
     this._framesPerSeconds.velocity = value
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
   }
 
-  public emit(name: TEventAnimation, callback: TFunction) {
+  emit(name: TEventAnimation, callback: TFunction) {
     this._events.addEventListener(name, callback)
   }
 
