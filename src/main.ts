@@ -1,4 +1,3 @@
-import FileSaver from "file-saver"
 import { AtomicEngine, Scene2D, Rectangle2D } from "../lib"
 
 const addRect = document.querySelector(
