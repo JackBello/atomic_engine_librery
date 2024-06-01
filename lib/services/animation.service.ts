@@ -1,11 +1,12 @@
-import { AtomicEngine } from "../atomic"
+import { AtomicGame } from "@/atomic-game"
+import { AtomicEngine } from "../atomic-engine"
 import { MethodDispatchEvent } from "../symbols"
 import { TFunction } from "../types"
 import EventObserver from "../utils/observer"
 import { TEventAnimation } from "./event.type"
 
 export class AnimationService {
-  private $app: AtomicEngine
+  private $app: AtomicEngine | AtomicGame
 
   protected _ref!: number
   protected _events: EventObserver = new EventObserver()
@@ -26,11 +27,12 @@ export class AnimationService {
     fps: 0
   }
 
-  protected _func: (object: {
+  protected _callback: (object: {
     timestamp: number
     deltaTime: number
-    frame: number
   }) => void = () => {}
+
+  protected _editor: () => void = () => {}
 
   get DELTA_TIME() {
     return this._deltaTime
@@ -56,13 +58,13 @@ export class AnimationService {
   }
 
   set callback(
-    func: (object: {
-      timestamp: number
-      deltaTime: number
-      frame: number
-    }) => void
+    func: (object: { timestamp: number; deltaTime: number }) => void
   ) {
-    this._func = func
+    this._callback = func
+  }
+
+  set editor(func: () => void) {
+    this._editor = func
   }
 
   get isPlaying() {
@@ -73,30 +75,34 @@ export class AnimationService {
     return this._status.pause
   }
 
-  constructor(app: AtomicEngine) {
+  constructor(app: AtomicEngine | AtomicGame) {
     this.$app = app
-
-    this.$app
   }
 
-  protected calculateFPS() {
-    const time = performance.now()
-    const delayTime = time - this._state.startTime
+  /**
+   *
+   * pasar a otro worker
+   */
+  // protected calculateFPS() {
+  //   const time = performance.now()
+  //   const delayTime = time - this._state.startTime
 
-    if (delayTime > this._framesPerSeconds.delay) {
-      this._state.fps = Math.round(
-        (this._state.frames * this._framesPerSeconds.delay) / delayTime
-      )
+  //   if (delayTime > this._framesPerSeconds.delay) {
+  //     this._state.fps = Math.round(
+  //       (this._state.frames * this._framesPerSeconds.delay) / delayTime
+  //     )
 
-      this._state.frames = 0
-      this._state.startTime = time
-    }
+  //     this._state.frames = 0
+  //     this._state.startTime = time
+  //   }
 
-    this._state.frames++
-  }
+  //   this._state.frames++
+  // }
 
   protected loop(timestamp: number) {
-    if (this._lastTime === 0) this._lastTime = timestamp
+    this._ref = window.requestAnimationFrame(this.loop.bind(this))
+
+    if (!this._lastTime) this._lastTime = timestamp
 
     this._deltaTime = timestamp - this._lastTime
 
@@ -105,19 +111,25 @@ export class AnimationService {
         (this._framesPerSeconds.delay / this._framesPerSeconds.velocity)
     )
 
+    if (this.$app.mode === "editor") this._editor()
+
+    // this.$app.canvas.animation({
+    //   timestamp,
+    //   deltaTime: this._deltaTime
+    // })
+
     if (framePerSecond > this._frame) {
       this._frame = framePerSecond
 
-      this.calculateFPS()
+      // this.calculateFPS()
 
-      this._func({
+      this._callback({
         timestamp,
-        deltaTime: this._deltaTime,
-        frame: this._frame
+        deltaTime: this._deltaTime
       })
     }
 
-    this._ref = window.requestAnimationFrame(this.loop.bind(this))
+    // this._lastTime = timestamp
   }
 
   play() {
@@ -147,6 +159,11 @@ export class AnimationService {
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
+
+    // this.$app.canvas.fps({
+    //   delay: this._framesPerSeconds.delay,
+    //   velocity: this.framesPerSeconds.velocity
+    // })
   }
 
   setVelocityFrames(value: number) {
@@ -154,6 +171,11 @@ export class AnimationService {
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
+
+    // this.$app.canvas.fps({
+    //   delay: this._framesPerSeconds.delay,
+    //   velocity: this.framesPerSeconds.velocity
+    // })
   }
 
   emit(name: TEventAnimation, callback: TFunction) {

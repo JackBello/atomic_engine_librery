@@ -1,5 +1,6 @@
-import { AtomicEngine } from "../atomic"
+import { AtomicEngine } from "../atomic-engine"
 import { IOptionsGame } from "../types"
+import jsonEscape from "json-escaping"
 
 export class WindowController {
   private $app: AtomicEngine
@@ -82,7 +83,7 @@ export class WindowController {
             (async ({ AtomicEngine }) => {
               const app = new AtomicEngine({}, true)
 
-              app.import(\`${this.$app.export("game")}\`)
+              app.import(${jsonEscape(this.$app.export("game"))})
 
               app.preview().play()
 

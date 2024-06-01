@@ -1,10 +1,11 @@
-import { AtomicEngine } from "../atomic"
+import { AtomicGame } from "@/atomic-game"
+import { AtomicEngine } from "../atomic-engine"
 import { MethodDispatchEvent, MethodReloadEvents } from "../symbols"
 
 export class EventController {
-  private $app: AtomicEngine
+  private $app: AtomicEngine | AtomicGame
 
-  constructor(app: AtomicEngine) {
+  constructor(app: AtomicEngine | AtomicGame) {
     this.$app = app
 
     this.init()
@@ -22,10 +23,16 @@ export class EventController {
         this.$app[MethodDispatchEvent]("canvas/mouse:up", this, event)
       })
 
-      window.addEventListener("mousemove", (event) => {
-        event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/mouse:move", this, event)
-      })
+      if (this.$app.mode === "editor")
+        window.addEventListener("mousemove", (event) => {
+          event.preventDefault()
+          this.$app[MethodDispatchEvent]("canvas/mouse:move", this, event)
+        })
+      if (this.$app.mode === "game")
+        this.$app.canvas.instance.addEventListener("mousemove", (event) => {
+          event.preventDefault()
+          this.$app[MethodDispatchEvent]("canvas/mouse:move", this, event)
+        })
 
       this.$app.canvas.instance.addEventListener("wheel", (event) => {
         event.preventDefault()
@@ -33,14 +40,17 @@ export class EventController {
       })
 
       window.addEventListener("keydown", (event) => {
+        if (this.$app.mode === "game") event.preventDefault()
         this.$app[MethodDispatchEvent]("canvas/key:down", this, event)
       })
 
       window.addEventListener("keyup", (event) => {
+        if (this.$app.mode === "game") event.preventDefault()
         this.$app[MethodDispatchEvent]("canvas/key:up", this, event)
       })
 
       window.addEventListener("keypress", (event) => {
+        if (this.$app.mode === "game") event.preventDefault()
         this.$app[MethodDispatchEvent]("canvas/key:press", this, event)
       })
     }

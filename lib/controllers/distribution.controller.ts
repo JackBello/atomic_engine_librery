@@ -1,13 +1,12 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
-import { AtomicEngine } from "../atomic"
+import { AtomicEngine } from "../atomic-engine"
 import {
   MethodExport,
   MethodGetAllInsideAtomic,
   MethodSetOptions
 } from "../symbols"
 import { makerNodes2D } from "../nodes/maker-2d"
-import { IOptionsEngine } from "@/types"
 
 export class DistributionController {
   private $app: AtomicEngine
@@ -31,7 +30,7 @@ export class DistributionController {
   }
 
   export(
-    mode: IOptionsEngine["mode"],
+    mode: "editor" | "game",
     format: "JSON" | "YAML" = this.$app.options.export.format
   ) {
     return format === "YAML"
@@ -39,11 +38,9 @@ export class DistributionController {
       : JSON5.stringify(this[MethodExport](mode))
   }
 
-  [MethodExport](mode: IOptionsEngine["mode"]) {
+  [MethodExport](mode: "editor" | "game") {
     const scenes = this.$app.scenes[MethodExport]()
     const all = this.$app[MethodGetAllInsideAtomic]()
-
-    all.options.mode = mode
 
     // $config: {
     //   currentScene: {

@@ -27,8 +27,8 @@ export class Scene2D extends GlobalNode implements IHandleDraw {
       const _ready = this.getFunction("_ready")
 
       const mode =
-        this.getApp().$global.MODE === "preview" ||
-        this.getApp().$global.MODE === "game"
+        this.getApp().useGlobal("mode") === "preview" ||
+        this.getApp().useGlobal("mode") === "game"
 
       if (_draw && mode) _draw()
       if (_ready && mode) executeOnlyOne(_ready).call(null)

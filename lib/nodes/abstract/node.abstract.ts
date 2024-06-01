@@ -27,14 +27,15 @@ import {
   MethodExport,
   MethodStaticSetApp
 } from "../../symbols"
-import { AtomicEngine } from "../../atomic"
+import { AtomicEngine } from "../../atomic-engine"
+import { AtomicGame } from "@/atomic-game"
 
 export abstract class AbstractNode
   implements IHandleFunctions, IHandleAttributes, IHandleMetaKey
 {
   [key: string]: any
 
-  protected static $app: AtomicEngine
+  protected static $app: AtomicEngine | AtomicGame
 
   protected abstract _initial: any
   protected abstract _events: EventObserver
@@ -134,7 +135,7 @@ export abstract class AbstractNode
   abstract [MethodExport](): any
   abstract [MethodExport](children: boolean): any
 
-  static [MethodStaticSetApp](app: AtomicEngine): void {
+  static [MethodStaticSetApp](app: AtomicEngine | AtomicGame): void {
     AbstractNode.$app = app
   }
 }

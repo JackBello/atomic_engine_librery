@@ -1,8 +1,8 @@
 import { ref, onMounted, onBeforeUnmount } from "vue"
 import { AtomicEngine } from "../../index"
-import { IOptionsEngine } from "../../types"
+import { IOptionsAtomicEngine } from "../../types"
 
-export const useAtomicCore = (options?: Partial<IOptionsEngine>) => {
+export const useAtomicCore = (options?: Partial<IOptionsAtomicEngine>) => {
   const app = ref<AtomicEngine | null>()
 
   onMounted(() => {

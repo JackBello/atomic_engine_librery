@@ -1,4 +1,4 @@
-import { IOptionsEngine, TPropsAtomic } from "./types"
+import { IOptionsAtomicEngine, TPropsAtomic } from "./types"
 import { TPlugin } from "./plugins/types"
 import { TEventCanvas } from "./event.type"
 import {
@@ -7,8 +7,7 @@ import {
   MethodGetAllInsideAtomic,
   MethodHasEvent,
   MethodReloadEvents,
-  MethodSetOptions,
-  MethodStaticSetApp
+  MethodSetOptions
 } from "./symbols"
 import EventObserver from "./utils/observer"
 import { DEFAULT_CONFIG_ATOMIC } from "./configs/engine/atomic"
@@ -18,7 +17,6 @@ import { AnimationService } from "./services/animation.service"
 import { SceneService } from "./services/scene.service"
 import { CanvasService } from "./services/canvas.service"
 import MathWorker from "@/workers/math.worker?worker&inline"
-import { AbstractNode } from "./nodes/abstract/node.abstract"
 import { TOptionsDraw, TOptionsRenderCanvasWorker } from "./workers/types"
 import { WindowController } from "./controllers/window.controller"
 
@@ -26,7 +24,7 @@ export class AtomicEngine {
   [key: string]: any
 
   protected _worker: Worker
-  protected _options: IOptionsEngine
+  protected _options: IOptionsAtomicEngine
   protected _plugins: Map<
     string,
     Omit<TPlugin, "install" | "name" | "events" | "inject">
@@ -36,7 +34,7 @@ export class AtomicEngine {
   protected _nodes: Map<any, any> = new Map()
   protected _controls: Map<string, any> = new Map()
   protected _global: Map<string, any> = new Map([
-    ["mode", "edition"], // "edition"| "game" | "preview"
+    ["mode", "edition"], // "edition" = 0 | "game" = 1 | "preview" = 2
     ["status", null], // null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
     ["fps", null]
   ])
@@ -49,6 +47,8 @@ export class AtomicEngine {
   protected $animation!: AnimationService
   protected $scenes!: SceneService<any>
   protected $canvas!: CanvasService
+
+  readonly mode: "editor" | "game" = "editor"
 
   get animation() {
     return this.$animation
@@ -66,18 +66,16 @@ export class AtomicEngine {
     return Object.freeze(this._options)
   }
 
-  constructor(options?: Partial<IOptionsEngine>, isImport: boolean = false) {
+  constructor(options?: Partial<IOptionsAtomicEngine>) {
     this._worker = new MathWorker()
 
     this._options = { ...DEFAULT_CONFIG_ATOMIC, ...options }
 
-    if (!isImport) this.init()
+    this.init()
 
     this.$distribution = new DistributionController(this)
     this.$window = new WindowController(this)
     this.$events = new EventController(this)
-
-    AbstractNode[MethodStaticSetApp](this)
   }
 
   protected init() {
@@ -221,7 +219,7 @@ export class AtomicEngine {
     })
   }
 
-  export(mode: IOptionsEngine["mode"] = "editor") {
+  export(mode: "editor" | "game" = "editor") {
     return this.$distribution.export(mode)
   }
 
@@ -230,7 +228,7 @@ export class AtomicEngine {
   }
 
   async start() {
-    if (this.$scenes.currentScene) this.$scenes[MethodDispatchScript]()
+    if (this.$scenes.currentScene) await this.$scenes[MethodDispatchScript]()
     this.animation.play()
   }
 
@@ -256,7 +254,7 @@ export class AtomicEngine {
     }
   }
 
-  [MethodSetOptions](options?: Partial<IOptionsEngine>) {
+  [MethodSetOptions](options?: Partial<IOptionsAtomicEngine>) {
     this._options = { ...DEFAULT_CONFIG_ATOMIC, ...options }
 
     this.init()

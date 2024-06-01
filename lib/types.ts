@@ -50,7 +50,7 @@ export interface IOptionsGame extends ISize2D {
   icon?: string | URL | null
   resizable?: boolean
 }
-export interface IOptionsEngine extends ISize2D {
+export interface IOptionsAtomicEngine extends ISize2D {
   background: string
   context: TContextName
   selector: string
@@ -58,5 +58,12 @@ export interface IOptionsEngine extends ISize2D {
   game: IOptionsGame
   fps: IOptionsFramePerSecond
   export: IOptionsExport
-  mode: "editor" | "game"
+}
+
+export interface IOptionsAtomicGame extends IOptionsGame {
+  background: string
+  context: TContextName
+  selector: string
+  fps: IOptionsFramePerSecond
+  dimension: TDimension
 }

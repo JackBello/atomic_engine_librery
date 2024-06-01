@@ -1,4 +1,4 @@
-import { AtomicEngine, Scene2D, Rectangle2D } from "../lib"
+import { AtomicEngine, Scene2D, Rectangle2D, AtomicGame } from "../lib"
 
 const addRect = document.querySelector(
   `[data-id="addRect"]`
@@ -24,6 +24,8 @@ const inputVelocity = document.querySelector(
   `[data-id="inputVelocity"]`
 ) as HTMLInputElement
 
+const game = new AtomicGame()
+
 const app = new AtomicEngine({
   background: "#eeeeee",
   context: "2d",
@@ -33,7 +35,7 @@ const app = new AtomicEngine({
   },
   fps: {
     delay: 1000,
-    velocity: 60
+    velocity: 15
   },
   game: {
     height: 500,
@@ -45,7 +47,6 @@ const app = new AtomicEngine({
   },
   height: 600,
   width: 600,
-  mode: "editor",
   selector: "[data-canvas]"
 })
 
@@ -62,19 +63,15 @@ const rect1 = new Rectangle2D({
 })
 
 rect1.script = `
-console.log(1)
-
 addAttribute("velocity", {
   value: 2
 })
 
 function _ready() {
-  console.log(2)
   console.log("hello")
 }
 
 function _process() {
-  console.log(3)
   x += getAttribute("velocity").value
 }
 `
@@ -126,15 +123,18 @@ buttonUploadGame.addEventListener("input", () => {
 
   const files = buttonUploadGame.files as FileList
 
-  reader.readAsText(files[0])
+  if (files.length) {
+    reader.readAsText(files[0])
 
-  reader.onload = async function () {
-    app.import(reader.result as string)
-    app.preview().play()
-    await app.start()
-  }
+    reader.onload = async function () {
+      await game.load(reader.result as string)
+      game.start()
 
-  reader.onerror = function () {
-    console.log(reader.error)
+      reader.abort()
+    }
+
+    reader.onerror = function () {
+      console.log(reader.error)
+    }
   }
 })

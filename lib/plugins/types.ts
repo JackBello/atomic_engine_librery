@@ -1,4 +1,4 @@
-import { AtomicEngine } from "../atomic"
+import { AtomicEngine } from "../atomic-engine"
 import { TEventCanvas } from "../event.type"
 
 export type TPlugin = {

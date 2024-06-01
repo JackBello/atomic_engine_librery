@@ -106,13 +106,13 @@ function P(i) {
   return !1;
 }
 const $i = (i) => (T(i) || K(i)) && !!i.anchor, Ce = Symbol("break visit"), Ti = Symbol("skip children"), Ze = Symbol("remove node");
-function we(i, t) {
+function Ee(i, t) {
   const e = Yi(t);
   yt(i) ? ke(null, i.contents, e, Object.freeze([i])) === Ze && (i.contents = null) : ke(null, i, e, Object.freeze([]));
 }
-we.BREAK = Ce;
-we.SKIP = Ti;
-we.REMOVE = Ze;
+Ee.BREAK = Ce;
+Ee.SKIP = Ti;
+Ee.REMOVE = Ze;
 function ke(i, t, e, s) {
   const n = Mi(i, t, e, s);
   if (P(n) || j(n))
@@ -292,7 +292,7 @@ class X {
     let n;
     if (t && s.length > 0 && P(t.contents)) {
       const u = {};
-      we(t.contents, (r, o) => {
+      Ee(t.contents, (r, o) => {
         P(o) && o.tag && (u[o.tag] = !0);
       }), n = Object.keys(u);
     } else
@@ -314,7 +314,7 @@ function js(i) {
 }
 function Ps(i) {
   const t = /* @__PURE__ */ new Set();
-  return we(i, {
+  return Ee(i, {
     Value(e, s) {
       s.anchor && t.add(s.anchor);
     }
@@ -435,10 +435,10 @@ class Jt extends Ut {
    */
   resolve(t) {
     let e;
-    return we(t, {
+    return Ee(t, {
       Node: (s, n) => {
         if (n === this)
-          return we.BREAK;
+          return Ee.BREAK;
         n.anchor === this.source && (e = n);
       }
     }), e;
@@ -687,8 +687,8 @@ function Ct(i, t, e = "flow", { indentAtStart: s, lineWidth: n = 80, minContentW
   typeof s == "number" && (s > n - Math.max(2, u) ? l.push(0) : f = n - s);
   let p, m, A = !1, h = -1, d = -1, y = -1;
   e === Gt && (h = ps(i, h, t.length), h !== -1 && (f = h + a));
-  for (let w; w = i[h += 1]; ) {
-    if (e === ct && w === "\\") {
+  for (let E; E = i[h += 1]; ) {
+    if (e === ct && E === "\\") {
       switch (d = h, i[h + 1]) {
         case "x":
           h += 3;
@@ -704,11 +704,11 @@ function Ct(i, t, e = "flow", { indentAtStart: s, lineWidth: n = 80, minContentW
       }
       y = h;
     }
-    if (w === `
+    if (E === `
 `)
       e === Gt && (h = ps(i, h, t.length)), f = h + t.length + a, p = void 0;
     else {
-      if (w === " " && m && m !== " " && m !== `
+      if (E === " " && m && m !== " " && m !== `
 ` && m !== "	") {
         const b = i[h + 1];
         b && b !== " " && b !== `
@@ -719,7 +719,7 @@ function Ct(i, t, e = "flow", { indentAtStart: s, lineWidth: n = 80, minContentW
           l.push(p), f = p + a, p = void 0;
         else if (e === ct) {
           for (; m === " " || m === "	"; )
-            m = w, w = i[h += 1], A = !0;
+            m = E, E = i[h += 1], A = !0;
           const b = h > y + 1 ? h - 2 : d - 1;
           if (D[b])
             return i;
@@ -727,17 +727,17 @@ function Ct(i, t, e = "flow", { indentAtStart: s, lineWidth: n = 80, minContentW
         } else
           A = !0;
     }
-    m = w;
+    m = E;
   }
   if (A && o && o(), l.length === 0)
     return i;
   r && r();
   let F = i.slice(0, l[0]);
-  for (let w = 0; w < l.length; ++w) {
-    const b = l[w], E = l[w + 1] || i.length;
+  for (let E = 0; E < l.length; ++E) {
+    const b = l[E], w = l[E + 1] || i.length;
     b === 0 ? F = `
-${t}${i.slice(0, E)}` : (e === ct && D[b] && (F += `${i[b]}\\`), F += `
-${t}${i.slice(b + 1, E)}`);
+${t}${i.slice(0, w)}` : (e === ct && D[b] && (F += `${i[b]}\\`), F += `
+${t}${i.slice(b + 1, w)}`);
   }
   return F;
 }
@@ -905,9 +905,9 @@ function ht({ comment: i, type: t, value: e }, s, n, u) {
 ${l}${F}${e}${m}`;
   e = e.replace(/\n+/g, `
 $&`).replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, "$1$2").replace(/\n+/g, `$&${l}`);
-  const E = Ct(`${F}${e}${m}`, l, Gt, At(s, !0));
+  const w = Ct(`${F}${e}${m}`, l, Gt, At(s, !0));
   return `${b}
-${l}${E}`;
+${l}${w}`;
 }
 function Xi(i, t, e, s) {
   const { type: n, value: u } = i, { actualString: r, implicitKey: o, indent: a, indentStep: l, inFlow: D } = t;
@@ -1087,10 +1087,10 @@ function Hi({ key: i, value: t }, e, s, n) {
     return d = `? ${d}`, p && !A ? d += Ae(d, e.indent, l(p)) : h && n && n(), d;
   A && (p = null), m ? (p && (d += Ae(d, e.indent, l(p))), d = `? ${d}
 ${o}:`) : (d = `${d}:`, p && (d += Ae(d, e.indent, l(p))));
-  let y, F, w;
-  P(t) ? (y = !!t.spaceBefore, F = t.commentBefore, w = t.comment) : (y = !1, F = null, w = null, t && typeof t == "object" && (t = r.createNode(t))), e.implicitKey = !1, !m && !p && T(t) && (e.indentAtStart = d.length + 1), h = !1, !D && a.length >= 2 && !e.inFlow && !m && et(t) && !t.flow && !t.tag && !t.anchor && (e.indent = e.indent.substring(2));
+  let y, F, E;
+  P(t) ? (y = !!t.spaceBefore, F = t.commentBefore, E = t.comment) : (y = !1, F = null, E = null, t && typeof t == "object" && (t = r.createNode(t))), e.implicitKey = !1, !m && !p && T(t) && (e.indentAtStart = d.length + 1), h = !1, !D && a.length >= 2 && !e.inFlow && !m && et(t) && !t.flow && !t.tag && !t.anchor && (e.indent = e.indent.substring(2));
   let b = !1;
-  const E = Te(t, e, () => b = !0, () => h = !0);
+  const w = Te(t, e, () => b = !0, () => h = !0);
   let C = " ";
   if (p || y || F) {
     if (C = y ? `
@@ -1099,27 +1099,27 @@ ${o}:`) : (d = `${d}:`, p && (d += Ae(d, e.indent, l(p))));
       C += `
 ${le(Y, e.indent)}`;
     }
-    E === "" && !e.inFlow ? C === `
+    w === "" && !e.inFlow ? C === `
 ` && (C = `
 
 `) : C += `
 ${e.indent}`;
   } else if (!m && K(t)) {
-    const Y = E[0], M = E.indexOf(`
+    const Y = w[0], M = w.indexOf(`
 `), Z = M !== -1, ge = e.inFlow ?? t.flow ?? t.items.length === 0;
     if (Z || !ge) {
       let Be = !1;
       if (Z && (Y === "&" || Y === "!")) {
-        let R = E.indexOf(" ");
-        Y === "&" && R !== -1 && R < M && E[R + 1] === "!" && (R = E.indexOf(" ", R + 1)), (R === -1 || M < R) && (Be = !0);
+        let R = w.indexOf(" ");
+        Y === "&" && R !== -1 && R < M && w[R + 1] === "!" && (R = w.indexOf(" ", R + 1)), (R === -1 || M < R) && (Be = !0);
       }
       Be || (C = `
 ${e.indent}`);
     }
   } else
-    (E === "" || E[0] === `
+    (w === "" || w[0] === `
 `) && (C = "");
-  return d += C + E, e.inFlow ? b && s && s() : w && !b ? d += Ae(d, e.indent, l(w)) : h && n && n(), d;
+  return d += C + w, e.inFlow ? b && s && s() : E && !b ? d += Ae(d, e.indent, l(E)) : h && n && n(), d;
 }
 function Us(i, t) {
   (i === "debug" || i === "warn") && (typeof process < "u" && process.emitWarning ? process.emitWarning(t) : console.warn(t));
@@ -1261,8 +1261,8 @@ function Qi({ items: i }, t, { flowChars: e, itemIndent: s }) {
     else if (j(h)) {
       const F = P(h.key) ? h.key : null;
       F && (F.spaceBefore && f.push(""), pt(t, f, F.commentBefore, !1), F.comment && (l = !0));
-      const w = P(h.value) ? h.value : null;
-      w ? (w.comment && (d = w.comment), w.commentBefore && (l = !0)) : h.value == null && (F != null && F.comment) && (d = F.comment);
+      const E = P(h.value) ? h.value : null;
+      E ? (E.comment && (d = E.comment), E.commentBefore && (l = !0)) : h.value == null && (F != null && F.comment) && (d = F.comment);
     }
     d && (l = !0);
     let y = Te(h, a, () => d = null);
@@ -1398,7 +1398,7 @@ const xe = {
   },
   createNode: (i, t, e) => Q.from(i, t, e)
 };
-class Ee extends Ht {
+class we extends Ht {
   static get tagName() {
     return "tag:yaml.org,2002:seq";
   }
@@ -1490,12 +1490,12 @@ function nt(i) {
 const Ke = {
   collection: "seq",
   default: !0,
-  nodeClass: Ee,
+  nodeClass: we,
   tag: "tag:yaml.org,2002:seq",
   resolve(i, t) {
     return et(i) || t("Expected a sequence for this tag"), i;
   },
-  createNode: (i, t, e) => Ee.from(i, t, e)
+  createNode: (i, t, e) => we.from(i, t, e)
 }, Ft = {
   identify: (i) => typeof i == "string",
   default: !0,
@@ -1504,14 +1504,14 @@ const Ke = {
   stringify(i, t, e, s) {
     return t = Object.assign({ actualString: !0 }, t), Vt(i, t, e, s);
   }
-}, wt = {
+}, Et = {
   identify: (i) => i == null,
   createNode: () => new B(null),
   default: !0,
   tag: "tag:yaml.org,2002:null",
   test: /^(?:~|[Nn]ull|NULL)?$/,
   resolve: () => new B(null),
-  stringify: ({ source: i }, t) => typeof i == "string" && wt.test.test(i) ? i : t.options.nullStr
+  stringify: ({ source: i }, t) => typeof i == "string" && Et.test.test(i) ? i : t.options.nullStr
 }, qt = {
   identify: (i) => typeof i == "boolean",
   default: !0,
@@ -1571,13 +1571,13 @@ const Vs = {
     return e !== -1 && i[i.length - 1] === "0" && (t.minFractionDigits = i.length - e - 1), t;
   },
   stringify: ue
-}, Et = (i) => typeof i == "bigint" || Number.isInteger(i), Qt = (i, t, e, { intAsBigInt: s }) => s ? BigInt(i) : parseInt(i.substring(t), e);
+}, wt = (i) => typeof i == "bigint" || Number.isInteger(i), Qt = (i, t, e, { intAsBigInt: s }) => s ? BigInt(i) : parseInt(i.substring(t), e);
 function Qs(i, t, e) {
   const { value: s } = i;
-  return Et(s) && s >= 0 ? e + s.toString(t) : ue(i);
+  return wt(s) && s >= 0 ? e + s.toString(t) : ue(i);
 }
 const ei = {
-  identify: (i) => Et(i) && i >= 0,
+  identify: (i) => wt(i) && i >= 0,
   default: !0,
   tag: "tag:yaml.org,2002:int",
   format: "OCT",
@@ -1585,14 +1585,14 @@ const ei = {
   resolve: (i, t, e) => Qt(i, 2, 8, e),
   stringify: (i) => Qs(i, 8, "0o")
 }, ti = {
-  identify: Et,
+  identify: wt,
   default: !0,
   tag: "tag:yaml.org,2002:int",
   test: /^[-+]?[0-9]+$/,
   resolve: (i, t, e) => Qt(i, 0, 10, e),
   stringify: ue
 }, si = {
-  identify: (i) => Et(i) && i >= 0,
+  identify: (i) => wt(i) && i >= 0,
   default: !0,
   tag: "tag:yaml.org,2002:int",
   format: "HEX",
@@ -1603,7 +1603,7 @@ const ei = {
   xe,
   Ke,
   Ft,
-  wt,
+  Et,
   qt,
   ei,
   ti,
@@ -1733,7 +1733,7 @@ ${u.comment}` : s.comment;
   return i;
 }
 function ni(i, t, e) {
-  const { replacer: s } = e, n = new Ee(i);
+  const { replacer: s } = e, n = new we(i);
   n.tag = "tag:yaml.org,2002:pairs";
   let u = 0;
   if (t && Symbol.iterator in Object(t))
@@ -1764,7 +1764,7 @@ const ts = {
   resolve: ii,
   createNode: ni
 };
-class Oe extends Ee {
+class Oe extends we {
   constructor() {
     super(), this.add = Q.prototype.add.bind(this), this.delete = Q.prototype.delete.bind(this), this.get = Q.prototype.get.bind(this), this.has = Q.prototype.has.bind(this), this.set = Q.prototype.set.bind(this), this.tag = Oe.tag;
   }
@@ -2030,7 +2030,7 @@ const li = {
   xe,
   Ke,
   Ft,
-  wt,
+  Et,
   ri,
   oi,
   an,
@@ -2065,7 +2065,7 @@ const li = {
   intOct: ei,
   intTime: li,
   map: xe,
-  null: wt,
+  null: Et,
   omap: ss,
   pairs: ts,
   seq: Ke,
@@ -2415,7 +2415,7 @@ ${l}
   }
 };
 function Ye(i, { flow: t, indicator: e, next: s, offset: n, onError: u, startOnNewline: r }) {
-  let o = !1, a = r, l = r, D = "", f = "", p = !1, m = !1, A = !1, h = null, d = null, y = null, F = null, w = null;
+  let o = !1, a = r, l = r, D = "", f = "", p = !1, m = !1, A = !1, h = null, d = null, y = null, F = null, E = null;
   for (const C of i)
     switch (A && (C.type !== "space" && C.type !== "newline" && C.type !== "comma" && u(C.offset, "MISSING_CHAR", "Tags and anchors must be separated from the next token by white space"), A = !1), C.type) {
       case "space":
@@ -2431,10 +2431,10 @@ function Ye(i, { flow: t, indicator: e, next: s, offset: n, onError: u, startOnN
         a ? D ? D += C.source : o = !0 : f += C.source, a = !0, p = !0, (h || d) && (m = !0), l = !0;
         break;
       case "anchor":
-        h && u(C, "MULTIPLE_ANCHORS", "A node can have at most one anchor"), C.source.endsWith(":") && u(C.offset + C.source.length - 1, "BAD_ALIAS", "Anchor ending in : is ambiguous", !0), h = C, w === null && (w = C.offset), a = !1, l = !1, A = !0;
+        h && u(C, "MULTIPLE_ANCHORS", "A node can have at most one anchor"), C.source.endsWith(":") && u(C.offset + C.source.length - 1, "BAD_ALIAS", "Anchor ending in : is ambiguous", !0), h = C, E === null && (E = C.offset), a = !1, l = !1, A = !0;
         break;
       case "tag": {
-        d && u(C, "MULTIPLE_TAGS", "A node can have at most one tag"), d = C, w === null && (w = C.offset), a = !1, l = !1, A = !0;
+        d && u(C, "MULTIPLE_TAGS", "A node can have at most one tag"), d = C, E === null && (E = C.offset), a = !1, l = !1, A = !0;
         break;
       }
       case e:
@@ -2448,7 +2448,7 @@ function Ye(i, { flow: t, indicator: e, next: s, offset: n, onError: u, startOnN
       default:
         u(C, "UNEXPECTED_TOKEN", `Unexpected ${C.type} token`), a = !1, l = !1;
     }
-  const b = i[i.length - 1], E = b ? b.offset + b.source.length : n;
+  const b = i[i.length - 1], w = b ? b.offset + b.source.length : n;
   return A && s && s.type !== "space" && s.type !== "newline" && s.type !== "comma" && (s.type !== "scalar" || s.source !== "") && u(s.offset, "MISSING_CHAR", "Tags and anchors must be separated from the next token by white space"), {
     comma: y,
     found: F,
@@ -2458,8 +2458,8 @@ function Ye(i, { flow: t, indicator: e, next: s, offset: n, onError: u, startOnN
     hasNewlineAfterProp: m,
     anchor: h,
     tag: d,
-    end: E,
-    start: w ?? E
+    end: w,
+    start: E ?? w
   };
 }
 function Ve(i) {
@@ -2533,32 +2533,32 @@ function gn({ composeNode: i, composeEmptyNode: t }, e, s, n, u) {
       (d.hasNewlineAfterProp || Ve(m)) && n(m ?? p[p.length - 1], "MULTILINE_IMPLICIT_KEY", "Implicit keys need to be on a single line");
     } else
       ((D = d.found) == null ? void 0 : D.indent) !== s.indent && n(a, "BAD_INDENT", bs);
-    const F = d.end, w = m ? i(e, m, d, n) : t(e, F, p, null, d, n);
-    e.schema.compat && jt(s.indent, m, n), fi(e, o.items, w) && n(F, "DUPLICATE_KEY", "Map keys must be unique");
+    const F = d.end, E = m ? i(e, m, d, n) : t(e, F, p, null, d, n);
+    e.schema.compat && jt(s.indent, m, n), fi(e, o.items, E) && n(F, "DUPLICATE_KEY", "Map keys must be unique");
     const b = Ye(A ?? [], {
       indicator: "map-value-ind",
       next: h,
-      offset: w.range[2],
+      offset: E.range[2],
       onError: n,
       startOnNewline: !m || m.type === "block-scalar"
     });
     if (a = b.end, b.found) {
-      y && ((h == null ? void 0 : h.type) === "block-map" && !b.hasNewline && n(a, "BLOCK_AS_IMPLICIT_KEY", "Nested mappings are not allowed in compact mappings"), e.options.strict && d.start < b.found.offset - 1024 && n(w.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key"));
-      const E = h ? i(e, h, b, n) : t(e, a, A, null, b, n);
-      e.schema.compat && jt(s.indent, h, n), a = E.range[2];
-      const C = new J(w, E);
+      y && ((h == null ? void 0 : h.type) === "block-map" && !b.hasNewline && n(a, "BLOCK_AS_IMPLICIT_KEY", "Nested mappings are not allowed in compact mappings"), e.options.strict && d.start < b.found.offset - 1024 && n(E.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key"));
+      const w = h ? i(e, h, b, n) : t(e, a, A, null, b, n);
+      e.schema.compat && jt(s.indent, h, n), a = w.range[2];
+      const C = new J(E, w);
       e.options.keepSourceTokens && (C.srcToken = f), o.items.push(C);
     } else {
-      y && n(w.range, "MISSING_CHAR", "Implicit map keys need to be followed by map values"), b.comment && (w.comment ? w.comment += `
-` + b.comment : w.comment = b.comment);
-      const E = new J(w);
-      e.options.keepSourceTokens && (E.srcToken = f), o.items.push(E);
+      y && n(E.range, "MISSING_CHAR", "Implicit map keys need to be followed by map values"), b.comment && (E.comment ? E.comment += `
+` + b.comment : E.comment = b.comment);
+      const w = new J(E);
+      e.options.keepSourceTokens && (w.srcToken = f), o.items.push(w);
     }
   }
   return l && l < a && n(l, "IMPOSSIBLE", "Map comment with trailing content"), o.range = [s.offset, a, l ?? a], o;
 }
 function mn({ composeNode: i, composeEmptyNode: t }, e, s, n, u) {
-  const r = (u == null ? void 0 : u.nodeClass) ?? Ee, o = new r(e.schema);
+  const r = (u == null ? void 0 : u.nodeClass) ?? we, o = new r(e.schema);
   e.atRoot && (e.atRoot = !1);
   let a = s.offset, l = null;
   for (const { start: D, value: f } of s.items) {
@@ -2610,28 +2610,28 @@ function it(i, t, e, s) {
 }
 const vt = "Block collections are not allowed within flow collections", Nt = (i) => i && (i.type === "block-map" || i.type === "block-seq");
 function yn({ composeNode: i, composeEmptyNode: t }, e, s, n, u) {
-  const r = s.start.source === "{", o = r ? "flow map" : "flow sequence", a = (u == null ? void 0 : u.nodeClass) ?? (r ? Q : Ee), l = new a(e.schema);
+  const r = s.start.source === "{", o = r ? "flow map" : "flow sequence", a = (u == null ? void 0 : u.nodeClass) ?? (r ? Q : we), l = new a(e.schema);
   l.flow = !0;
   const D = e.atRoot;
   D && (e.atRoot = !1);
   let f = s.offset + s.start.source.length;
   for (let d = 0; d < s.items.length; ++d) {
-    const y = s.items[d], { start: F, key: w, sep: b, value: E } = y, C = Ye(F, {
+    const y = s.items[d], { start: F, key: E, sep: b, value: w } = y, C = Ye(F, {
       flow: o,
       indicator: "explicit-key-ind",
-      next: w ?? (b == null ? void 0 : b[0]),
+      next: E ?? (b == null ? void 0 : b[0]),
       offset: f,
       onError: n,
       startOnNewline: !1
     });
     if (!C.found) {
-      if (!C.anchor && !C.tag && !b && !E) {
+      if (!C.anchor && !C.tag && !b && !w) {
         d === 0 && C.comma ? n(C.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${o}`) : d < s.items.length - 1 && n(C.start, "UNEXPECTED_TOKEN", `Unexpected empty item in ${o}`), C.comment && (l.comment ? l.comment += `
 ` + C.comment : l.comment = C.comment), f = C.end;
         continue;
       }
-      !r && e.options.strict && Ve(w) && n(
-        w,
+      !r && e.options.strict && Ve(E) && n(
+        E,
         // checked by containsNewline()
         "MULTILINE_IMPLICIT_KEY",
         "Implicit keys of flow sequence pairs need to be on a single line"
@@ -2660,15 +2660,15 @@ function yn({ composeNode: i, composeEmptyNode: t }, e, s, n, u) {
       }
     }
     if (!r && !b && !C.found) {
-      const Y = E ? i(e, E, C, n) : t(e, C.end, b, null, C, n);
-      l.items.push(Y), f = Y.range[2], Nt(E) && n(Y.range, "BLOCK_IN_FLOW", vt);
+      const Y = w ? i(e, w, C, n) : t(e, C.end, b, null, C, n);
+      l.items.push(Y), f = Y.range[2], Nt(w) && n(Y.range, "BLOCK_IN_FLOW", vt);
     } else {
-      const Y = C.end, M = w ? i(e, w, C, n) : t(e, Y, F, null, C, n);
-      Nt(w) && n(M.range, "BLOCK_IN_FLOW", vt);
+      const Y = C.end, M = E ? i(e, E, C, n) : t(e, Y, F, null, C, n);
+      Nt(E) && n(M.range, "BLOCK_IN_FLOW", vt);
       const Z = Ye(b ?? [], {
         flow: o,
         indicator: "map-value-ind",
-        next: E,
+        next: w,
         offset: M.range[2],
         onError: n,
         startOnNewline: !1
@@ -2687,9 +2687,9 @@ function yn({ composeNode: i, composeEmptyNode: t }, e, s, n, u) {
           C.start < Z.found.offset - 1024 && n(Z.found, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit flow sequence key");
         }
       } else
-        E && ("source" in E && E.source && E.source[0] === ":" ? n(E, "MISSING_CHAR", `Missing space after : in ${o}`) : n(Z.start, "MISSING_CHAR", `Missing , or : between ${o} items`));
-      const ge = E ? i(e, E, Z, n) : Z.found ? t(e, Z.end, b, null, Z, n) : null;
-      ge ? Nt(E) && n(ge.range, "BLOCK_IN_FLOW", vt) : Z.comment && (M.comment ? M.comment += `
+        w && ("source" in w && w.source && w.source[0] === ":" ? n(w, "MISSING_CHAR", `Missing space after : in ${o}`) : n(Z.start, "MISSING_CHAR", `Missing , or : between ${o} items`));
+      const ge = w ? i(e, w, Z, n) : Z.found ? t(e, Z.end, b, null, Z, n) : null;
+      ge ? Nt(w) && n(ge.range, "BLOCK_IN_FLOW", vt) : Z.comment && (M.comment ? M.comment += `
 ` + Z.comment : M.comment = Z.comment);
       const Be = new J(M, ge);
       if (e.options.keepSourceTokens && (Be.srcToken = y), r) {
@@ -2725,7 +2725,7 @@ function Lt(i, t, e, s, n, u) {
 function Cn(i, t, e, s, n) {
   var f;
   const u = s ? t.directives.tagName(s.source, (p) => n(s, "TAG_RESOLVE_FAILED", p)) : null, r = e.type === "block-map" ? "map" : e.type === "block-seq" ? "seq" : e.start.source === "{" ? "map" : "seq";
-  if (!s || !u || u === "!" || u === Q.tagName && r === "map" || u === Ee.tagName && r === "seq" || !r)
+  if (!s || !u || u === "!" || u === Q.tagName && r === "map" || u === we.tagName && r === "seq" || !r)
     return Lt(i, t, e, n, u);
   let o = t.schema.tags.find((p) => p.tag === u && p.collection === r);
   if (!o) {
@@ -2857,13 +2857,13 @@ function Fn(i) {
     u.push([t[r], t[r + 1]]);
   return u;
 }
-function wn(i, t, e) {
+function En(i, t, e) {
   const { offset: s, type: n, source: u, end: r } = i;
   let o, a;
   const l = (p, m, A) => e(s + p, m, A);
   switch (n) {
     case "scalar":
-      o = B.PLAIN, a = En(u, l);
+      o = B.PLAIN, a = wn(u, l);
       break;
     case "single-quoted-scalar":
       o = B.QUOTE_SINGLE, a = In(u, l);
@@ -2887,7 +2887,7 @@ function wn(i, t, e) {
     range: [s, D, f.offset]
   };
 }
-function En(i, t) {
+function wn(i, t) {
   let e = "";
   switch (i[0]) {
     case "	":
@@ -3031,7 +3031,7 @@ function kn(i, t, e, s) {
   return String.fromCodePoint(r);
 }
 function pi(i, t, e, s) {
-  const { value: n, type: u, comment: r, range: o } = t.type === "block-scalar" ? An(t, i.options.strict, s) : wn(t, i.options.strict, s), a = e ? i.directives.tagName(e.source, (f) => s(e, "TAG_RESOLVE_FAILED", f)) : null, l = e && a ? vn(i.schema, n, a, e, s) : t.type === "scalar" ? Nn(i, n, t, s) : i.schema[he];
+  const { value: n, type: u, comment: r, range: o } = t.type === "block-scalar" ? An(t, i.options.strict, s) : En(t, i.options.strict, s), a = e ? i.directives.tagName(e.source, (f) => s(e, "TAG_RESOLVE_FAILED", f)) : null, l = e && a ? vn(i.schema, n, a, e, s) : t.type === "scalar" ? Nn(i, n, t, s) : i.schema[he];
   let D;
   try {
     const f = l.resolve(n, (p) => s(e ?? t, "TAG_RESOLVE_FAILED", p), i.options);
@@ -3372,7 +3372,7 @@ function z(i) {
       return !1;
   }
 }
-const ws = "0123456789ABCDEFabcdef".split(""), Gn = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-#;/?:@&=+$_.!~*'()".split(""), Ot = ",[]{}".split(""), xn = ` ,[]{}
+const Es = "0123456789ABCDEFabcdef".split(""), Gn = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-#;/?:@&=+$_.!~*'()".split(""), Ot = ",[]{}".split(""), xn = ` ,[]{}
 \r	`.split(""), $t = (i) => !i || xn.includes(i);
 class Kn {
   constructor() {
@@ -3743,7 +3743,7 @@ class Kn {
       for (; e; )
         if (Gn.includes(e))
           e = this.buffer[++t];
-        else if (e === "%" && ws.includes(this.buffer[t + 1]) && ws.includes(this.buffer[t + 2]))
+        else if (e === "%" && Es.includes(this.buffer[t + 1]) && Es.includes(this.buffer[t + 2]))
           e = this.buffer[t += 3];
         else
           break;
@@ -3794,7 +3794,7 @@ function se(i, t) {
       return !0;
   return !1;
 }
-function Es(i) {
+function ws(i) {
   for (let t = 0; t < i.length; ++t)
     switch (i[t].type) {
       case "space":
@@ -4010,7 +4010,7 @@ class Pn {
       }
       if ((s.type === "document" || s.type === "block-map" || s.type === "block-seq") && (e.type === "block-map" || e.type === "block-seq")) {
         const n = e.items[e.items.length - 1];
-        n && !n.sep && !n.value && n.start.length > 0 && Es(n.start) === -1 && (e.indent === 0 || n.start.every((u) => u.type !== "comment" || u.indent < e.indent)) && (s.type === "document" ? s.end = n.start : s.items.push({ start: n.start }), e.items.splice(-1, 1));
+        n && !n.sep && !n.value && n.start.length > 0 && ws(n.start) === -1 && (e.indent === 0 || n.start.every((u) => u.type !== "comment" || u.indent < e.indent)) && (s.type === "document" ? s.end = n.start : s.items.push({ start: n.start }), e.items.splice(-1, 1));
       }
     }
   }
@@ -4048,7 +4048,7 @@ class Pn {
       return yield* this.lineEnd(t);
     switch (this.type) {
       case "doc-start": {
-        Es(t.start) !== -1 ? (yield* this.pop(), yield* this.step()) : t.start.push(this.sourceToken);
+        ws(t.start) !== -1 ? (yield* this.pop(), yield* this.step()) : t.start.push(this.sourceToken);
         return;
       }
       case "anchor":
@@ -5203,11 +5203,11 @@ var eu = function(t, e, s) {
     };
     let F = "";
     for (let b = 0; b < h.length; b++) {
-      const E = h[b];
-      switch (E) {
+      const w = h[b];
+      switch (w) {
         case "'":
         case '"':
-          d[E]++, F += E;
+          d[w]++, F += w;
           continue;
         case "\0":
           if (x.isDigit(h[b + 1])) {
@@ -5215,19 +5215,19 @@ var eu = function(t, e, s) {
             continue;
           }
       }
-      if (y[E]) {
-        F += y[E];
+      if (y[w]) {
+        F += y[w];
         continue;
       }
-      if (E < " ") {
-        let C = E.charCodeAt(0).toString(16);
+      if (w < " ") {
+        let C = w.charCodeAt(0).toString(16);
         F += "\\x" + ("00" + C).substring(C.length);
         continue;
       }
-      F += E;
+      F += w;
     }
-    const w = l || Object.keys(d).reduce((b, E) => d[b] < d[E] ? b : E);
-    return F = F.replace(new RegExp(w, "g"), y[w]), w + F + w;
+    const E = l || Object.keys(d).reduce((b, w) => d[b] < d[w] ? b : w);
+    return F = F.replace(new RegExp(E, "g"), y[E]), E + F + E;
   }
   function p(h) {
     if (n.indexOf(h) >= 0)
@@ -5237,28 +5237,28 @@ var eu = function(t, e, s) {
     u = u + a;
     let y = r || Object.keys(h), F = [];
     for (const b of y) {
-      const E = D(b, h);
-      if (E !== void 0) {
+      const w = D(b, h);
+      if (w !== void 0) {
         let C = m(b) + ":";
-        a !== "" && (C += " "), C += E, F.push(C);
+        a !== "" && (C += " "), C += w, F.push(C);
       }
     }
-    let w;
+    let E;
     if (F.length === 0)
-      w = "{}";
+      E = "{}";
     else {
       let b;
       if (a === "")
-        b = F.join(","), w = "{" + b + "}";
+        b = F.join(","), E = "{" + b + "}";
       else {
-        let E = `,
+        let w = `,
 ` + u;
-        b = F.join(E), w = `{
+        b = F.join(w), E = `{
 ` + u + b + `,
 ` + d + "}";
       }
     }
-    return n.pop(), u = d, w;
+    return n.pop(), u = d, E;
   }
   function m(h) {
     if (h.length === 0)
@@ -5278,8 +5278,8 @@ var eu = function(t, e, s) {
     let d = u;
     u = u + a;
     let y = [];
-    for (let w = 0; w < h.length; w++) {
-      const b = D(String(w), h);
+    for (let E = 0; E < h.length; E++) {
+      const b = D(String(E), h);
       y.push(b !== void 0 ? b : "null");
     }
     let F;
@@ -5288,8 +5288,8 @@ var eu = function(t, e, s) {
     else if (a === "")
       F = "[" + y.join(",") + "]";
     else {
-      let w = `,
-` + u, b = y.join(w);
+      let E = `,
+` + u, b = y.join(E);
       F = `[
 ` + u + b + `,
 ` + d + "]";
@@ -5302,7 +5302,7 @@ const tu = {
   stringify: eu
 };
 var H = tu;
-const v = Symbol("PropFunctions"), N = Symbol("PropAttributes"), L = Symbol("PropMetaKeys"), G = Symbol("PropNodes"), mt = Symbol("MethodSetParent"), ls = Symbol("MethodSetUUID"), Fi = Symbol("MethodSetFunctions"), cs = Symbol("MethodSetAttributes"), wi = Symbol("MethodSetMetaKeys"), de = Symbol("MethodSetIndex"), Ei = Symbol("MethodSetNodes"), Je = class Je {
+const v = Symbol("PropFunctions"), N = Symbol("PropAttributes"), L = Symbol("PropMetaKeys"), G = Symbol("PropNodes"), mt = Symbol("MethodSetParent"), ls = Symbol("MethodSetUUID"), Fi = Symbol("MethodSetFunctions"), cs = Symbol("MethodSetAttributes"), Ei = Symbol("MethodSetMetaKeys"), de = Symbol("MethodSetIndex"), wi = Symbol("MethodSetNodes"), Je = class Je {
   static import(t, e = "JSON") {
     throw new Error("Method not implemented! Use derived class");
   }
@@ -5344,7 +5344,7 @@ ${e}}`;
     t.indexOf(s) == -1 && (e[s] = i[s]);
   return e;
 };
-var Fu, wu, Eu, Iu;
+var Su, _u, ku, vu;
 class hs extends ze {
   constructor(e) {
     super();
@@ -5359,10 +5359,10 @@ class hs extends ze {
     c(this, "name");
     c(this, "title");
     c(this, "description");
-    c(this, Fu);
-    c(this, wu);
-    c(this, Eu);
-    c(this, Iu);
+    c(this, Su);
+    c(this, _u);
+    c(this, ku);
+    c(this, vu);
     this._initial = {
       ...Si,
       ...e
@@ -5574,7 +5574,7 @@ class hs extends ze {
     const n = s === "YAML" ? re(e) : H.parse(e);
     return V([n])[0];
   }
-  [(Fu = G, wu = v, Eu = N, Iu = L, mt)](e) {
+  [(Su = G, _u = v, ku = N, vu = L, mt)](e) {
     this._parent = e;
   }
   [ls](e) {
@@ -5589,10 +5589,10 @@ class hs extends ze {
   [cs](e) {
     this[N] = new Map(e);
   }
-  [wi](e) {
+  [Ei](e) {
     this[L] = new Map(e);
   }
-  [Ei](e) {
+  [wi](e) {
     this[G] = e;
   }
   [q](e, ...s) {
@@ -6511,7 +6511,7 @@ const lu = {
   const e = [];
   for (const s of i) {
     const n = new lu[s.type](s.options);
-    t && n[mt](t), n.script = s.script, n[ls](s.uuid), n[de](s.index), n[cs](s.attributes), s.hierarchy === "children" && n[Ei](
+    t && n[mt](t), n.script = s.script, n[ls](s.uuid), n[de](s.index), n[cs](s.attributes), s.hierarchy === "children" && n[wi](
       V(
         s.nodes,
         n
@@ -6888,7 +6888,18 @@ function Au(i) {
     );
   }
 }
-class bu {
+function bu(i) {
+  return i && i.__esModule && Object.prototype.hasOwnProperty.call(i, "default") ? i.default : i;
+}
+const Fu = /[\u0000-\u001f\u0022\u005c\ud800-\udfff]|[\ud800-\udbff](?![\udc00-\udfff])|(?:[^\ud800-\udbff]|^)[\udc00-\udfff]/;
+function Eu(i) {
+  if (typeof i != "string")
+    throw new TypeError(`Expected input to be of type string, received type ${typeof i} (${i})`);
+  return i.length < 5e3 && !Fu.test(i) ? `"${i}"` : JSON.stringify(i);
+}
+var wu = Eu;
+const Iu = /* @__PURE__ */ bu(wu);
+class Bu {
   constructor(t) {
     c(this, "$app");
     c(this, "_window");
@@ -6930,7 +6941,7 @@ class bu {
             (async ({ AtomicEngine }) => {
               const app = new AtomicEngine({}, true)
 
-              app.import(\`${this.$app.export("game")}\`)
+              app.import(${Iu(this.$app.export("game"))})
 
               app.preview().play()
 
@@ -6966,7 +6977,7 @@ class bu {
     this._window && (this._window.close(), this._window = null);
   }
 }
-class vu {
+class Tu {
   constructor(t, e = !1) {
     c(this, "_worker");
     c(this, "_options");
@@ -6989,7 +7000,7 @@ class vu {
     c(this, "$animation");
     c(this, "$scenes");
     c(this, "$canvas");
-    this._worker = new Au(), this._options = { ...ds, ...t }, e || this.init(), this.$distribution = new cu(this), this.$window = new bu(this), this.$events = new Oi(this), ze[Ms](this);
+    this._worker = new Au(), this._options = { ...ds, ...t }, e || this.init(), this.$distribution = new cu(this), this.$window = new Bu(this), this.$events = new Oi(this), ze[Ms](this);
   }
   get animation() {
     return this.$animation;
@@ -7129,8 +7140,8 @@ class vu {
     return this._events.hasEventListener(t);
   }
 }
-var Bu, Su, _u;
-class Nu extends ze {
+var Nu, Lu, Ou;
+class Yu extends ze {
   constructor(e) {
     super();
     c(this, "_initial");
@@ -7144,9 +7155,9 @@ class Nu extends ze {
     c(this, "name");
     c(this, "title");
     c(this, "description");
-    c(this, Bu);
-    c(this, Su);
-    c(this, _u);
+    c(this, Nu);
+    c(this, Lu);
+    c(this, Ou);
     this._initial = { ...Si, ...e }, this._events = new qe(), this._parent = null, this._uuid = Ii(), this._index = 0, this.script = null, this.name = this._initial.name, this.title = this._initial.title, this.description = this._initial.description, this[v] = /* @__PURE__ */ new Map(), this[N] = /* @__PURE__ */ new Map(), this[L] = /* @__PURE__ */ new Map();
   }
   get parent() {
@@ -7262,7 +7273,7 @@ class Nu extends ze {
     const n = s === "YAML" ? re(e) : H.parse(e);
     return V([n])[0];
   }
-  [(Bu = v, Su = N, _u = L, mt)](e) {
+  [(Nu = v, Lu = N, Ou = L, mt)](e) {
     this._parent = e;
   }
   [ls](e) {
@@ -7277,7 +7288,7 @@ class Nu extends ze {
   [cs](e) {
     this[N] = new Map(e);
   }
-  [wi](e) {
+  [Ei](e) {
     this[L] = new Map(e);
   }
   [q](e, ...s) {
@@ -7307,10 +7318,10 @@ class Nu extends ze {
   }
 }
 export {
-  vu as AtomicEngine,
+  Tu as AtomicEngine,
   au as ControlEdition2D,
   hs as GlobalNode,
-  Nu as GlobalNodeNC,
+  Yu as GlobalNodeNC,
   ru as LineFlowEffect2D,
   ie as Node2D,
   nu as Rectangle2D,

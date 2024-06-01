@@ -14,6 +14,9 @@ importers:
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
+      json-escaping:
+        specifier: ^2.0.0
+        version: 2.0.0
       json5:
         specifier: ^2.2.3
         version: 2.2.3
@@ -605,6 +608,10 @@ packages:
 
   jju@1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
+
+  json-escaping@2.0.0:
+    resolution: {integrity: sha512-W4AykeGauEJrCPtH4yM6nYe24++GgRt6Ei8oenx8XW18R1Zar8yYYZ/50B1hfRdjvSUJjQt82Ss5yNY2vTDKKg==}
+    engines: {node: '>=12'}
 
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
@@ -1365,6 +1372,8 @@ snapshots:
       hasown: 2.0.2
 
   jju@1.4.0: {}
+
+  json-escaping@2.0.0: {}
 
   json-schema-traverse@0.4.1: {}
 

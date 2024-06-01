@@ -1,6 +1,6 @@
-import { IOptionsEngine } from "../../types"
+import { IOptionsAtomicEngine } from "../../types"
 
-export const DEFAULT_CONFIG_ATOMIC: IOptionsEngine = {
+export const DEFAULT_CONFIG_ATOMIC: IOptionsAtomicEngine = {
   background: "#eeeeee",
   context: "2d",
   dimension: "2D",
@@ -27,6 +27,5 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsEngine = {
     exclude: [],
     format: "JSON",
     include: []
-  },
-  mode: "editor"
+  }
 }

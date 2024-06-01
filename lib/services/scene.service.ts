@@ -9,18 +9,21 @@ import { TEventScenes } from "./event.type"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
-  MethodExport
+  MethodExport,
+  MethodStaticSetApp
 } from "../symbols"
-import { AtomicEngine } from "../atomic"
+import { AtomicEngine } from "../atomic-engine"
+import { AtomicGame } from "@/atomic-game"
+import { AbstractNode } from "@/nodes/abstract/node.abstract"
 
 export class SceneService<T extends Scene2D> {
-  private $app: AtomicEngine
+  private $app: AtomicEngine | AtomicGame
 
   protected _scenes = new Map<string, T>()
   protected _scene?: T
   protected _events: EventObserver = new EventObserver()
 
-  constructor(app: AtomicEngine) {
+  constructor(app: AtomicEngine | AtomicGame) {
     this.$app = app
 
     this.$app
@@ -37,8 +40,9 @@ export class SceneService<T extends Scene2D> {
     return this._scenes.get(uuid) as T
   }
 
-  change(uuid: string) {
+  async change(uuid: string, executeScript: boolean = false) {
     this._scene = this.get(uuid)
+    if (this._scene && executeScript) await this[MethodDispatchScript]()
   }
 
   add(...scenes: T[]) {
@@ -54,7 +58,7 @@ export class SceneService<T extends Scene2D> {
   }
 
   process(
-    animation?: { timestamp: number; deltaTime: number; frame: number },
+    animation?: { timestamp: number; deltaTime: number },
     reset: boolean = false
   ) {
     if (this._scene) this.executeProcess(this._scene, animation, reset)
@@ -65,10 +69,10 @@ export class SceneService<T extends Scene2D> {
     animation?: {
       timestamp: number
       deltaTime: number
-      frame: number
     },
     reset: boolean = false
   ) {
+    if (node.visible) AbstractNode[MethodStaticSetApp](this.$app)
     if (reset && node.visible) node.reset()
     if (node.visible) node.process(animation)
 
@@ -104,12 +108,12 @@ export class SceneService<T extends Scene2D> {
     this._events.addEventListener(name, callback)
   }
 
-  [MethodDispatchScript](node: any = this._scene) {
+  async [MethodDispatchScript](node: any = this._scene) {
     node[MethodDispatchScript]()
 
     if (node.nodes.length)
       for (const childNode of node.nodes) {
-        this[MethodDispatchScript](childNode)
+        await this[MethodDispatchScript](childNode)
       }
   }
 
