@@ -27,13 +27,6 @@ export class AnimationService {
     fps: 0
   }
 
-  protected _callback: (object: {
-    timestamp: number
-    deltaTime: number
-  }) => void = () => {}
-
-  protected _editor: () => void = () => {}
-
   get DELTA_TIME() {
     return this._deltaTime
   }
@@ -55,16 +48,6 @@ export class AnimationService {
       delay: this._framesPerSeconds.delay,
       velocity: this._framesPerSeconds.velocity
     })
-  }
-
-  set callback(
-    func: (object: { timestamp: number; deltaTime: number }) => void
-  ) {
-    this._callback = func
-  }
-
-  set editor(func: () => void) {
-    this._editor = func
   }
 
   get isPlaying() {
@@ -99,41 +82,47 @@ export class AnimationService {
   //   this._state.frames++
   // }
 
-  protected loop(timestamp: number) {
-    this._ref = window.requestAnimationFrame(this.loop.bind(this))
-
+  protected async loop(timestamp: number) {
     if (!this._lastTime) this._lastTime = timestamp
-
     this._deltaTime = timestamp - this._lastTime
 
-    let framePerSecond = Math.floor(
-      this._deltaTime /
-        (this._framesPerSeconds.delay / this._framesPerSeconds.velocity)
-    )
+    const mode = this.$app.useGlobal("mode") === "preview"
+    const reDraw = this.$app.useGlobal("re-draw")
 
-    if (this.$app.mode === "editor") this._editor()
+    if (this.$app.mode === "game") {
+      // let framePerSecond = Math.floor(
+      //   this._deltaTime /
+      //     (this._framesPerSeconds.delay / this._framesPerSeconds.velocity)
+      // )
+      // if (framePerSecond > this._frame) {
+      //   this._frame = framePerSecond
+      // await this.$app.scenes.process()
+      // }
 
-    // this.$app.canvas.animation({
-    //   timestamp,
-    //   deltaTime: this._deltaTime
-    // })
-
-    if (framePerSecond > this._frame) {
-      this._frame = framePerSecond
-
-      // this.calculateFPS()
-
-      this._callback({
+      await this.$app.script.process({
         timestamp,
         deltaTime: this._deltaTime
       })
+
+      await this.$app.drawer.process()
+    } else if (this.$app.mode === "editor" || mode) {
+      await this.$app.script.process({
+        timestamp,
+        deltaTime: this._deltaTime
+      })
+
+      await this.$app.drawer.process()
+
+      this.$app.changeGlobal("re-draw", false)
     }
 
-    // this._lastTime = timestamp
+    this._ref = window.requestAnimationFrame(this.loop.bind(this))
   }
 
   play() {
     if (!this._status.playing) {
+      this[MethodDispatchEvent]("animation:play")
+
       this._status.playing = true
       this._status.pause = false
 
@@ -143,6 +132,8 @@ export class AnimationService {
 
   pause() {
     if (this._status.playing) {
+      this[MethodDispatchEvent]("animation:pause")
+
       window.cancelAnimationFrame(this._ref)
 
       this._status.playing = false
@@ -159,11 +150,6 @@ export class AnimationService {
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
-
-    // this.$app.canvas.fps({
-    //   delay: this._framesPerSeconds.delay,
-    //   velocity: this.framesPerSeconds.velocity
-    // })
   }
 
   setVelocityFrames(value: number) {
@@ -171,18 +157,13 @@ export class AnimationService {
     this._frame = 0
     this._lastTime = 0
     this._deltaTime = 0
-
-    // this.$app.canvas.fps({
-    //   delay: this._framesPerSeconds.delay,
-    //   velocity: this.framesPerSeconds.velocity
-    // })
   }
 
   emit(name: TEventAnimation, callback: TFunction) {
     this._events.addEventListener(name, callback)
   }
 
-  [MethodDispatchEvent](name: any, ...args: any[]) {
+  [MethodDispatchEvent](name: TEventAnimation, ...args: any[]) {
     this._events.emitEvent(name, args)
   }
 }

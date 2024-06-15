@@ -1,4 +1,4 @@
-import { TExportNode, TOptionalNodes } from "./nodes.types"
+import { TExportNode } from "./nodes.types"
 import {
   MethodSetAttributes,
   MethodSetIndex,
@@ -6,17 +6,17 @@ import {
   MethodSetParent,
   MethodSetUUID
 } from "./symbols"
-import { GlobalNode } from "./@global/node"
-import { Node2D } from "./2D/node"
-import { Scene2D } from "./2D/scene"
-import { Rectangle2D } from "./2D/shapes/rectangle"
-import { Selection2D } from "./2D/edition/selection"
-import { LineFlowEffect2D } from "./2D/effects/line-flow-effect"
-import { Text2D } from "./2D/interface/text"
-import { ControlEdition2D } from "./2D/edition/control-edition"
+import { PrimitiveNode } from "./@global/primitive-node"
+import { Node2D } from "./2D/2d/node"
+import { Scene2D } from "./2D/2d/scene"
+import { Rectangle2D } from "./2D/2d/shapes/rectangle"
+import { Selection2D } from "./2D/2d/edition/selection"
+import { LineFlowEffect2D } from "./2D/2d/effects/line-flow-effect"
+import { Text2D } from "./2D/2d/interface/text"
+import { ControlEdition2D } from "./2D/2d/edition/control-edition"
 
 const allNodes: Record<string, any> = {
-  GlobalNode,
+  PrimitiveNode,
   Node2D,
   Scene2D,
   Rectangle2D,
@@ -33,7 +33,7 @@ export const makerNodes2D = (
   const nodesInstance = []
 
   for (const node of nodes) {
-    const abstract: GlobalNode = new allNodes[node.type](node.options)
+    const abstract: PrimitiveNode = new allNodes[node.type](node.options)
 
     if (parent) abstract[MethodSetParent](parent)
 
@@ -42,13 +42,9 @@ export const makerNodes2D = (
     abstract[MethodSetIndex](node.index)
     abstract[MethodSetAttributes](node.attributes)
 
-    if (node.hierarchy === "children")
-      abstract[MethodSetNodes](
-        makerNodes2D(
-          (node as TExportNode<any> & TOptionalNodes<"children">).nodes,
-          abstract
-        )
-      )
+    abstract[MethodSetNodes](
+      makerNodes2D((node as TExportNode<any>).nodes, abstract)
+    )
 
     nodesInstance.push(abstract)
   }

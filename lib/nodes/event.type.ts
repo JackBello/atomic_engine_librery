@@ -20,5 +20,6 @@ export type TEventSelection2D =
   | "selection2D:start"
   | "selection2D:end"
   | "selection2D:moving"
+  | "selection2D:nodes"
 
 export type TEventText2D = ""

@@ -1,6 +1,10 @@
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
-export const handleScript = async (code: string, node: any) => {
+export const handleScript = async (
+  code: string,
+  node: any,
+  viewport: { width: number; height: number }
+) => {
   const _return = `return {$functions:{${
     code.indexOf("_ready") !== -1 ? "_ready," : ""
   }${code.indexOf("_process") !== -1 ? "_process," : ""}${
@@ -10,7 +14,7 @@ export const handleScript = async (code: string, node: any) => {
   const _code = `with (node) {${code};
 ${_return}}`
 
-  const execute = new AsyncFunction("node, $attributes", _code)
+  const execute = new AsyncFunction("node, viewport", _code)
 
-  return await execute(node, node._attributes)
+  return await execute(node, viewport)
 }

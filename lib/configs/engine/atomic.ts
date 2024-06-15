@@ -9,16 +9,19 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsAtomicEngine = {
     velocity: 60
   },
   game: {
+    background: "#000000",
     full_screen: false,
     full_size: false,
-    height: 400,
-    width: 400,
     x: 0,
     y: 0,
     icon: null,
     center: true,
     title: undefined,
-    resizable: false
+    resizable: false,
+    viewport: {
+      height: 600,
+      width: 800
+    }
   },
   height: 500,
   width: 500,
@@ -27,5 +30,6 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsAtomicEngine = {
     exclude: [],
     format: "JSON",
     include: []
-  }
+  },
+  canvasMode: "main-thread"
 }

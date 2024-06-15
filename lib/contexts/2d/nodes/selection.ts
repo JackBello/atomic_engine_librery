@@ -19,6 +19,8 @@ export const selection_2D = (
     IRectangle2D &
     IBorder2D
 ) => {
+  context.save()
+
   context.fillStyle = options.background
 
   options.border ? (context.strokeStyle = options.borderColor) : 0
@@ -58,4 +60,6 @@ export const selection_2D = (
   options.border ? context.stroke() : 0
 
   context.closePath()
+
+  context.restore()
 }

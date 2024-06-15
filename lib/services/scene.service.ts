@@ -1,6 +1,5 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
-import { Scene2D } from "../nodes/2D/scene"
 import EventObserver from "../utils/observer"
 import { TFunction } from "../types"
 import { IControlEditor, TExportNode } from "../nodes/nodes.types"
@@ -8,7 +7,6 @@ import { makerNodes2D } from "../nodes/maker-2d"
 import { TEventScenes } from "./event.type"
 import {
   MethodDispatchEvent,
-  MethodDispatchScript,
   MethodExport,
   MethodStaticSetApp
 } from "../symbols"
@@ -16,17 +14,17 @@ import { AtomicEngine } from "../atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 import { AbstractNode } from "@/nodes/abstract/node.abstract"
 
-export class SceneService<T extends Scene2D> {
+export class SceneService {
   private $app: AtomicEngine | AtomicGame
 
-  protected _scenes = new Map<string, T>()
-  protected _scene?: T
+  protected _scenes = new Map<string, any>()
+  protected _scene?: any
   protected _events: EventObserver = new EventObserver()
 
   constructor(app: AtomicEngine | AtomicGame) {
     this.$app = app
 
-    this.$app
+    AbstractNode[MethodStaticSetApp](this.$app)
   }
 
   get currentScene() {
@@ -37,49 +35,40 @@ export class SceneService<T extends Scene2D> {
     if (!this._scenes.has(uuid))
       throw new Error('not found scene "' + uuid + '"')
 
-    return this._scenes.get(uuid) as T
+    return this._scenes.get(uuid)
   }
 
-  async change(uuid: string, executeScript: boolean = false) {
-    this._scene = this.get(uuid)
-    if (this._scene && executeScript) await this[MethodDispatchScript]()
-  }
-
-  add(...scenes: T[]) {
+  add(...scenes: any[]) {
     for (let scene of scenes) {
       this._scenes.set(scene.uuid, scene)
     }
+
+    this[MethodDispatchEvent]("scene:add", scenes)
   }
 
   delete(uuid: string) {
     this._scenes.delete(uuid)
 
     if (uuid === this.currentScene?.uuid) this._scene = undefined
+
+    this[MethodDispatchEvent]("scene:delete", uuid)
   }
 
-  process(
-    animation?: { timestamp: number; deltaTime: number },
-    reset: boolean = false
-  ) {
-    if (this._scene) this.executeProcess(this._scene, animation, reset)
+  change(uuid: string) {
+    this._scene = this.get(uuid)
+
+    this[MethodDispatchEvent]("scene:change", uuid)
   }
 
-  protected executeProcess(
-    node: any = this._scene,
-    animation?: {
-      timestamp: number
-      deltaTime: number
-    },
-    reset: boolean = false
-  ) {
-    if (node.visible) AbstractNode[MethodStaticSetApp](this.$app)
-    if (reset && node.visible) node.reset()
-    if (node.visible) node.process(animation)
+  reset(node: any = this._scene) {
+    if (node) {
+      node.reset()
 
-    if (node.nodes.length)
-      for (const childNode of node.nodes) {
-        this.executeProcess(childNode as any, animation, reset)
-      }
+      if (node.nodes.length > 0)
+        for (const child of node.nodes) {
+          this.reset(child)
+        }
+    }
   }
 
   getScenes() {
@@ -87,19 +76,22 @@ export class SceneService<T extends Scene2D> {
   }
 
   export(format: "JSON" | "YAML" = "JSON") {
+    this[MethodDispatchEvent]("scene:export")
     return format === "YAML"
       ? YAML.stringify(this[MethodExport]())
       : JSON5.stringify(this[MethodExport]())
   }
 
   import(data: string, format: "JSON" | "YAML" = "JSON") {
+    this[MethodDispatchEvent]("scene:import")
+
     const structure: TExportNode<IControlEditor>[] =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
-    const scenes = (makerNodes2D(structure) as T[]).map((scene) => [
+    const scenes = (makerNodes2D(structure) as any[]).map((scene) => [
       scene.uuid,
       scene
-    ]) as [string, T][]
+    ]) as [string, any][]
 
     this._scenes = new Map(scenes)
   }
@@ -108,16 +100,7 @@ export class SceneService<T extends Scene2D> {
     this._events.addEventListener(name, callback)
   }
 
-  async [MethodDispatchScript](node: any = this._scene) {
-    node[MethodDispatchScript]()
-
-    if (node.nodes.length)
-      for (const childNode of node.nodes) {
-        await this[MethodDispatchScript](childNode)
-      }
-  }
-
-  [MethodDispatchEvent](name: any, ...args: any[]) {
+  [MethodDispatchEvent](name: TEventScenes, ...args: any[]) {
     this._events.emitEvent(name, args)
   }
 

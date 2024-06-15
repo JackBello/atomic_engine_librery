@@ -21,6 +21,8 @@ export const rectangle_2D = (
 ) => {
   const { calculate } = options
 
+  context.save()
+
   context.translate(calculate.translate.x, calculate.translate.y)
   if (calculate.rotation === 0) context.rotate(calculate.rotation)
 
@@ -74,4 +76,6 @@ export const rectangle_2D = (
   options.border ? context.stroke() : 0
 
   context.closePath()
+
+  context.restore()
 }

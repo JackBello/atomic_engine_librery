@@ -18,13 +18,12 @@ import { selection_2D } from "./nodes/selection"
 import { text_2D } from "./nodes/text"
 
 export const handleContext2D = (
-  action: TDrawsContext2D,
+  action: TDrawsContext2D | TCanvasActionsContext2D | TCanvasActions,
   options: any,
-  context: CanvasRenderingContext2D,
-  buffer: { context: CanvasRenderingContext2D; canvas: OffscreenCanvas }
+  context: CanvasRenderingContext2D
 ) => {
   const actions: Record<
-    TDrawsContext2D | TCanvasActions | TCanvasActionsContext2D,
+    TDrawsContext2D | TCanvasActionsContext2D | TCanvasActions,
     TFunction
   > = {
     "draw:2D/rectangle": rectangle_2D,
@@ -42,8 +41,5 @@ export const handleContext2D = (
 
   const exec = actions[action]
 
-  if (exec) exec(buffer.context, options)
-
-  context.clearRect(0, 0, buffer.canvas.width, buffer.canvas.height)
-  context.drawImage(buffer.canvas, 0, 0)
+  if (exec) exec(context, options)
 }

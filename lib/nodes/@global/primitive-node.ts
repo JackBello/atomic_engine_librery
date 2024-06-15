@@ -2,15 +2,14 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { AbstractNode } from "../abstract/node.abstract"
 import {
-  IControlEditor,
   IHandleNodes,
+  INodeWorker,
   TAttribute,
   TAttributeTuple,
   TExportNode,
   TFunctionTuple,
   TMetaKey,
   TMetaKeyTuple,
-  TOptionalNodes,
   TTypeNode
 } from "../nodes.types"
 import {
@@ -21,6 +20,7 @@ import {
   MethodSetNodes,
   MethodSetParent,
   MethodSetUUID,
+  PropType,
   PropAttributes,
   PropFunctions,
   PropMetaKeys,
@@ -31,63 +31,64 @@ import { TFunction } from "../../types"
 import EventObserver from "../../utils/observer"
 import { v4 } from "@lukeed/uuid"
 import { handleScript } from "../../utils/script"
-import { DEFAULT_CONFIG_GLOBAL_NODE } from "../../configs/nodes/@global/node"
+import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "../../configs/nodes/@global/node"
 import { TEventGlobalNode } from "../event.type"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
-  MethodExport
+  MethodExport,
+  MethodExportWorker
 } from "../../symbols"
+import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { AtomicEngine } from "@/atomic-engine"
+import { AtomicGame } from "@/atomic-game"
 import { omitKeys } from "@/utils/json"
 
-export class GlobalNode
-  extends AbstractNode
-  implements IHandleNodes, IControlEditor
-{
-  protected _initial: IControlEditor
+export class PrimitiveNode extends AbstractNode implements IHandleNodes {
+  protected _omit: string[] = ["name", "description"]
+  protected _options: TTypeNodeOptions["primitive:node"]
+  protected _initial: TTypeNodeOptions["primitive:node"]
   protected _events: EventObserver
-  protected _parent: GlobalNode | null
+  protected _parent: PrimitiveNode | null
   protected _uuid: string
-  protected _index: number
+  protected _index: number;
 
-  readonly hierarchy: "children" | "not-children" = "children"
-  readonly type: TTypeNode = "GlobalNode"
+  [PropType]: TAllDrawsContext = "primitive:node"
 
-  script: string | URL | null
-  name: string
-  title: string
-  description: string;
+  readonly NODE_NAME: TTypeNode = "PrimitiveNode"
 
-  [PropNodes]: GlobalNode[];
+  script: string | URL | null;
+
+  [PropNodes]: PrimitiveNode[];
   [PropFunctions]: Map<string, TFunction>;
   [PropAttributes]: Map<string, TAttribute>;
   [PropMetaKeys]: Map<string, TMetaKey>
 
-  get nodes(): GlobalNode[] {
+  get nodes(): PrimitiveNode[] {
     return this[PropNodes]
   }
 
-  get firstNode(): GlobalNode | undefined {
+  get firstNode(): PrimitiveNode | undefined {
     if (this._parent) return this._parent.nodes[0]
     else return undefined
   }
 
-  get lastNode(): GlobalNode | undefined {
+  get lastNode(): PrimitiveNode | undefined {
     if (this._parent) return this._parent.nodes[this._parent.nodes.length - 1]
     else return undefined
   }
 
-  get nextSiblingNode(): GlobalNode | undefined {
+  get nextSiblingNode(): PrimitiveNode | undefined {
     if (this._parent) return this._parent.nodes[this.index + 1]
     else return undefined
   }
 
-  get previousSiblingNode(): GlobalNode | undefined {
+  get previousSiblingNode(): PrimitiveNode | undefined {
     if (this._parent) return this._parent.nodes[this.index - 1]
     else return undefined
   }
 
-  get parent(): GlobalNode | null {
+  get parent(): PrimitiveNode | null {
     return this._parent
   }
 
@@ -100,26 +101,58 @@ export class GlobalNode
   }
 
   get deep(): string {
-    if (this.parent) return this.parent.index + "_" + this.index
+    if (this.parent) return this.parent.deep + "_" + this.index
     else return this.index.toString()
   }
 
-  constructor(options?: Partial<IControlEditor>) {
+  get name() {
+    return this._options.name
+  }
+
+  get title() {
+    return this._options.title
+  }
+
+  get description() {
+    return this._options.description
+  }
+
+  set name(value: string) {
+    this._options.name = value
+  }
+
+  set title(value: string) {
+    this._options.title = value
+  }
+
+  set description(value: string) {
+    this._options.description = value
+
+    this.getApp().drawer.updateNode(this.deep, "property", "deep", {
+      property: "description",
+      value
+    })
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
+  }
+
+  constructor(options?: Partial<TTypeNodeOptions["primitive:node"]>) {
     super()
 
     this._initial = {
-      ...DEFAULT_CONFIG_GLOBAL_NODE,
+      ...DEFAULT_CONFIG_PRIMITIVE_NODE,
       ...options
-    } as IControlEditor
+    }
+    this._options = { ...this._initial }
+
     this._events = new EventObserver()
     this._parent = null
     this._uuid = v4()
     this._index = 0
 
     this.script = null
-    this.name = this._initial.name
-    this.title = this._initial.title
-    this.description = this._initial.description
 
     this[PropNodes] = []
     this[PropFunctions] = new Map()
@@ -127,20 +160,30 @@ export class GlobalNode
     this[PropMetaKeys] = new Map()
   }
 
-  cloneNode(): GlobalNode {
-    return makerNodes2D([this[MethodExport](true)])[0] as GlobalNode
+  cloneNode(): PrimitiveNode {
+    return makerNodes2D([this[MethodExport](true)])[0] as PrimitiveNode
   }
 
-  getNode(uuid: string): GlobalNode | undefined {
+  getNode(uuid: string): PrimitiveNode | undefined {
     return this[PropNodes].find((node) => node.uuid == uuid)
   }
 
-  addNode(...nodes: GlobalNode[]): void {
+  addNode(...nodes: PrimitiveNode[]): void {
     for (const node of nodes) {
       node[MethodSetIndex](this[PropNodes].length)
       node[MethodSetParent](this as any)
       this[PropNodes].push(node)
+
+      this.getApp().drawer.addNode(
+        node[MethodExportWorker](),
+        this.deep,
+        "deep"
+      )
     }
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   hasNode(uuid: string): boolean {
@@ -153,6 +196,10 @@ export class GlobalNode
     if (node) {
       this[PropNodes].splice(node.index, 1)
 
+      this.getApp().drawer.reDraw()
+
+      this.getApp().changeGlobal("re-draw", true)
+
       node = undefined
 
       return true
@@ -163,9 +210,13 @@ export class GlobalNode
 
   clearNodes(): void {
     this[PropNodes] = []
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
-  replaceNode(uuid: string, node: GlobalNode): void {
+  replaceNode(uuid: string, node: PrimitiveNode): void {
     const search = this.getNode(uuid)
 
     if (!search) throw new Error("node not found")
@@ -173,9 +224,13 @@ export class GlobalNode
     node[MethodSetIndex](search.index)
 
     this[PropNodes][search.index] = node
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
-  replaceNodeByIndex(index: number, node: GlobalNode): void {
+  replaceNodeByIndex(index: number, node: PrimitiveNode): void {
     if (index < 0 || index >= this[PropNodes].length)
       throw new Error("Indexes out ranges")
 
@@ -186,10 +241,14 @@ export class GlobalNode
     node[MethodSetIndex](index)
 
     this[PropNodes][index] = node
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
-  searchNode(uuid: string): GlobalNode | undefined {
-    const nodes: GlobalNode[] = [this as any]
+  searchNode(uuid: string): PrimitiveNode | undefined {
+    const nodes: PrimitiveNode[] = [this as any]
 
     while (nodes.length > 0) {
       let node = nodes.shift()
@@ -204,11 +263,11 @@ export class GlobalNode
     return undefined
   }
 
-  searchNodeByIndex(index: number): GlobalNode | undefined {
+  searchNodeByIndex(index: number): PrimitiveNode | undefined {
     if (index < 0 || index >= this[PropNodes].length)
       throw new Error("Indexes out ranges")
 
-    const nodes: GlobalNode[] = [this as any]
+    const nodes: PrimitiveNode[] = [this as any]
 
     while (nodes.length > 0) {
       let node = nodes.shift()
@@ -242,6 +301,10 @@ export class GlobalNode
     }
 
     this[PropNodes] = nodes
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   moveNodeByIndex(from: number, to: number): void {
@@ -264,6 +327,10 @@ export class GlobalNode
     }
 
     this[PropNodes] = nodes
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   getFunctions(): TFunction[] {
@@ -276,6 +343,10 @@ export class GlobalNode
 
   addFunction(name: string, func: TFunction): void {
     this[PropFunctions].set(name, func)
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   hasFunction(name: string): boolean {
@@ -283,6 +354,10 @@ export class GlobalNode
   }
 
   deleteFunction(name: string): boolean {
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
+
     return this[PropFunctions].delete(name)
   }
 
@@ -292,10 +367,18 @@ export class GlobalNode
     if (!func) throw new Error("function not found")
 
     func(args)
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   clearFunctions(): void {
     this[PropFunctions].clear()
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   getAttributes(): TAttribute[] {
@@ -308,6 +391,10 @@ export class GlobalNode
 
   addAttribute(name: string, options: TAttribute): void {
     this[PropAttributes].set(name, options)
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   hasAttribute(name: string): boolean {
@@ -315,11 +402,19 @@ export class GlobalNode
   }
 
   deleteAttribute(name: string): boolean {
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
+
     return this[PropAttributes].delete(name)
   }
 
   clearAttributes(): void {
     this[PropAttributes].clear()
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   getMetaKeys(): TMetaKey[] {
@@ -332,6 +427,10 @@ export class GlobalNode
 
   addMetaKey(name: string, options: TMetaKey): void {
     this[PropMetaKeys].set(name, options)
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   hasMetaKey(name: string): boolean {
@@ -339,55 +438,74 @@ export class GlobalNode
   }
 
   deleteMetaKey(name: string): boolean {
+    this.getApp().changeGlobal("re-draw", true)
+
+    this.getApp().drawer.reDraw()
+
     return this[PropMetaKeys].delete(name)
   }
 
   clearMetaKeys(): void {
     this[PropMetaKeys].clear()
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   emit(event: TEventGlobalNode, callback: TFunction): void {
     return this._events.addEventListener(event, callback)
   }
 
-  reset(property?: keyof IControlEditor): void {
+  reset(property?: keyof TTypeNodeOptions["primitive:node"]): void {
     if (property) {
-      this[property as string] = this._initial[property]
+      this._options[property] = this._initial[property]
+      if (!this._omit.includes(property))
+        this.getApp().drawer.updateNode(this.deep, "property", "deep", {
+          property,
+          value: this._initial[property]
+        })
     } else {
-      for (const key of Object.keys(this._initial)) {
-        this[key] = this._initial[key as keyof IControlEditor]
-      }
+      this._options = { ...this._initial }
+      this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
+        properties: omitKeys(this._initial, this._omit)
+      })
     }
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): IControlEditor {
-    return omitKeys(
-      {
-        ...this
-      },
-      [
-        "_initial",
-        "_events",
-        "_parent",
-        "_uuid",
-        "_index",
-        "hierarchy",
-        "type",
-        "script"
-      ]
-    )
+  toObject(): TTypeNodeOptions["primitive:node"] {
+    return this._options
   }
 
-  set(property: keyof IControlEditor, value: any): void
-  set(properties: IControlEditor): void
+  set(property: keyof TTypeNodeOptions["primitive:node"], value: any): void
+  set(properties: Partial<TTypeNodeOptions["primitive:node"]>): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this[property] = value
+      this._options[property as keyof TTypeNodeOptions["primitive:node"]] =
+        value as any
+
+      if (!this._omit.includes(property))
+        this.getApp().drawer.updateNode(this.deep, "property", "deep", {
+          property,
+          value
+        })
     } else if (typeof properties !== "string") {
-      for (const [key, value] of Object.entries(this._initial)) {
-        this[key] = value
+      for (const [key, value] of Object.entries(this.properties)) {
+        this._options[key as keyof TTypeNodeOptions["primitive:node"]] =
+          value as any
       }
+      this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
+        properties: omitKeys(properties, this._omit)
+      })
     }
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
   }
 
   export(format: "JSON" | "YAML" = "JSON"): string {
@@ -397,13 +515,13 @@ export class GlobalNode
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<IControlEditor> =
+    const structure: TExportNode<TTypeNodeOptions["primitive:node"]> =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
-    return makerNodes2D([structure])[0] as GlobalNode
+    return makerNodes2D([structure])[0] as PrimitiveNode
   }
 
-  [MethodSetParent](node: GlobalNode | null): void {
+  [MethodSetParent](node: PrimitiveNode | null): void {
     this._parent = node
   }
 
@@ -427,7 +545,7 @@ export class GlobalNode
     this[PropMetaKeys] = new Map(metaKeys)
   }
 
-  [MethodSetNodes](nodes: GlobalNode[]): void {
+  [MethodSetNodes](nodes: PrimitiveNode[]): void {
     this[PropNodes] = nodes
   }
 
@@ -438,21 +556,52 @@ export class GlobalNode
   async [MethodDispatchScript]() {
     if (this.script === null) return
 
-    const response = await handleScript(this.script as string, this)
+    let viewport = {
+      width: 0,
+      height: 0
+    }
+
+    const app = this.getApp()
+
+    if (app instanceof AtomicEngine) {
+      viewport = app.options.game.viewport
+    } else if (app instanceof AtomicGame) {
+      viewport = app.options.viewport
+    }
+
+    const response = await handleScript(this.script as string, this, viewport)
 
     const functions: [string, TFunction][] = Object.entries(response.$functions)
 
     this[PropFunctions] = new Map(functions)
   }
 
+  [MethodExportWorker](childNode: boolean = true): INodeWorker {
+    const nodes: INodeWorker[] = []
+
+    if (childNode && this.nodes.length)
+      for (const node of this.nodes) {
+        nodes.push(node[MethodExportWorker](true))
+      }
+
+    return {
+      __type__: this[PropType],
+      deep: this.deep,
+      index: this.index,
+      nodes: nodes,
+      uuid: this.uuid,
+      options: omitKeys(this.toObject(), this._omit)
+    }
+  }
+
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<IControlEditor> & TOptionalNodes<"children"> {
-    const nodes = []
+  ): TExportNode<TTypeNodeOptions["primitive:node"]> {
+    const nodes: TExportNode<any>[] = []
 
-    if (childNode)
-      for (const node of this.getNodes()) {
-        nodes.push(node[MethodExport]())
+    if (childNode && this.nodes.length)
+      for (const node of this.nodes) {
+        nodes.push(node[MethodExport](childNode))
       }
 
     return {
@@ -460,17 +609,12 @@ export class GlobalNode
       functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
-      type: this.type,
-      hierarchy: this.hierarchy,
-      script: this.script
-        ? (this.script as string).replace(/(\r\n|\n|\r)/gm, "")
-        : null,
+      type: this.NODE_NAME,
+      script: this.script,
       deep: this.deep,
       index: this.index,
       nodes,
-      options: {
-        ...this.toObject()
-      }
+      options: this.toObject()
     }
   }
 }

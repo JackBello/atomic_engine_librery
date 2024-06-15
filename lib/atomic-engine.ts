@@ -1,13 +1,15 @@
-import { IOptionsAtomicEngine, TPropsAtomic } from "./types"
+import { IOptionsAtomicEngine, TMode, TPropsAtomic } from "./types"
 import { TPlugin } from "./plugins/types"
 import { TEventCanvas } from "./event.type"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
+  MethodExportWorker,
   MethodGetAllInsideAtomic,
   MethodHasEvent,
   MethodReloadEvents,
-  MethodSetOptions
+  MethodSetOptions,
+  MethodSetRootNode
 } from "./symbols"
 import EventObserver from "./utils/observer"
 import { DEFAULT_CONFIG_ATOMIC } from "./configs/engine/atomic"
@@ -16,14 +18,13 @@ import { DistributionController } from "./controllers/distribution.controller"
 import { AnimationService } from "./services/animation.service"
 import { SceneService } from "./services/scene.service"
 import { CanvasService } from "./services/canvas.service"
-import MathWorker from "@/workers/math.worker?worker&inline"
-import { TOptionsDraw, TOptionsRenderCanvasWorker } from "./workers/types"
 import { WindowController } from "./controllers/window.controller"
+import { ScriptService } from "./services/script.service"
+import { DrawerService } from "./services/drawer.service"
 
 export class AtomicEngine {
   [key: string]: any
 
-  protected _worker: Worker
   protected _options: IOptionsAtomicEngine
   protected _plugins: Map<
     string,
@@ -33,22 +34,20 @@ export class AtomicEngine {
   protected _providers: Map<any, any> = new Map()
   protected _nodes: Map<any, any> = new Map()
   protected _controls: Map<string, any> = new Map()
-  protected _global: Map<string, any> = new Map([
-    ["mode", "edition"], // "edition" = 0 | "game" = 1 | "preview" = 2
-    ["status", null], // null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
-    ["fps", null]
-  ])
+  protected _global: Map<string, any> = new Map()
   protected _events: EventObserver = new EventObserver()
 
-  protected $events!: EventController
-  protected $distribution!: DistributionController
-  protected $window!: WindowController
+  protected $$events!: EventController
+  protected $$distribution!: DistributionController
+  protected $$window!: WindowController
 
   protected $animation!: AnimationService
-  protected $scenes!: SceneService<any>
+  protected $scenes!: SceneService
   protected $canvas!: CanvasService
+  protected $script!: ScriptService
+  protected $drawer!: DrawerService
 
-  readonly mode: "editor" | "game" = "editor"
+  readonly mode: TMode = "editor"
 
   get animation() {
     return this.$animation
@@ -62,44 +61,67 @@ export class AtomicEngine {
     return this.$canvas
   }
 
+  get script() {
+    return this.$script
+  }
+
+  get drawer() {
+    return this.$drawer
+  }
+
   get options() {
-    return Object.freeze(this._options)
+    return Object.freeze({ ...this._options })
+  }
+
+  get width() {
+    return this.options.width
+  }
+
+  get height() {
+    return this.options.height
   }
 
   constructor(options?: Partial<IOptionsAtomicEngine>) {
-    this._worker = new MathWorker()
-
     this._options = { ...DEFAULT_CONFIG_ATOMIC, ...options }
 
     this.init()
 
-    this.$distribution = new DistributionController(this)
-    this.$window = new WindowController(this)
-    this.$events = new EventController(this)
+    this.$$distribution = new DistributionController(this)
+    this.$$window = new WindowController(this)
+    this.$$events = new EventController(this)
   }
 
   protected init() {
-    this.$animation = new AnimationService(this)
-    this.$scenes = new SceneService<any>(this)
+    this.$scenes = new SceneService(this)
     this.$canvas = new CanvasService(this)
+    this.$script = new ScriptService(this)
+    this.$drawer = new DrawerService(this)
+    this.$animation = new AnimationService(this)
 
-    this.initAnimation()
-  }
+    this._global.set("mode", "edition") // "edition" = 0 | "game" = 1 | "preview" = 2
+    this._global.set("status", null) //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
+    this._global.set("fps", null)
+    this._global.set("re-draw", true)
+    this._global.set("scale-viewport", 1)
 
-  protected initAnimation() {
     this.animation.setDelayFrames(this.options.fps.delay)
     this.animation.setVelocityFrames(this.options.fps.velocity)
 
-    this.animation.callback = (animation) => {
-      this.execute("canvas:clear")
-      this.scenes.process(animation)
-    }
+    this.scenes.emit("scene:change", () => {
+      this.script[MethodSetRootNode](this.scenes.currentScene)
+
+      this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+    })
+
+    this.setSize(this._options.width, this._options.height)
   }
 
   setSize(width: number, height: number) {
     this._options.width = width
     this._options.height = height
     this.canvas.setSize(width, height)
+    this.drawer.setSize(width, height)
+    this.drawer.setSizeEditor(width, height)
   }
 
   setExport(
@@ -113,8 +135,6 @@ export class AtomicEngine {
   }
 
   plugin(plugin: TPlugin, options?: any) {
-    plugin.install(this, options)
-
     this._plugins.set(plugin.name, {
       config: plugin?.config,
       nodes: plugin?.nodes,
@@ -123,8 +143,8 @@ export class AtomicEngine {
 
     if (plugin.inject) {
       this[plugin.name] = {}
-      for (const [name, propOrMethod] of Object.entries(plugin.inject)) {
-        this[plugin.name][name] = propOrMethod
+      for (const [name, method] of Object.entries(plugin.inject)) {
+        this[plugin.name][name] = method.bind(this)
       }
     }
 
@@ -132,6 +152,8 @@ export class AtomicEngine {
       for (const [event, callback] of Object.entries(plugin.events)) {
         if (callback) this._events.addEventListener(event, callback)
       }
+
+    if (plugin.install) plugin.install(this, options)
   }
 
   use(
@@ -199,46 +221,40 @@ export class AtomicEngine {
     this._nodes.set(name, node)
   }
 
-  calculate() {
-    this._worker
+  export(mode: "editor" | "game" = "editor", format: "JSON" | "YAML" = "JSON") {
+    return this.$$distribution.export(mode, format)
   }
 
-  validation() {
-    this._worker
-  }
-
-  execute<A extends TOptionsRenderCanvasWorker["action"]>(
-    action: A,
-    options?: TOptionsDraw[A]
-  ) {
-    this.canvas.execute({
-      dimension: this.options.dimension,
-      context: this.options.context,
-      action,
-      options
-    })
-  }
-
-  export(mode: "editor" | "game" = "editor") {
-    return this.$distribution.export(mode)
-  }
-
-  import(text: string) {
-    this.$distribution.import(text)
+  import(text: string, format: "JSON" | "YAML" = "JSON") {
+    this.$$distribution.import(text, format)
   }
 
   async start() {
-    if (this.$scenes.currentScene) await this.$scenes[MethodDispatchScript]()
+    if (this.$scenes.currentScene) await this.$script[MethodDispatchScript]()
     this.animation.play()
+  }
+
+  changeGlobal(config: "mode" | "fps" | "status" | "re-draw", value: any) {
+    this._global.set(config, value)
   }
 
   preview() {
     return {
-      play: () => {
-        this._global.set("mode", "preview")
+      play: async () => {
+        if (this.useGlobal("mode") === "edition") {
+          this._global.set("mode", "preview")
+          await this.$script.ready()
+        }
+      },
+      stop: () => {
+        if (this.useGlobal("mode") === "preview") {
+          this._global.set("mode", "edition")
+          this.$scenes.reset()
+        }
       },
       pause: () => {
-        this._global.set("mode", "edition")
+        if (this.useGlobal("mode") === "preview")
+          this._global.set("mode", "edition")
       }
     }
   }
@@ -246,10 +262,10 @@ export class AtomicEngine {
   game() {
     return {
       play: () => {
-        this.$window.createWindow()
+        this.$$window.createWindow()
       },
       stop: () => {
-        this.$window.closeWindow()
+        this.$$window.closeWindow()
       }
     }
   }
@@ -259,7 +275,7 @@ export class AtomicEngine {
 
     this.init()
 
-    this.$events[MethodReloadEvents]()
+    this.$$events[MethodReloadEvents]()
   }
 
   [MethodGetAllInsideAtomic]() {

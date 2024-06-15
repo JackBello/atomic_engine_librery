@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://localhost:5173/atomic-engine.iife.js" crossorigin="anonymous"
-    referrerpolicy="no-referrer"></script>
+
   <title>Vite + TS</title>
 
   <style>
@@ -31,16 +30,18 @@
     Velocity
     <input type="number" data-id="inputVelocity">
   </label>
-  <input type="button" value="upload dir" data-id="uploadDirectory" />
+  <input type="button" value="toggle mode edition" data-id="buttonToggleModeEdition" />
   <input type="file" value="upload game" data-id="uploadGame" aria-label="s" />
 
-  <input type="button" value="add rect" data-id="addRect">
+  <input type="button" value="Add Rect" data-id="button-add-rect">
 
-  <input type="button" value="preview" data-id="preview">
-  <input type="button" value="edition" data-id="edition">
+  <input type="button" value="Play Preview" data-id="button-play-preview">
+  <input type="button" value="Stop Preview" data-id="button-stop-preview">
+  <input type="button" value="Pause Preview" data-id="button-pause-preview">
 
-  <input type="button" value="Play" data-id="buttonPlay">
+  <input type="button" value="Run Game" data-id="button-run-game">
   <div data-canvas></div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

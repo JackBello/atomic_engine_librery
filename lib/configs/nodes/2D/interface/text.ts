@@ -1,19 +1,6 @@
-import {
-  ICoords2D,
-  INode2D,
-  IBorder2D,
-  IText2D,
-  ISize2D
-} from "../../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../../nodes/nodes.types"
+import { TTypeNodeOptions } from "@/workers/types"
 
-export const DEFAULT_CONFIG_TEXT_2D: IControlEditor &
-  IControlEdition &
-  ICoords2D &
-  ISize2D &
-  INode2D &
-  IBorder2D &
-  IText2D = {
+export const DEFAULT_CONFIG_TEXT_2D: TTypeNodeOptions["draw:2D/text"] = {
   rotation: 0,
   cursor: "default",
   height: 0,

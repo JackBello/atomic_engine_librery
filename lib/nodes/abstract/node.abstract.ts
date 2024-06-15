@@ -16,6 +16,7 @@ import {
   MethodSetMetaKeys,
   MethodSetParent,
   MethodSetUUID,
+  PropType,
   PropAttributes,
   PropFunctions,
   PropMetaKeys
@@ -25,9 +26,11 @@ import {
   MethodDispatchEvent,
   MethodDispatchScript,
   MethodExport,
+  MethodExportWorker,
   MethodStaticSetApp
 } from "../../symbols"
-import { AtomicEngine } from "../../atomic-engine"
+import { TAllDrawsContext } from "@/workers/types"
+import { AtomicEngine } from "@/atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 
 export abstract class AbstractNode
@@ -37,14 +40,17 @@ export abstract class AbstractNode
 
   protected static $app: AtomicEngine | AtomicGame
 
+  protected abstract _omit: string[]
+  protected abstract _options: any
   protected abstract _initial: any
   protected abstract _events: EventObserver
   protected abstract _parent: any
   protected abstract _uuid: string
-  protected abstract _index: number
+  protected abstract _index: number;
 
-  abstract readonly hierarchy: "children" | "not-children"
-  abstract readonly type: string
+  abstract [PropType]: TAllDrawsContext
+
+  abstract readonly NODE_NAME: string
 
   abstract script: string | URL | null;
 
@@ -134,6 +140,9 @@ export abstract class AbstractNode
 
   abstract [MethodExport](): any
   abstract [MethodExport](children: boolean): any
+
+  abstract [MethodExportWorker](): any
+  abstract [MethodExportWorker](childNode: boolean): any
 
   static [MethodStaticSetApp](app: AtomicEngine | AtomicGame): void {
     AbstractNode.$app = app

@@ -1,4 +1,4 @@
-export type TCanvasType = "editor" | "event" | "game"
+export type TCanvasType = "editor" | "game"
 
 export interface ISizeCanvas {
   width: number

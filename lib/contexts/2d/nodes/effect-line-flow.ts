@@ -25,12 +25,12 @@ export const effect_line_flow_2D = (
 
   context.lineWidth = options.lineWidth
   context.strokeStyle = validColor(options.color, context, {
-    width: options.x,
-    height: options.y
+    width: options.width,
+    height: options.height
   })
 
-  for (let y = 0; y < options.y; y += options.cellSize) {
-    for (let x = 0; x < options.x; x += options.cellSize) {
+  for (let y = 0; y < options.height; y += options.cellSize) {
+    for (let x = 0; x < options.width; x += options.cellSize) {
       const angle = (Math.cos(x * 0.01) + Math.sin(y * 0.01)) * options.radius
       context.beginPath()
       context.moveTo(x, y)

@@ -1,3 +1,4 @@
+import { TAllDrawsContext } from "@/workers/types"
 import { TFunction } from "../types"
 import {
   MethodSetAttributes,
@@ -21,7 +22,7 @@ export type TTypeNode2D =
 
 export type TTypeNode3D = "Cube3D" | "Sphere3D"
 
-export type TTypeNode = "GlobalNode" | TTypeNode2D | TTypeNode3D
+export type TTypeNode = "PrimitiveNode" | TTypeNode2D | TTypeNode3D
 
 export type TSize = "px" | "em" | "pc" | "cm" | "rem" | "pt" | "inch" | "%"
 
@@ -60,16 +61,14 @@ export type TAttributeTuple = [string, TAttribute]
 
 export type TMetaKeyTuple = [string, TMetaKey]
 
-export type TOptionalNodes<T> = T extends "children" ? { nodes: any[] } : {}
-
 export type TExportNode<O> = {
   uuid: string
   functions: TFunctionTuple[]
   attributes: TAttributeTuple[]
   metaKeys: TMetaKeyTuple[]
   type: TTypeNode | TTypeNode2D | TTypeNode3D
-  hierarchy: "children" | "not-children"
   script: string | URL | null
+  nodes: TExportNode<any>[]
   deep: string
   index: number
   options: O
@@ -88,6 +87,15 @@ export type TAttribute = {
   options: {}
 }
 
+export interface INodeWorker {
+  uuid: string
+  deep: string
+  index: number
+  nodes: INodeWorker[]
+  options?: Record<string, any>
+  __type__: TAllDrawsContext
+}
+
 export interface IControlEditor {
   name: string
   title: string
@@ -99,15 +107,6 @@ export interface IControlEdition {
   selectable: boolean
   lock: boolean
   cursor: TCursorOptions
-}
-
-export interface IHandleDraw {
-  process(): void
-  process(animation?: {
-    timestamp: number
-    deltaTime: number
-    frame: number
-  }): void
 }
 
 export interface IHandleFunctions {

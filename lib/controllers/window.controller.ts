@@ -12,17 +12,17 @@ export class WindowController {
   }
 
   protected makeConfigWindow(game: IOptionsGame) {
-    let config = `scrollbars=0,status=0,menubar=0,toolbar=0,location=0,directories=0`
+    let config = `scrollbars=no,status=no,menubar=no,toolbar=no,location=no,directories=no`
 
     if (game.full_size) {
       config += `,width=${screen.availWidth},height=${screen.availHeight}`
     } else {
-      config += `,width=${game.width},height=${game.height}`
+      config += `,width=${game.viewport.width},height=${game.viewport.height}`
     }
 
     if (game.center && !game.full_size) {
-      const top = screen.height / 2 - game.height / 2
-      const left = screen.width / 2 - game.width / 2
+      const top = screen.height / 2 - game.viewport.height / 2
+      const left = screen.width / 2 - game.viewport.width / 2
 
       config += `,top=${top},left=${left}`
     } else if (!game.full_size) {
@@ -32,28 +32,28 @@ export class WindowController {
     }
 
     if (game.resizable) {
-      config += `,resizable=1`
+      config += `,resizable=yes`
     } else {
-      config += `,resizable=0`
+      config += `,resizable=no`
     }
 
     if (game.full_screen) {
-      config += `,fullscreen=1`
+      config += `,fullscreen=yes`
     } else {
-      config += `,fullscreen=0`
+      config += `,fullscreen=no`
     }
 
     if (game.title) {
-      config += `,titlebar=1`
+      config += `,titlebar=yes`
     } else {
-      config += `,titlebar=0`
+      config += `,titlebar=no`
     }
 
     return config.trim()
   }
 
   protected makeCanvas(game: IOptionsGame) {
-    const template = `
+    const template = /* html */ `
     <!DOCTYPE html>
     <html>
     <head>
@@ -67,27 +67,26 @@ export class WindowController {
       }
       <title>${game.title ? game.title : "Atomic Engine"}</title>
       <style>
-            body, html {
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-            }
+        body, html {
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+        canvas {
+          display: block;
+        }
         </style>
     </head>
     <body>
       <div data-canvas></div>
         <script>
           window.addEventListener("DOMContentLoaded", () => {
-            (async ({ AtomicEngine }) => {
-              const app = new AtomicEngine({}, true)
+            (async ({ AtomicGame }) => {
+              const app = new AtomicGame()
 
-              app.import(${jsonEscape(this.$app.export("game"))})
+              await app.load(${jsonEscape(this.$app.export("game"))})
 
-              app.preview().play()
-
-              await app.start()
+              app.start()
             })(Atomic)
 
             ${
@@ -106,7 +105,7 @@ export class WindowController {
               game.resizable
                 ? ""
                 : `window.onresize = function() {
-              window.resizeTo(${game.width}, ${game.height});
+              window.resizeTo(${game.viewport.width}, ${game.viewport.height});
             }`
             }
           })

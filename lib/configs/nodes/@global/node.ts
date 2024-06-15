@@ -1,7 +1,8 @@
-import { IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptions } from "@/workers/types"
 
-export const DEFAULT_CONFIG_GLOBAL_NODE: IControlEditor = {
-  description: "",
-  title: "",
-  name: "GlobalNode"
-}
+export const DEFAULT_CONFIG_PRIMITIVE_NODE: TTypeNodeOptions["primitive:node"] =
+  {
+    description: "",
+    title: "",
+    name: "GlobalNode"
+  }

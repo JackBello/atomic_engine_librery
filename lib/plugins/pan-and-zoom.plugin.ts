@@ -1,119 +1,156 @@
-/**
- *   PAN: {
-    active: false,
-    translateX: 0,
-    translateY: 0
+import { AtomicEngine } from ".."
+import { TPlugin } from "./types"
+
+const pluginPanAndZoom: TPlugin = {
+  name: "pan-and-zoom",
+  events: {
+    "canvas/mouse:down": (app, event: MouseEvent) => {
+      const config = app.use("@config/pan-and-zoom")
+
+      if (config.mode === "node") return
+
+      if (event.button !== 0) return
+
+      app.canvas.event.style.cursor = "grabbing"
+
+      config._.isPanning = true
+
+      config._.startCoords.x = event.clientX
+      config._.startCoords.y = event.clientY
+    },
+    "canvas/mouse:up": (app, event: MouseEvent) => {
+      const config = app.use("@config/pan-and-zoom")
+
+      if (config.mode === "node") return
+
+      if (event.button !== 0) return
+
+      app.canvas.event.style.cursor = "grab"
+
+      config._.isPanning = false
+    },
+    "canvas/mouse:move": (app, event: MouseEvent) => {
+      const config = app.use("@config/pan-and-zoom")
+
+      if (config.mode === "node") return
+
+      if (!config._.isPanning) return
+
+      app.changeGlobal("re-draw", true)
+
+      app.canvas.event.style.cursor = "grabbing"
+
+      const dx = event.clientX - config._.startCoords.x
+      const dy = event.clientY - config._.startCoords.y
+
+      config._.pan.x += dx
+      config._.pan.y += dy
+
+      config.pan.x = config._.pan.x
+      config.pan.y = config._.pan.y
+
+      config._.startCoords.x = event.clientX
+      config._.startCoords.y = event.clientY
+    },
+    "canvas/mouse:wheel": (app, event: WheelEvent) => {
+      const config = app.use("@config/pan-and-zoom")
+
+      if (config.mode === "node") return
+
+      app.changeGlobal("re-draw", true)
+
+      const delta = event.deltaY > 0 ? -1 : 1
+
+      config._.zoom.scale += delta * config._.zoom.speed
+      config._.zoom.scale = Math.max(
+        config._.zoom.min,
+        Math.min(config._.zoom.max, config._.zoom.scale)
+      )
+
+      config.zoom = config._.zoom.scale
+    }
   },
-  ZOOM: {
-    active: false,
-    scale: 1
+  config: {
+    mode: "node", // node | pan-and-zoom
+    pan: {
+      x: 0,
+      y: 0
+    },
+    zoom: 1,
+    _: {
+      isPanning: false,
+      startCoords: {
+        x: 0,
+        y: 0
+      },
+      pan: {
+        x: 0,
+        y: 0
+      },
+      zoom: {
+        scale: 1.0,
+        speed: 0.01,
+        min: 0.009,
+        max: 15.0,
+        scaleFactor: 1.1
+      }
+    }
   },
- */
-// class PanAndZoomElementCanvas {
-//   protected static $core: AtomicEditor
+  inject: {
+    zoom(this: AtomicEngine, scale: number) {
+      const config = this.use("@config/pan-and-zoom")
 
-//   protected static _mouseCoords = {
-//     x: 0,
-//     y: 0
-//   }
+      config.zoom = scale
 
-//   protected static _control = {
-//     isPanning: false,
-//     startCoords: {
-//       x: 0,
-//       y: 0
-//     },
-//     pan: {
-//       x: 0,
-//       y: 0
-//     },
-//     zoom: {
-//       scale: 1.0,
-//       speed: 0.1,
-//       min: 0.009,
-//       max: 15.0
-//     }
-//   }
+      config._.zoom.scale = scale
+    },
+    pan(this: AtomicEngine, x: number, y: number) {
+      const config = this.use("@config/pan-and-zoom")
 
-//   protected static getCanvasEditor() {
-//     return (this.$core.$canvas.getCanvas("editor") as MainCanvas).canvas
-//   }
+      config.pan = {
+        x,
+        y
+      }
 
-//   protected static getPosition(event: MouseEvent) {
-//     const { left, top } = this.getCanvasEditor().getBoundingClientRect()
+      config._.pan = {
+        x,
+        y
+      }
+    },
+    toggleMode(this: AtomicEngine) {
+      const config = this.use("@config/pan-and-zoom")
 
-//     this._mouseCoords = {
-//       x: event.clientX - left,
-//       y: event.clientY - top
-//     }
-//   }
+      if (config.mode === "node") {
+        config.mode = "pan-and-zoom"
+        this.canvas.event.style.cursor = "grab"
+      } else if (config.mode === "pan-and-zoom") {
+        config.mode = "node"
+        this.canvas.event.style.cursor = "default"
+      }
+    }
+  },
+  process: {
+    after: (app) => {
+      const config = app.use("@config/pan-and-zoom")
 
-//   public static pan(x: number, y: number) {
-//     this._control.pan = {
-//       x,
-//       y
-//     }
+      return [
+        {
+          __type__: "canvas:translate",
+          options: {
+            x: config.pan.x,
+            y: config.pan.y
+          }
+        },
+        {
+          __type__: "canvas:scale",
+          options: {
+            scaleX: config.zoom,
+            scaleY: config.zoom
+          }
+        }
+      ]
+    }
+  }
+}
 
-//     this.$core.$global.PAN.translateX = x
-//     this.$core.$global.PAN.translateY = y
-//   }
-
-//   public static zoom(scale: number) {
-//     this._control.zoom.scale = scale
-
-//     this.$core.$global.ZOOM.scale = scale
-//   }
-
-//   public static mousedown(event: MouseEvent) {
-//     if (event.button !== 0) return
-
-//     this.getCanvasEditor().style.cursor = "grabbing"
-
-//     this._control.isPanning = true
-
-//     this._control.startCoords.x = event.clientX
-//     this._control.startCoords.y = event.clientY
-//   }
-
-//   public static mouseup(event: MouseEvent) {
-//     if (event.button !== 0) return
-
-//     this.getCanvasEditor().style.cursor = "grab"
-
-//     this._control.isPanning = false
-//   }
-
-//   public static mousemove(event: MouseEvent) {
-//     if (!this._control.isPanning) return
-
-//     this.getCanvasEditor().style.cursor = "grabbing"
-
-//     const dx = event.clientX - this._control.startCoords.x
-//     const dy = event.clientY - this._control.startCoords.y
-
-//     this._control.pan.x += dx
-//     this._control.pan.y += dy
-
-//     this.$core.$global.PAN.translateX = this._control.pan.x
-//     this.$core.$global.PAN.translateY = this._control.pan.y
-
-//     this._control.startCoords.x = event.clientX
-//     this._control.startCoords.y = event.clientY
-//   }
-
-//   public static wheel(event: WheelEvent) {
-//     const delta = event.deltaY > 0 ? -1 : 1
-
-//     this._control.zoom.scale += delta * this._control.zoom.speed
-//     this._control.zoom.scale = Math.max(
-//       this._control.zoom.min,
-//       Math.min(this._control.zoom.max, this._control.zoom.scale)
-//     )
-
-//     this.$core.$global.ZOOM.scale = this._control.zoom.scale
-//   }
-
-//   static [SetCore](core: any) {
-//     PanAndZoomElementCanvas.$core = core
-//   }
-// }
+export default pluginPanAndZoom

@@ -20,4 +20,3 @@ export type TEventCanvas =
   | "canvas/drag:enter"
   | "canvas/drag:over"
   | "canvas/drop"
-  | "canvas:draw"

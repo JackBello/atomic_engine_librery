@@ -1,11 +1,6 @@
-import { ICoords2D, INode2D, ISize2D } from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptions } from "@/workers/types"
 
-export const DEFAULT_CONFIG_NODE_2D: IControlEdition &
-  IControlEditor &
-  ICoords2D &
-  INode2D &
-  ISize2D = {
+export const DEFAULT_CONFIG_NODE_2D: TTypeNodeOptions["primitive:2D/node"] = {
   rotationType: "degrees",
   rotation: 0,
   cursor: "default",

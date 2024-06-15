@@ -7,6 +7,7 @@ import {
   MethodSetOptions
 } from "../symbols"
 import { makerNodes2D } from "../nodes/maker-2d"
+import { IOptionsAtomicGame } from "@/types"
 
 export class DistributionController {
   private $app: AtomicEngine
@@ -42,43 +43,43 @@ export class DistributionController {
     const scenes = this.$app.scenes[MethodExport]()
     const all = this.$app[MethodGetAllInsideAtomic]()
 
-    // $config: {
-    //   currentScene: {
-    //     name: this.getCore().$scenes.currentScene.name,
-    //     uuid: this.getCore().$scenes.currentScene.uuid
-    //   },
-    //   pan: {
-    //     translateX: this.getCore().$global.PAN.translateX,
-    //     translateY: this.getCore().$global.PAN.translateY
-    //   },
-    //   zoom: {
-    //     scale: this.getCore().$global.ZOOM.scale
-    //   },
-    //   selection: {
-    //     background: this.getCore().$global.SELECTION.background,
-    //     border: this.getCore().$global.SELECTION.border,
-    //     borderColor: this.getCore().$global.SELECTION.borderColor,
-    //     borderWidth: this.getCore().$global.SELECTION.borderWidth,
-    //     radius: this.getCore().$global.SELECTION.radius
-    //   },
-    //   axis: {
-    //     show: this.getCore().$global.AXIS.show,
-    //     colorX: this.getCore().$global.AXIS.colorX,
-    //     colorY: this.getCore().$global.AXIS.colorY
-    //   },
-    //   grid: {
-    //     show: this.getCore().$global.GRID.show,
-    //     cell: this.getCore().$global.GRID.cell,
-    //     color: this.getCore().$global.GRID.color
-    //   }
-    // },
+    if (mode === "game") {
+      const optionsGame: IOptionsAtomicGame = {
+        background: all.options.game.background,
+        context: all.options.context,
+        dimension: all.options.dimension,
+        fps: {
+          delay: all.options.fps.delay,
+          velocity: all.options.fps.velocity
+        },
+        selector: all.options.selector,
+        viewport: {
+          height: all.options.game.viewport.height,
+          width: all.options.game.viewport.width
+        },
+        x: all.options.game.x,
+        y: all.options.game.y,
+        center: all.options.game.center,
+        full_screen: all.options.game.full_screen,
+        full_size: all.options.game.full_size,
+        icon: all.options.game.icon,
+        resizable: all.options.game.resizable,
+        title: all.options.game.title
+      }
+
+      return {
+        options: optionsGame,
+        scenes,
+        $global: all.global,
+        scene: this.$app.scenes.currentScene.uuid
+      }
+    }
 
     return {
       options: all.options,
       scenes,
       $plugins: all.plugins,
       $configs: all.configs,
-      $providers: all.providers,
       $controls: all.controls,
       $nodes: all.nodes,
       $global: all.global,

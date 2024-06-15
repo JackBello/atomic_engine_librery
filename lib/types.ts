@@ -4,7 +4,7 @@ export type TClass<C> = new (...args: any[]) => C
 
 export type ValueOf<T> = T[keyof T]
 
-export type KeyOf<T> = keyof T
+export type KeyOf<T> = keyof Partial<T>
 
 export type TFunction = (...args: any[]) => void | Promise<void>
 
@@ -34,13 +34,17 @@ export type TPropsAtomic =
   | "$controls"
   | "$nodes"
   | "$global"
+
+export type TMode = "game" | "editor"
+
 export interface IOptionsExport {
   format: "JSON" | "YAML"
   include?: TPropsAtomic[]
   exclude?: TPropsAtomic[]
 }
 
-export interface IOptionsGame extends ISize2D {
+export interface IOptionsGame {
+  background: string
   full_size?: boolean
   full_screen?: boolean
   x: number
@@ -49,6 +53,7 @@ export interface IOptionsGame extends ISize2D {
   title?: string
   icon?: string | URL | null
   resizable?: boolean
+  viewport: ISize2D
 }
 export interface IOptionsAtomicEngine extends ISize2D {
   background: string
@@ -58,10 +63,10 @@ export interface IOptionsAtomicEngine extends ISize2D {
   game: IOptionsGame
   fps: IOptionsFramePerSecond
   export: IOptionsExport
+  canvasMode: "worker" | "main-thread"
 }
 
 export interface IOptionsAtomicGame extends IOptionsGame {
-  background: string
   context: TContextName
   selector: string
   fps: IOptionsFramePerSecond
