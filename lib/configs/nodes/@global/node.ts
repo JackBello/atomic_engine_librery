@@ -1,6 +1,6 @@
-import { TTypeNodeOptions } from "@/workers/types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
 
-export const DEFAULT_CONFIG_PRIMITIVE_NODE: TTypeNodeOptions["primitive:node"] =
+export const DEFAULT_CONFIG_PRIMITIVE_NODE: TTypeNodeOptionsContext2D["primitive:node"] =
   {
     description: "",
     title: "",

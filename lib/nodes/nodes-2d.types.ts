@@ -6,6 +6,10 @@ import {
   TTypeOriginY
 } from "./nodes.types"
 
+export interface IOpacity {
+  opacity: number
+}
+
 export interface IHandleCoords2D {
   center(): void
   centerX(): void
@@ -171,5 +175,9 @@ export interface ICalculate {
       height: number
     }
     rotation: number
+    scale: {
+      x: number
+      y: number
+    }
   }
 }

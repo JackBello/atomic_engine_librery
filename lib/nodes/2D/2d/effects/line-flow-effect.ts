@@ -1,24 +1,19 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
 import { INodeWorker, TExportNode, TTypeNode } from "../../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../../symbols"
 import { Node2D } from "../node"
 import { makerNodes2D } from "../../../maker-2d"
 import { DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D } from "../../../../configs/nodes/2D/effects/line-flow-effect"
 import { MethodExport, MethodExportWorker } from "../../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { omitKeys } from "@/utils/json"
 
 export class LineFlowEffect2D extends Node2D {
   [PropType]: TAllDrawsContext = "draw:2D/line-flow-effect"
 
-  protected _options: TTypeNodeOptions["draw:2D/line-flow-effect"]
-  protected _initial: TTypeNodeOptions["draw:2D/line-flow-effect"]
+  protected _options: TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
+  protected _initial: TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
 
   readonly NODE_NAME: TTypeNode = "LineFlowEffect2D"
 
@@ -107,14 +102,18 @@ export class LineFlowEffect2D extends Node2D {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["draw:2D/line-flow-effect"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]>
+  ) {
     super({ ...DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D, ...options }
     this._options = { ...this._initial }
   }
 
-  reset(property?: keyof TTypeNodeOptions["draw:2D/line-flow-effect"]): void {
+  reset(
+    property?: keyof TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
+  ): void {
     if (property) {
       this._options[property] = this._initial[property] as never
       if (!this._omit.includes(property))
@@ -139,19 +138,21 @@ export class LineFlowEffect2D extends Node2D {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): TTypeNodeOptions["draw:2D/line-flow-effect"] {
+  toObject(): TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"] {
     return this._options
   }
 
   set(
-    property: keyof TTypeNodeOptions["draw:2D/line-flow-effect"],
+    property: keyof TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"],
     value: any
   ): void
-  set(properties: Partial<TTypeNodeOptions["draw:2D/line-flow-effect"]>): void
+  set(
+    properties: Partial<TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]>
+  ): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
       this._options[
-        property as keyof TTypeNodeOptions["draw:2D/line-flow-effect"]
+        property as keyof TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
       ] = value as never
       if (!this._omit.includes(property))
         this.getApp().drawer.updateNode(this.deep, "property", "deep", {
@@ -161,7 +162,7 @@ export class LineFlowEffect2D extends Node2D {
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
         this._options[
-          key as keyof TTypeNodeOptions["draw:2D/line-flow-effect"]
+          key as keyof TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
         ] = value as never
       }
       this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
@@ -175,8 +176,9 @@ export class LineFlowEffect2D extends Node2D {
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["draw:2D/line-flow-effect"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as LineFlowEffect2D
   }
@@ -205,7 +207,7 @@ export class LineFlowEffect2D extends Node2D {
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["draw:2D/line-flow-effect"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -215,7 +217,6 @@ export class LineFlowEffect2D extends Node2D {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

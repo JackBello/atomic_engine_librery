@@ -1,32 +1,15 @@
-import {
-  IBorder2D,
-  ICalculate,
-  IControlEdition2D,
-  ICoords2D,
-  INode2D,
-  IRectangle2D,
-  ISize2D
-} from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { ICalculate } from "../../../nodes/nodes-2d.types"
 
 export const control_edition_2D = (
   context: CanvasRenderingContext2D,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    IRectangle2D &
-    IBorder2D &
-    IControlEdition2D &
-    ICalculate
+  options: TTypeNodeOptionsContext2D["draw:2D/control-edition"] & ICalculate
 ) => {
   const { calculate } = options
 
-  context.translate(calculate.translate.x, calculate.translate.y)
-  context.rotate(calculate.rotation)
-
   context.globalCompositeOperation = "destination-over"
+
+  context.globalAlpha = options.opacity
 
   context.strokeStyle = options.borderColor
   context.lineWidth = options.borderWidth

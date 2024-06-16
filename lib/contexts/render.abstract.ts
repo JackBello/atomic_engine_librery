@@ -30,7 +30,13 @@ export abstract class AbstractRender {
 
   abstract draw(): void
 
-  protected abstract executeDrawEditor(node: INodeWorker): void
+  protected abstract executeDrawEditor(
+    node: INodeWorker,
+    parent: INodeWorker | undefined
+  ): void
 
-  protected abstract executeDrawGame(node: INodeWorker): void
+  protected abstract executeDrawGame(
+    node: INodeWorker,
+    parent: INodeWorker | undefined
+  ): void
 }

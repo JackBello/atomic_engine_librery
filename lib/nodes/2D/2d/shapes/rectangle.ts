@@ -4,21 +4,16 @@ import { DEFAULT_CONFIG_RECTANGLE_2D } from "../../../../configs/nodes/2D/shapes
 import { Node2D } from "../node"
 import { makerNodes2D } from "../../../maker-2d"
 import { INodeWorker, TExportNode, TTypeNode } from "../../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../../symbols"
 import { MethodExport, MethodExportWorker } from "../../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { omitKeys } from "@/utils/json"
 
 export class Rectangle2D extends Node2D {
   [PropType]: TAllDrawsContext = "draw:2D/rectangle"
 
-  protected _options: TTypeNodeOptions["draw:2D/rectangle"]
-  protected _initial: TTypeNodeOptions["draw:2D/rectangle"]
+  protected _options: TTypeNodeOptionsContext2D["draw:2D/rectangle"]
+  protected _initial: TTypeNodeOptionsContext2D["draw:2D/rectangle"]
 
   readonly NODE_NAME: TTypeNode = "Rectangle2D"
 
@@ -117,14 +112,16 @@ export class Rectangle2D extends Node2D {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["draw:2D/rectangle"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["draw:2D/rectangle"]>
+  ) {
     super({ ...DEFAULT_CONFIG_RECTANGLE_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_RECTANGLE_2D, ...options }
     this._options = { ...this._initial }
   }
 
-  reset(property?: keyof TTypeNodeOptions["draw:2D/rectangle"]): void {
+  reset(property?: keyof TTypeNodeOptionsContext2D["draw:2D/rectangle"]): void {
     if (property) {
       this._options[property] = this._initial[property] as never
       if (!this._omit.includes(property))
@@ -149,16 +146,20 @@ export class Rectangle2D extends Node2D {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): TTypeNodeOptions["draw:2D/rectangle"] {
+  toObject(): TTypeNodeOptionsContext2D["draw:2D/rectangle"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["draw:2D/rectangle"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["draw:2D/rectangle"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["draw:2D/rectangle"],
+    value: any
+  ): void
+  set(properties: Partial<TTypeNodeOptionsContext2D["draw:2D/rectangle"]>): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["draw:2D/rectangle"]] =
-        value as never
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["draw:2D/rectangle"]
+      ] = value as never
       if (!this._omit.includes(property))
         this.getApp().drawer.updateNode(this.deep, "property", "deep", {
           property,
@@ -166,8 +167,9 @@ export class Rectangle2D extends Node2D {
         })
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
-        this._options[key as keyof TTypeNodeOptions["draw:2D/rectangle"]] =
-          value as never
+        this._options[
+          key as keyof TTypeNodeOptionsContext2D["draw:2D/rectangle"]
+        ] = value as never
       }
       this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
         properties: omitKeys(properties, this._omit)
@@ -180,8 +182,9 @@ export class Rectangle2D extends Node2D {
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["draw:2D/rectangle"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["draw:2D/rectangle"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Rectangle2D
   }
@@ -210,7 +213,7 @@ export class Rectangle2D extends Node2D {
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["draw:2D/rectangle"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["draw:2D/rectangle"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -220,7 +223,6 @@ export class Rectangle2D extends Node2D {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

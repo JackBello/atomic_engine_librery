@@ -4,6 +4,7 @@ import {
   ICoords2D,
   ILineFlowEffect2D,
   INode2D,
+  IOpacity,
   IRectangle2D,
   ISelection2D,
   ISize2D,
@@ -38,7 +39,7 @@ export type TAllDrawsContext =
   | TDrawsContext3D
   | TDrawsContext2D
 
-export type TTypeNodeOptions = {
+export type TTypeNodeOptionsContext2D = {
   "canvas:save": undefined
   "canvas:restore": undefined
 
@@ -63,12 +64,14 @@ export type TTypeNodeOptions = {
 
   "primitive:2D/node": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D
 
   "draw:2D/rectangle": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D &
@@ -77,6 +80,7 @@ export type TTypeNodeOptions = {
 
   "draw:2D/text": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D &
@@ -85,6 +89,7 @@ export type TTypeNodeOptions = {
 
   "draw:2D/line-flow-effect": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D &
@@ -92,6 +97,7 @@ export type TTypeNodeOptions = {
 
   "draw:2D/selection": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D &
@@ -101,16 +107,11 @@ export type TTypeNodeOptions = {
 
   "draw:2D/control-edition": IControlEditor &
     IControlEdition &
+    IOpacity &
     ICoords2D &
     ISize2D &
     INode2D &
     IControlEdition2D &
     IRectangle2D &
     IBorder2D
-
-  "draw:3D/cube": {
-    x: number
-    y: number
-    z: number
-  }
 }

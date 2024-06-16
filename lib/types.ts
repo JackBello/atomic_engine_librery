@@ -63,7 +63,6 @@ export interface IOptionsAtomicEngine extends ISize2D {
   game: IOptionsGame
   fps: IOptionsFramePerSecond
   export: IOptionsExport
-  canvasMode: "worker" | "main-thread"
 }
 
 export interface IOptionsAtomicGame extends IOptionsGame {

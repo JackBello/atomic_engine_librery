@@ -36,6 +36,10 @@ const inputVelocity = document.querySelector(
   `[data-id="inputVelocity"]`
 ) as HTMLInputElement
 
+const inputRotation = document.querySelector(
+  `[data-id="input-rotation"]`
+) as HTMLInputElement
+
 const buttonToggleModeEdition = document.querySelector(
   `[data-id="buttonToggleModeEdition"]`
 ) as HTMLInputElement
@@ -69,8 +73,7 @@ const app = new AtomicEngine({
   },
   height: 600,
   width: 600,
-  selector: "[data-canvas]",
-  canvasMode: "worker"
+  selector: "[data-canvas]"
 })
 
 app.plugin(pluginPanAndZoom)
@@ -84,9 +87,11 @@ const rect1 = new Rectangle2D({
   background: "red",
   width: 100,
   height: 100,
-  x: 50,
-  y: 50,
-  name: "player"
+  x: 100,
+  y: 100,
+  name: "player",
+  scaleX: 0.5,
+  scaleY: 0.5
 })
 
 rect1.script = `
@@ -127,10 +132,10 @@ function _process() {
 `
 
 const lineFlow = new LineFlowEffect2D({
-  width: 300,
-  height: 300,
-  x: 50,
-  y: 50,
+  width: 200,
+  height: 200,
+  x: 0,
+  y: 0,
   color:
     "linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)",
   cellSize: 12,
@@ -152,7 +157,8 @@ function _process() {
 
 function _ready() {
   console.log("effect ready")
-}`
+}
+`
 
 rect1.addNode(lineFlow)
 lv1.addNode(rect1)
@@ -175,6 +181,12 @@ if (vx) {
     vx.value = Number(inputVelocity.value)
   }
 }
+
+inputRotation.value = rect1.rotation.toString()
+
+inputRotation.addEventListener("input", () => {
+  rect1.rotation = Number(inputRotation.value)
+})
 
 buttonToggleModeEdition.addEventListener("click", () => {
   app["pan-and-zoom"].toggleMode()

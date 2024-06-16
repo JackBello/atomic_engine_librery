@@ -17,16 +17,11 @@ import {
   TTypeOriginX,
   TTypeOriginY
 } from "../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../symbols"
 import { TEventGlobalNode, TEventNode2D } from "../../event.type"
 import { TFunction } from "../../../types"
 import { MethodExport, MethodExportWorker } from "../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { omitKeys } from "@/utils/json"
 
 export class Node2D
@@ -46,8 +41,8 @@ export class Node2D
     "title",
     "name"
   ]
-  protected _options: TTypeNodeOptions["primitive:2D/node"]
-  protected _initial: TTypeNodeOptions["primitive:2D/node"]
+  protected _options: TTypeNodeOptionsContext2D["primitive:2D/node"]
+  protected _initial: TTypeNodeOptionsContext2D["primitive:2D/node"]
 
   readonly NODE_NAME: TTypeNode = "Node2D"
 
@@ -65,6 +60,10 @@ export class Node2D
 
   get cursor() {
     return this._options.cursor
+  }
+
+  get opacity() {
+    return this._options.opacity
   }
 
   get x() {
@@ -175,6 +174,19 @@ export class Node2D
 
     this.getApp().drawer.updateNode(this.deep, "property", "deep", {
       property: "cursor",
+      value
+    })
+
+    this.getApp().drawer.reDraw()
+
+    this.getApp().changeGlobal("re-draw", true)
+  }
+
+  set opacity(value: number) {
+    this._options.opacity = value
+
+    this.getApp().drawer.updateNode(this.deep, "property", "deep", {
+      property: "opacity",
       value
     })
 
@@ -375,7 +387,9 @@ export class Node2D
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["primitive:2D/node"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["primitive:2D/node"]>
+  ) {
     super({ ...DEFAULT_CONFIG_NODE_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_NODE_2D, ...options }
@@ -468,19 +482,21 @@ export class Node2D
       translate: {
         x: 0,
         y: 0
+      },
+      scale: {
+        x: 0,
+        y: 0
       }
     }
 
-    if (this._parent && this._parent instanceof Node2D) {
-      calculate.translate = {
-        x: this._parent.x + this.x * scaleViewport,
-        y: this._parent.y + this.y * scaleViewport
-      }
-    } else {
-      calculate.translate = {
-        x: this.x * scaleViewport,
-        y: this.y * scaleViewport
-      }
+    calculate.scale = {
+      x: this.scaleX * scaleViewport,
+      y: this.scaleY * scaleViewport
+    }
+
+    calculate.translate = {
+      x: this.x * scaleViewport,
+      y: this.y * scaleViewport
     }
 
     calculate.rotation =
@@ -489,8 +505,8 @@ export class Node2D
         : this.rotation
 
     calculate.scaleFactor = {
-      width: this.width * this.scaleX * scaleViewport,
-      height: this.height * this.scaleY * scaleViewport
+      width: this.width * scaleViewport,
+      height: this.height * scaleViewport
     }
 
     calculate.middleScaleFactor = {
@@ -505,7 +521,7 @@ export class Node2D
     return this._events.addEventListener(event, callback)
   }
 
-  reset(property?: keyof TTypeNodeOptions["primitive:2D/node"]): void {
+  reset(property?: keyof TTypeNodeOptionsContext2D["primitive:2D/node"]): void {
     if (property) {
       this._options[property] = this._initial[property] as never
       if (!this._omit.includes(property))
@@ -530,16 +546,20 @@ export class Node2D
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): TTypeNodeOptions["primitive:2D/node"] {
+  toObject(): TTypeNodeOptionsContext2D["primitive:2D/node"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["primitive:2D/node"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["primitive:2D/node"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["primitive:2D/node"],
+    value: any
+  ): void
+  set(properties: Partial<TTypeNodeOptionsContext2D["primitive:2D/node"]>): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["primitive:2D/node"]] =
-        value as never
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["primitive:2D/node"]
+      ] = value as never
       if (!this._omit.includes(property))
         this.getApp().drawer.updateNode(this.deep, "property", "deep", {
           property,
@@ -547,8 +567,9 @@ export class Node2D
         })
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
-        this._options[key as keyof TTypeNodeOptions["primitive:2D/node"]] =
-          value as never
+        this._options[
+          key as keyof TTypeNodeOptionsContext2D["primitive:2D/node"]
+        ] = value as never
       }
 
       this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
@@ -562,8 +583,9 @@ export class Node2D
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["primitive:2D/node"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["primitive:2D/node"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Node2D
   }
@@ -592,7 +614,7 @@ export class Node2D
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["primitive:2D/node"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["primitive:2D/node"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -602,7 +624,6 @@ export class Node2D
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

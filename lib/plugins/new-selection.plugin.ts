@@ -12,8 +12,21 @@ const pluginSelection: TPlugin = {
       pan: { x: number; y: number },
       zoom: number
     ) {
-      node.x = mouseCoords.x - pan.x / zoom - startCoords.x
-      node.y = mouseCoords.y - pan.y / zoom - startCoords.y
+      // continuar con esto
+      const parentWidth = node.parent.width || 0
+      const parentHeight = node.parent.height || 0
+      const parentScaleX = node.parent.scaleX || 1
+      const parentScaleY = node.parent.scaleY || 1
+      const parentX = node.parent.x || 0
+      const parentY = node.parent.y || 0
+
+      const mouseCoordsAdjust = {
+        x: mouseCoords.x / parentScaleX,
+        y: mouseCoords.y / parentScaleY
+      }
+
+      node.x = mouseCoordsAdjust.x - pan.x / zoom - startCoords.x
+      node.y = mouseCoordsAdjust.y - pan.y / zoom - startCoords.y
     },
     moveNodeByKeyboard(
       node: any,

@@ -108,9 +108,11 @@ export class AtomicEngine {
     this.animation.setVelocityFrames(this.options.fps.velocity)
 
     this.scenes.emit("scene:change", () => {
-      this.script[MethodSetRootNode](this.scenes.currentScene)
+      if (this.scenes.currentScene) {
+        this.script[MethodSetRootNode](this.scenes.currentScene)
 
-      this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+        this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+      }
     })
 
     this.setSize(this._options.width, this._options.height)
@@ -247,9 +249,9 @@ export class AtomicEngine {
         }
       },
       stop: () => {
-        if (this.useGlobal("mode") === "preview") {
+        if (this.useGlobal("mode") === "preview" && this.$scenes.currentScene) {
           this._global.set("mode", "edition")
-          this.$scenes.reset()
+          this.$scenes.reset(this.$scenes.currentScene)
         }
       },
       pause: () => {

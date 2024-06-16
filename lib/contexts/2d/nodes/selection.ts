@@ -1,25 +1,11 @@
-import {
-  IBorder2D,
-  ICoords2D,
-  INode2D,
-  IRectangle2D,
-  ISelection2D,
-  ISize2D
-} from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { ICalculate } from "../../../nodes/nodes-2d.types"
 
 export const selection_2D = (
   context: CanvasRenderingContext2D,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    ISelection2D &
-    IRectangle2D &
-    IBorder2D
+  options: TTypeNodeOptionsContext2D["draw:2D/selection"] & ICalculate
 ) => {
-  context.save()
+  context.globalAlpha = options.opacity
 
   context.fillStyle = options.background
 
@@ -60,6 +46,4 @@ export const selection_2D = (
   options.border ? context.stroke() : 0
 
   context.closePath()
-
-  context.restore()
 }

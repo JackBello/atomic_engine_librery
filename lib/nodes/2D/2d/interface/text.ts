@@ -11,13 +11,13 @@ import { Node2D } from "../node"
 import { makerNodes2D } from "../../../maker-2d"
 import { DEFAULT_CONFIG_TEXT_2D } from "../../../../configs/nodes/2D/interface/text"
 import { MethodExport } from "../../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 
 export class Text2D extends Node2D {
   [PropType]: TAllDrawsContext = "draw:2D/text"
 
-  protected _options: TTypeNodeOptions["draw:2D/text"]
-  protected _initial: TTypeNodeOptions["draw:2D/text"]
+  protected _options: TTypeNodeOptionsContext2D["draw:2D/text"]
+  protected _initial: TTypeNodeOptionsContext2D["draw:2D/text"]
 
   readonly NODE_NAME: TTypeNode = "Text2D"
 
@@ -229,14 +229,14 @@ export class Text2D extends Node2D {
     this._options.color = value
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["draw:2D/text"]>) {
+  constructor(options?: Partial<TTypeNodeOptionsContext2D["draw:2D/text"]>) {
     super({ ...DEFAULT_CONFIG_TEXT_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_TEXT_2D, ...options }
     this._options = this._initial
   }
 
-  reset(property?: keyof TTypeNodeOptions["draw:2D/text"]): void {
+  reset(property?: keyof TTypeNodeOptionsContext2D["draw:2D/text"]): void {
     if (property) {
       this._options[property] = this._initial[property] as never
     } else {
@@ -244,26 +244,30 @@ export class Text2D extends Node2D {
     }
   }
 
-  toObject(): TTypeNodeOptions["draw:2D/text"] {
+  toObject(): TTypeNodeOptionsContext2D["draw:2D/text"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["draw:2D/text"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["draw:2D/text"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["draw:2D/text"],
+    value: any
+  ): void
+  set(properties: Partial<TTypeNodeOptionsContext2D["draw:2D/text"]>): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["draw:2D/text"]] =
-        value as never
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["draw:2D/text"]
+      ] = value as never
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
-        this._options[key as keyof TTypeNodeOptions["draw:2D/text"]] =
+        this._options[key as keyof TTypeNodeOptionsContext2D["draw:2D/text"]] =
           value as never
       }
     }
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["draw:2D/text"]> =
+    const structure: TExportNode<TTypeNodeOptionsContext2D["draw:2D/text"]> =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Text2D
@@ -271,7 +275,7 @@ export class Text2D extends Node2D {
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["draw:2D/text"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["draw:2D/text"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)

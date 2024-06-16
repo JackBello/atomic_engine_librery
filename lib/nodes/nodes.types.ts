@@ -27,12 +27,39 @@ export type TTypeNode = "PrimitiveNode" | TTypeNode2D | TTypeNode3D
 export type TSize = "px" | "em" | "pc" | "cm" | "rem" | "pt" | "inch" | "%"
 
 export type TCursorOptions =
+  | "auto"
   | "default"
   | "pointer"
-  | "not-allow"
-  | "move"
   | "grabbing"
   | "grab"
+  | "progress"
+  | "help"
+  | "wait"
+  | "cell"
+  | "crosshair"
+  | "text"
+  | "vertical-text"
+  | "alias"
+  | "copy"
+  | "move"
+  | "no-drop"
+  | "not-allowed"
+  | "all-scroll"
+  | "col-resize"
+  | "e-resize"
+  | "ew-resize"
+  | "n-resize"
+  | "ne-resize"
+  | "nesw-resize"
+  | "ns-resize"
+  | "nw-resize"
+  | "nwse-resize"
+  | "row-resize"
+  | "s-resize"
+  | "se-resize"
+  | "sw-resize"
+  | "w-resize"
+  | "none"
 
 export type TTypeGlobalFont =
   | "inherit"
@@ -63,7 +90,6 @@ export type TMetaKeyTuple = [string, TMetaKey]
 
 export type TExportNode<O> = {
   uuid: string
-  functions: TFunctionTuple[]
   attributes: TAttributeTuple[]
   metaKeys: TMetaKeyTuple[]
   type: TTypeNode | TTypeNode2D | TTypeNode3D

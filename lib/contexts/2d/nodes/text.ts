@@ -1,28 +1,11 @@
-import {
-  IBorder2D,
-  ICalculate,
-  ICoords2D,
-  INode2D,
-  ISize2D,
-  IText2D
-} from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { ICalculate } from "../../../nodes/nodes-2d.types"
 
 export const text_2D = (
   context: CanvasRenderingContext2D,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    IBorder2D &
-    IText2D &
-    ICalculate
+  options: TTypeNodeOptionsContext2D["draw:2D/text"] & ICalculate
 ) => {
-  const { calculate } = options
-
-  context.translate(calculate.translate.x, calculate.translate.y)
-  context.rotate(calculate.rotation)
+  context.globalAlpha = options.opacity
 
   context.fillStyle = options.color
   context.font = `${options.fontStretch ? options.fontStretch + " " : ""}${

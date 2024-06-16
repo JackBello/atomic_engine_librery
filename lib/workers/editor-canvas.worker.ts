@@ -53,26 +53,30 @@ const cursorNode = (
 ): TCursorOptions => {
   let cursor: TCursorOptions = "default"
 
-  for (let index = 0; index < nodes.length; index++) {
+  for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index]
 
     const coordsParent = parent
       ? {
-          x:
-            parent.options?.x +
-            (parent.options?.width * parent.options?.scaleX) / 2,
-          y:
-            parent.options?.y +
-            (parent.options?.height * parent.options?.scaleY) / 2,
+          x: parent.options?.x,
+          y: parent.options?.y,
           scaleX: parent.options?.scaleX,
-          scaleY: parent.options?.scaleY
+          scaleY: parent.options?.scaleY,
+          rotation: parent.options?.rotation
         }
       : {
           x: 0,
           y: 0,
           scaleX: 1,
-          scaleY: 1
+          scaleY: 1,
+          rotation: 0
         }
+
+    const globalX = node.options?.x * coordsParent.scaleX + coordsParent.x
+    const globalY = node.options?.y * coordsParent.scaleY + coordsParent.y
+    const globalScaleX = node.options?.scaleX * coordsParent.scaleX
+    const globalScaleY = node.options?.scaleY * coordsParent.scaleY
+    const globalRotation = node.options?.rotation + coordsParent.rotation
 
     if (
       node.options &&
@@ -83,18 +87,18 @@ const cursorNode = (
           y: 0
         },
         node: {
-          x: node.options.x + coordsParent.x,
-          y: node.options.y + coordsParent.y,
+          x: globalX,
+          y: globalY,
           width: node.options.width,
           height: node.options.height,
-          scaleX: node.options.scaleX * coordsParent.scaleX,
-          scaleY: node.options.scaleY * coordsParent.scaleY,
-          rotation: node.options.rotation
+          scaleX: globalScaleX,
+          scaleY: globalScaleY,
+          rotation: globalRotation
         },
         mouseCoords
       })
     ) {
-      cursor = "move"
+      cursor = node.options.cursor === "default" ? "move" : node.options.cursor
 
       break
     } else {
@@ -113,26 +117,30 @@ const selectNode = (
   let select: INodeWorker | undefined
   let minDistance = Number.MAX_VALUE
 
-  for (let index = 0; index < nodes.length; index++) {
+  for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index]
 
     const coordsParent = parent
       ? {
-          x:
-            parent.options?.x +
-            (parent.options?.width * parent.options?.scaleX) / 2,
-          y:
-            parent.options?.y +
-            (parent.options?.height * parent.options?.scaleY) / 2,
+          x: parent.options?.x,
+          y: parent.options?.y,
           scaleX: parent.options?.scaleX,
-          scaleY: parent.options?.scaleY
+          scaleY: parent.options?.scaleY,
+          rotation: parent.options?.rotation
         }
       : {
           x: 0,
           y: 0,
           scaleX: 1,
-          scaleY: 1
+          scaleY: 1,
+          rotation: 0
         }
+
+    const globalX = node.options?.x * coordsParent.scaleX + coordsParent.x
+    const globalY = node.options?.y * coordsParent.scaleY + coordsParent.y
+    const globalScaleX = node.options?.scaleX * coordsParent.scaleX
+    const globalScaleY = node.options?.scaleY * coordsParent.scaleY
+    const globalRotation = node.options?.rotation + coordsParent.rotation
 
     if (
       node.options &&
@@ -143,13 +151,13 @@ const selectNode = (
           y: 0
         },
         node: {
-          x: node.options.x + coordsParent.x,
-          y: node.options.y + coordsParent.y,
+          x: globalX,
+          y: globalY,
           width: node.options.width,
           height: node.options.height,
-          scaleX: node.options.scaleX * coordsParent.scaleX,
-          scaleY: node.options.scaleY * coordsParent.scaleY,
-          rotation: node.options.rotation
+          scaleX: globalScaleX,
+          scaleY: globalScaleY,
+          rotation: globalRotation
         },
         mouseCoords
       })
@@ -164,6 +172,10 @@ const selectNode = (
 
       if (distance < minDistance) {
         minDistance = distance
+      }
+
+      if (node.options.lock) {
+        break
       }
 
       select = node

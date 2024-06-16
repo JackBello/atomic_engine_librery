@@ -3,14 +3,9 @@ import JSON5 from "json5"
 import { makerNodes2D } from "../../maker-2d"
 import { PrimitiveNode } from "../../@global/primitive-node"
 import { INodeWorker, TExportNode, TTypeNode } from "../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../symbols"
 import { MethodExport, MethodExportWorker } from "../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { omitKeys } from "@/utils/json"
 
 export class Scene2D extends PrimitiveNode {
@@ -18,11 +13,15 @@ export class Scene2D extends PrimitiveNode {
 
   readonly NODE_NAME: TTypeNode = "Scene2D"
 
-  constructor(options?: Partial<TTypeNodeOptions["primitive:2D/scene"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["primitive:2D/scene"]>
+  ) {
     super(options)
   }
 
-  reset(property?: keyof TTypeNodeOptions["primitive:2D/scene"]): void {
+  reset(
+    property?: keyof TTypeNodeOptionsContext2D["primitive:2D/scene"]
+  ): void {
     if (property) {
       this._options[property] = this._initial[property]
       if (!this._omit.includes(property))
@@ -42,16 +41,22 @@ export class Scene2D extends PrimitiveNode {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): TTypeNodeOptions["primitive:2D/scene"] {
+  toObject(): TTypeNodeOptionsContext2D["primitive:2D/scene"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["primitive:2D/scene"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["primitive:2D/scene"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["primitive:2D/scene"],
+    value: any
+  ): void
+  set(
+    properties: Partial<TTypeNodeOptionsContext2D["primitive:2D/scene"]>
+  ): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["primitive:2D/scene"]] =
-        value as any
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["primitive:2D/scene"]
+      ] = value as any
       if (!this._omit.includes(property))
         this.getApp().drawer.updateNode(this.deep, "property", "deep", {
           property,
@@ -59,8 +64,9 @@ export class Scene2D extends PrimitiveNode {
         })
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this.properties)) {
-        this._options[key as keyof TTypeNodeOptions["primitive:2D/scene"]] =
-          value as any
+        this._options[
+          key as keyof TTypeNodeOptionsContext2D["primitive:2D/scene"]
+        ] = value as any
       }
       this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
         properties: omitKeys(properties, this._omit)
@@ -73,8 +79,9 @@ export class Scene2D extends PrimitiveNode {
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["primitive:2D/scene"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["primitive:2D/scene"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Scene2D
   }
@@ -98,7 +105,7 @@ export class Scene2D extends PrimitiveNode {
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["primitive:2D/scene"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["primitive:2D/scene"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -108,7 +115,6 @@ export class Scene2D extends PrimitiveNode {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

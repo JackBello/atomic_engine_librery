@@ -39,15 +39,15 @@ import {
   MethodExport,
   MethodExportWorker
 } from "../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { AtomicEngine } from "@/atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 import { omitKeys } from "@/utils/json"
 
 export class PrimitiveNode extends AbstractNode implements IHandleNodes {
   protected _omit: string[] = ["name", "description"]
-  protected _options: TTypeNodeOptions["primitive:node"]
-  protected _initial: TTypeNodeOptions["primitive:node"]
+  protected _options: TTypeNodeOptionsContext2D["primitive:node"]
+  protected _initial: TTypeNodeOptionsContext2D["primitive:node"]
   protected _events: EventObserver
   protected _parent: PrimitiveNode | null
   protected _uuid: string
@@ -138,7 +138,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["primitive:node"]>) {
+  constructor(options?: Partial<TTypeNodeOptionsContext2D["primitive:node"]>) {
     super()
 
     this._initial = {
@@ -457,7 +457,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     return this._events.addEventListener(event, callback)
   }
 
-  reset(property?: keyof TTypeNodeOptions["primitive:node"]): void {
+  reset(property?: keyof TTypeNodeOptionsContext2D["primitive:node"]): void {
     if (property) {
       this._options[property] = this._initial[property]
       if (!this._omit.includes(property))
@@ -477,16 +477,20 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  toObject(): TTypeNodeOptions["primitive:node"] {
+  toObject(): TTypeNodeOptionsContext2D["primitive:node"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["primitive:node"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["primitive:node"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["primitive:node"],
+    value: any
+  ): void
+  set(properties: Partial<TTypeNodeOptionsContext2D["primitive:node"]>): void
   set(property?: unknown, value?: unknown, properties?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["primitive:node"]] =
-        value as any
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["primitive:node"]
+      ] = value as any
 
       if (!this._omit.includes(property))
         this.getApp().drawer.updateNode(this.deep, "property", "deep", {
@@ -495,8 +499,9 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
         })
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this.properties)) {
-        this._options[key as keyof TTypeNodeOptions["primitive:node"]] =
-          value as any
+        this._options[
+          key as keyof TTypeNodeOptionsContext2D["primitive:node"]
+        ] = value as any
       }
       this.getApp().drawer.updateNode(this.deep, "properties", "deep", {
         properties: omitKeys(properties, this._omit)
@@ -515,7 +520,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["primitive:node"]> =
+    const structure: TExportNode<TTypeNodeOptionsContext2D["primitive:node"]> =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as PrimitiveNode
@@ -596,7 +601,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["primitive:node"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["primitive:node"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -606,7 +611,6 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

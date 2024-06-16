@@ -1,7 +1,8 @@
-import { TTypeNodeOptions } from "@/workers/types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
 
-export const DEFAULT_CONFIG_SELECTION_2D: TTypeNodeOptions["draw:2D/selection"] =
+export const DEFAULT_CONFIG_SELECTION_2D: TTypeNodeOptionsContext2D["draw:2D/selection"] =
   {
+    opacity: 1,
     background: "#000",
     border: true,
     borderColor: "#eee",

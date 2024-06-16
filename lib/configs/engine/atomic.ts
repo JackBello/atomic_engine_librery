@@ -30,6 +30,5 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsAtomicEngine = {
     exclude: [],
     format: "JSON",
     include: []
-  },
-  canvasMode: "main-thread"
+  }
 }

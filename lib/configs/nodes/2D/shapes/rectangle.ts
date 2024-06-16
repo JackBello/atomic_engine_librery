@@ -1,7 +1,8 @@
-import { TTypeNodeOptions } from "@/workers/types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
 
-export const DEFAULT_CONFIG_RECTANGLE_2D: TTypeNodeOptions["draw:2D/rectangle"] =
+export const DEFAULT_CONFIG_RECTANGLE_2D: TTypeNodeOptionsContext2D["draw:2D/rectangle"] =
   {
+    opacity: 1,
     rotation: 0,
     cursor: "default",
     height: 100,

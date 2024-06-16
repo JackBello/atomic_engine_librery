@@ -140,9 +140,11 @@ export class AtomicGame {
     )
 
     this.scenes.emit("scene:change", () => {
-      this.script[MethodSetRootNode](this.scenes.currentScene)
+      if (this.scenes.currentScene) {
+        this.script[MethodSetRootNode](this.scenes.currentScene)
 
-      this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+        this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+      }
     })
 
     const scenes = makerNodes2D(structure.scenes)

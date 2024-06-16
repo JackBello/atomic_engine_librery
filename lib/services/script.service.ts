@@ -1,7 +1,7 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
 import { nodeIsInEditor, nodeIsInViewport } from "@/utils/nodes"
-import { AtomicEngine, AtomicGame } from ".."
+import { AtomicEngine, AtomicGame, Scene2D } from ".."
 import { PropType } from "@/nodes/symbols"
 import {
   MethodDispatchEvent,
@@ -16,7 +16,7 @@ import { TFunction } from "@/types"
 export class ScriptService {
   private $app: AtomicEngine | AtomicGame
 
-  protected root_node!: any
+  protected root_node!: Scene2D
 
   protected _events: EventObserver = new EventObserver()
 
@@ -57,32 +57,14 @@ export class ScriptService {
   ) {
     const app = this.$app as AtomicEngine
     const mode = app.useGlobal("mode") === "preview"
-    const panAndZoomConfig = app.use("@config/pan-and-zoom")
-    const pan = panAndZoomConfig?.pan ?? { x: 0, y: 0 }
-    const zoom = panAndZoomConfig?.zoom ?? 1
 
     const _draw = node.getFunction("_draw")
     const _process = node.getFunction("_process")
 
     if (node && node?.visible && mode && _process) await _process(animation)
 
-    if (
-      nodeIsInEditor(
-        node,
-        {
-          height: app.options.width,
-          width: app.options.height
-        },
-        pan,
-        zoom
-      ) &&
-      node &&
-      node[PropType].startsWith("draw:2D") &&
-      mode &&
-      _draw
-    ) {
+    if (node && node[PropType].startsWith("draw:2D") && mode && _draw)
       await _draw()
-    }
 
     if (node.nodes.length > 0)
       for (const child of node.nodes) {
@@ -94,24 +76,12 @@ export class ScriptService {
     node: any,
     animation: { timestamp: number; deltaTime: number }
   ) {
-    const app = this.$app as AtomicGame
-
     const _draw = node.getFunction("_draw")
     const _process = node.getFunction("_process")
 
     if (node && node?.visible && _process) await _process(animation)
 
-    if (
-      nodeIsInViewport(node, {
-        x: 0,
-        y: 0,
-        height: app.options.viewport.height,
-        width: app.options.viewport.width
-      }) &&
-      node &&
-      node[PropType].startsWith("draw:2D") &&
-      _draw
-    ) {
+    if (node && node[PropType].startsWith("draw:2D") && _draw) {
       await _draw()
     }
 
@@ -148,7 +118,7 @@ export class ScriptService {
     this._events.addEventListener(name, callback)
   }
 
-  [MethodSetRootNode](root: any) {
+  [MethodSetRootNode](root: Scene2D) {
     this.root_node = root
   }
 

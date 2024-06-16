@@ -1,23 +1,18 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
 import { TExportNode, TTypeNode } from "../../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../../symbols"
 import { Node2D } from "../node"
 import { makerNodes2D } from "../../../maker-2d"
 import { MethodExport } from "../../../../symbols"
 import { DEFAULT_CONFIG_CONTROL_EDITION_2D } from "../../../../configs/nodes/2D/edition/control-edition"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 
 export class ControlEdition2D extends Node2D {
   [PropType]: TAllDrawsContext = "draw:2D/control-edition"
 
-  protected _options: TTypeNodeOptions["draw:2D/control-edition"]
-  protected _initial: TTypeNodeOptions["draw:2D/control-edition"]
+  protected _options: TTypeNodeOptionsContext2D["draw:2D/control-edition"]
+  protected _initial: TTypeNodeOptionsContext2D["draw:2D/control-edition"]
 
   readonly NODE_NAME: TTypeNode = "ControlEdition2D"
 
@@ -135,14 +130,18 @@ export class ControlEdition2D extends Node2D {
     this._options.borderWidth = value
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["draw:2D/control-edition"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["draw:2D/control-edition"]>
+  ) {
     super({ ...DEFAULT_CONFIG_CONTROL_EDITION_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_CONTROL_EDITION_2D, ...options }
     this._options = this._initial
   }
 
-  reset(property?: keyof TTypeNodeOptions["draw:2D/control-edition"]): void {
+  reset(
+    property?: keyof TTypeNodeOptionsContext2D["draw:2D/control-edition"]
+  ): void {
     if (property) {
       this._options[property] = this._initial[property] as never
     } else {
@@ -150,39 +149,42 @@ export class ControlEdition2D extends Node2D {
     }
   }
 
-  toObject(): TTypeNodeOptions["draw:2D/control-edition"] {
+  toObject(): TTypeNodeOptionsContext2D["draw:2D/control-edition"] {
     return this._options
   }
 
   set(
-    property: keyof TTypeNodeOptions["draw:2D/control-edition"],
+    property: keyof TTypeNodeOptionsContext2D["draw:2D/control-edition"],
     value: any
   ): void
-  set(properties: Partial<TTypeNodeOptions["draw:2D/control-edition"]>): void
+  set(
+    properties: Partial<TTypeNodeOptionsContext2D["draw:2D/control-edition"]>
+  ): void
   set(properties?: unknown, value?: unknown, property?: unknown): void {
     if (property && typeof property === "string" && value) {
       this._options[
-        property as keyof TTypeNodeOptions["draw:2D/control-edition"]
+        property as keyof TTypeNodeOptionsContext2D["draw:2D/control-edition"]
       ] = value as never
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
         this._options[
-          key as keyof TTypeNodeOptions["draw:2D/control-edition"]
+          key as keyof TTypeNodeOptionsContext2D["draw:2D/control-edition"]
         ] = value as never
       }
     }
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["draw:2D/control-edition"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["draw:2D/control-edition"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as ControlEdition2D
   }
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["draw:2D/control-edition"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["draw:2D/control-edition"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -192,7 +194,6 @@ export class ControlEdition2D extends Node2D {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

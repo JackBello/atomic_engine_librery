@@ -13,12 +13,13 @@ import {
 import { AtomicEngine } from "../atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 import { AbstractNode } from "@/nodes/abstract/node.abstract"
+import { PrimitiveNode, Scene2D } from "@/nodes"
 
 export class SceneService {
   private $app: AtomicEngine | AtomicGame
 
   protected _scenes = new Map<string, any>()
-  protected _scene?: any
+  protected _scene?: Scene2D
   protected _events: EventObserver = new EventObserver()
 
   constructor(app: AtomicEngine | AtomicGame) {
@@ -38,9 +39,10 @@ export class SceneService {
     return this._scenes.get(uuid)
   }
 
-  add(...scenes: any[]) {
+  add(...scenes: Scene2D[]) {
     for (let scene of scenes) {
-      this._scenes.set(scene.uuid, scene)
+      if (scene instanceof Scene2D) this._scenes.set(scene.uuid, scene)
+      else throw new Error("this instance is not a scene")
     }
 
     this[MethodDispatchEvent]("scene:add", scenes)
@@ -60,7 +62,7 @@ export class SceneService {
     this[MethodDispatchEvent]("scene:change", uuid)
   }
 
-  reset(node: any = this._scene) {
+  reset(node: PrimitiveNode) {
     if (node) {
       node.reset()
 

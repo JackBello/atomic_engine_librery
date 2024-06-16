@@ -1,17 +1,12 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
 import { TExportNode, TTypeNode } from "../../../nodes.types"
-import {
-  PropType,
-  PropAttributes,
-  PropFunctions,
-  PropMetaKeys
-} from "../../../symbols"
+import { PropType, PropAttributes, PropMetaKeys } from "../../../symbols"
 import { Node2D } from "../node"
 import { makerNodes2D } from "../../../maker-2d"
 import { DEFAULT_CONFIG_SELECTION_2D } from "../../../../configs/nodes/2D/edition/selection"
 import { MethodDispatchEvent, MethodExport } from "../../../../symbols"
-import { TAllDrawsContext, TTypeNodeOptions } from "@/workers/types"
+import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { TFunction } from "@/types"
 import {
   TEventGlobalNode,
@@ -22,8 +17,8 @@ import {
 export class Selection2D extends Node2D {
   [PropType]: TAllDrawsContext = "draw:2D/selection"
 
-  protected _options: TTypeNodeOptions["draw:2D/selection"]
-  protected _initial: TTypeNodeOptions["draw:2D/selection"]
+  protected _options: TTypeNodeOptionsContext2D["draw:2D/selection"]
+  protected _initial: TTypeNodeOptionsContext2D["draw:2D/selection"]
 
   protected _selectedNodes: Set<Node2D> = new Set()
 
@@ -121,7 +116,9 @@ export class Selection2D extends Node2D {
     this._options.borderWidth = value
   }
 
-  constructor(options?: Partial<TTypeNodeOptions["draw:2D/selection"]>) {
+  constructor(
+    options?: Partial<TTypeNodeOptionsContext2D["draw:2D/selection"]>
+  ) {
     super({ ...DEFAULT_CONFIG_SELECTION_2D, ...options })
 
     this._initial = { ...DEFAULT_CONFIG_SELECTION_2D, ...options }
@@ -147,7 +144,7 @@ export class Selection2D extends Node2D {
     return this._events.addEventListener(event, callback)
   }
 
-  reset(property?: keyof TTypeNodeOptions["draw:2D/selection"]): void {
+  reset(property?: keyof TTypeNodeOptionsContext2D["draw:2D/selection"]): void {
     if (property) {
       this._options[property] = this._initial[property] as never
     } else {
@@ -155,34 +152,40 @@ export class Selection2D extends Node2D {
     }
   }
 
-  toObject(): TTypeNodeOptions["draw:2D/selection"] {
+  toObject(): TTypeNodeOptionsContext2D["draw:2D/selection"] {
     return this._options
   }
 
-  set(property: keyof TTypeNodeOptions["draw:2D/selection"], value: any): void
-  set(properties: Partial<TTypeNodeOptions["draw:2D/selection"]>): void
+  set(
+    property: keyof TTypeNodeOptionsContext2D["draw:2D/selection"],
+    value: any
+  ): void
+  set(properties: Partial<TTypeNodeOptionsContext2D["draw:2D/selection"]>): void
   set(properties?: unknown, value?: unknown, property?: unknown): void {
     if (property && typeof property === "string" && value) {
-      this._options[property as keyof TTypeNodeOptions["draw:2D/selection"]] =
-        value as never
+      this._options[
+        property as keyof TTypeNodeOptionsContext2D["draw:2D/selection"]
+      ] = value as never
     } else if (typeof properties !== "string") {
       for (const [key, value] of Object.entries(this._initial)) {
-        this._options[key as keyof TTypeNodeOptions["draw:2D/selection"]] =
-          value as never
+        this._options[
+          key as keyof TTypeNodeOptionsContext2D["draw:2D/selection"]
+        ] = value as never
       }
     }
   }
 
   static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TTypeNodeOptions["draw:2D/selection"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+    const structure: TExportNode<
+      TTypeNodeOptionsContext2D["draw:2D/selection"]
+    > = format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
     return makerNodes2D([structure])[0] as Selection2D
   }
 
   [MethodExport](
     childNode: boolean = true
-  ): TExportNode<TTypeNodeOptions["draw:2D/selection"]> {
+  ): TExportNode<TTypeNodeOptionsContext2D["draw:2D/selection"]> {
     const nodes: TExportNode<any>[] = []
 
     if (childNode && this.nodes.length)
@@ -192,7 +195,6 @@ export class Selection2D extends Node2D {
 
     return {
       uuid: this._uuid,
-      functions: [...this[PropFunctions].entries()],
       attributes: [...this[PropAttributes].entries()],
       metaKeys: [...this[PropMetaKeys].entries()],
       type: this.NODE_NAME,

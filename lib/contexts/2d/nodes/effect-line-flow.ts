@@ -1,27 +1,14 @@
-import {
-  ICalculate,
-  ICoords2D,
-  ILineFlowEffect2D,
-  INode2D,
-  ISize2D
-} from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { ICalculate } from "../../../nodes/nodes-2d.types"
 import { validColor } from "../functions"
 
 export const effect_line_flow_2D = (
   context: CanvasRenderingContext2D,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    ILineFlowEffect2D &
-    ICalculate
+  options: TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"] & ICalculate
 ) => {
   const { calculate } = options
 
-  context.translate(calculate.translate.x, calculate.translate.y)
-  context.rotate(calculate.rotation)
+  context.globalAlpha = options.opacity
 
   context.lineWidth = options.lineWidth
   context.strokeStyle = validColor(options.color, context, {
@@ -29,14 +16,23 @@ export const effect_line_flow_2D = (
     height: options.height
   })
 
-  for (let y = 0; y < options.height; y += options.cellSize) {
-    for (let x = 0; x < options.width; x += options.cellSize) {
-      const angle = (Math.cos(x * 0.01) + Math.sin(y * 0.01)) * options.radius
+  for (
+    let row = -calculate.middleScaleFactor.height;
+    row < calculate.middleScaleFactor.height;
+    row += options.cellSize
+  ) {
+    for (
+      let column = -calculate.middleScaleFactor.width;
+      column < calculate.middleScaleFactor.width;
+      column += options.cellSize
+    ) {
       context.beginPath()
-      context.moveTo(x, y)
+      const angle =
+        (Math.cos(column * 0.01) + Math.sin(row * 0.01)) * options.radius
+      context.moveTo(column, row)
       context.lineTo(
-        x + Math.cos(angle) * options.spacing,
-        y + Math.sin(angle) * options.spacing
+        column + Math.cos(angle) * options.spacing,
+        row + Math.sin(angle) * options.spacing
       )
       context.stroke()
     }

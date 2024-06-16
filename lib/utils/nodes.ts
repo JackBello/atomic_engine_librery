@@ -1,5 +1,10 @@
 export function nodeIsInViewport(
-  node: any,
+  node: {
+    width: number
+    height: number
+    x: number
+    y: number
+  },
   viewport: { x: number; y: number; width: number; height: number }
 ) {
   return (
@@ -11,7 +16,14 @@ export function nodeIsInViewport(
 }
 
 export function nodeIsInEditor(
-  node: any,
+  node: {
+    width: number
+    height: number
+    x: number
+    y: number
+    scaleX: number
+    scaleY: number
+  },
   size: { width: number; height: number },
   pan?: { x: number; y: number },
   zoom?: number
