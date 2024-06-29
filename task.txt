@@ -1,6 +1,16 @@
-1- add all formats export & import
+- add all formats export & import
   JSON5: Fácil de usar en JavaScript nativo, buen rendimiento.
   YAML: Más legible para configuraciones complejas, requiere js-yaml.
   XML: Verboso, pero bien soportado en navegadores.
   INI: Simple y legible, requiere ini para analizar.
   TOML: Más estructurado que INI, fácil de leer, requiere toml-js.
+
+- calcular todas las transformaciones de padre a hijo
+
+- calcular las colisiones para luego hacer un motor de colisiones + motor de fisicas
+
+- optimizar funciones para que sean reutilizables
+
+- calcular las transformaciones para el mouse en caso de hijos
+
+- agregar el resto de nodos
