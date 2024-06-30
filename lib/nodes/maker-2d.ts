@@ -7,13 +7,13 @@ import {
   MethodSetUUID
 } from "./symbols"
 import { PrimitiveNode } from "./@global/primitive-node"
-import { Node2D } from "./2D/2d/node"
-import { Scene2D } from "./2D/2d/scene"
-import { Rectangle2D } from "./2D/2d/shapes/rectangle"
-import { Selection2D } from "./2D/2d/edition/selection"
-import { LineFlowEffect2D } from "./2D/2d/effects/line-flow-effect"
-import { Text2D } from "./2D/2d/interface/text"
-import { ControlEdition2D } from "./2D/2d/edition/control-edition"
+import { Node2D } from "./context/2d/class/2D/node"
+import { Scene2D } from "./context/2d/class/2D/scene"
+import { Rectangle2D } from "./context/2d/class/2D/shapes/rectangle"
+import { Selection2D } from "./context/2d/class/2D/edition/selection"
+import { LineFlowEffect2D } from "./context/2d/class/2D/effects/line-flow-effect"
+import { Text2D } from "./context/2d/class/2D/window-ui/text"
+import { ControlEdition2D } from "./context/2d/class/2D/edition/control-edition"
 
 const allNodes: Record<string, any> = {
   PrimitiveNode,

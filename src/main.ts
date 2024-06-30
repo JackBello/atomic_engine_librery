@@ -90,8 +90,8 @@ const rect1 = new Rectangle2D({
   x: 100,
   y: 100,
   name: "player",
-  scaleX: 0.5,
-  scaleY: 0.5
+  scaleX: 1,
+  scaleY: 1
 })
 
 rect1.script = `

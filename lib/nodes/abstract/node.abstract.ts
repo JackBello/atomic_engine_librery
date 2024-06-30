@@ -1,10 +1,14 @@
 import { TFunction } from "../../types"
 import {
-  IHandleAttributes,
-  IHandleFunctions,
+  IHandleAttribute,
+  IHandleComponent,
+  IHandleFunction,
   IHandleMetaKey,
+  IHandleNode,
   TAttribute,
   TAttributeTuple,
+  TComponent,
+  TComponentTuple,
   TFunctionTuple,
   TMetaKey,
   TMetaKeyTuple
@@ -19,9 +23,13 @@ import {
   PropType,
   PropAttributes,
   PropFunctions,
-  PropMetaKeys
+  PropMetaKeys,
+  PropNodes,
+  MethodSetNodes,
+  PropComponents,
+  MethodSetComponents
 } from "../symbols"
-import EventObserver from "../../utils/observer"
+import EventObserver from "../../app/utils/observer"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
@@ -34,7 +42,12 @@ import { AtomicEngine } from "@/atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 
 export abstract class AbstractNode
-  implements IHandleFunctions, IHandleAttributes, IHandleMetaKey
+  implements
+    IHandleNode,
+    IHandleFunction,
+    IHandleAttribute,
+    IHandleMetaKey,
+    IHandleComponent
 {
   [key: string]: any
 
@@ -54,14 +67,42 @@ export abstract class AbstractNode
 
   abstract script: string | URL | null;
 
+  abstract [PropNodes]: any[];
   abstract [PropFunctions]: Map<string, TFunction>;
   abstract [PropAttributes]: Map<string, TAttribute>;
-  abstract [PropMetaKeys]: Map<string, TMetaKey>
+  abstract [PropMetaKeys]: Map<string, TMetaKey>;
+  abstract [PropComponents]: Map<string, TComponent>
 
-  abstract get parent(): any
+  abstract get nodes(): any | null
+  abstract get parentNode(): any | null
+  abstract get firstNode(): any | null
+  abstract get lastNode(): any | null
+  abstract get nextSiblingNode(): any | null
+  abstract get previousSiblingNode(): any | null
+  abstract get nextSiblingsNode(): any[] | null
+  abstract get previousSiblingsNode(): any[] | null
+
   abstract get uuid(): string
   abstract get index(): number
   abstract get deep(): string
+
+  abstract cloneNode(): any
+
+  abstract getNode(uuid: string): any | undefined
+
+  abstract addNode(...nodes: any[]): void
+
+  abstract hasNode(uuid: string): boolean
+
+  abstract deleteNode(uuid: string): boolean
+
+  abstract clearNodes(): void
+
+  abstract replaceNode(uuid: string, node: any): void
+
+  abstract searchNode(uuid: string): any | undefined
+
+  abstract moveNode(uuid: string, to: number): void
 
   abstract getFunctions(): TFunction[]
 
@@ -101,6 +142,18 @@ export abstract class AbstractNode
 
   abstract clearMetaKeys(): void
 
+  abstract getComponents(): TComponent[]
+
+  abstract getComponent(name: string): TComponent | undefined
+
+  abstract addComponent(name: string, component: TComponent): void
+
+  abstract hasComponent(name: string): boolean
+
+  abstract deleteComponent(name: string): boolean
+
+  abstract clearComponents(): void
+
   abstract emit(event: any, callback: TFunction): void
 
   abstract reset(): void
@@ -128,11 +181,15 @@ export abstract class AbstractNode
 
   abstract [MethodSetIndex](index: number): void
 
+  abstract [MethodSetNodes](nodes: any[]): void
+
   abstract [MethodSetFunctions](functions: TFunctionTuple[]): void
 
   abstract [MethodSetAttributes](attributes: TAttributeTuple[]): void
 
   abstract [MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void
+
+  abstract [MethodSetComponents](components: TComponentTuple[]): void
 
   abstract [MethodDispatchEvent](event: any, ...args: any[]): void
 

@@ -11,7 +11,7 @@ import {
   searchNode,
   updatePropertiesNode,
   updatePropertyNode
-} from "@/utils/nodes"
+} from "@/app/utils/nodes"
 
 let root: INodeWorker[] = []
 

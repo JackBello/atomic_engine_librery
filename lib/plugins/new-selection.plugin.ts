@@ -1,4 +1,4 @@
-import { getNodeByDeep } from "@/utils/nodes"
+import { getNodeByDeep } from "@/app/utils/nodes"
 import { TPlugin } from "./types"
 
 const pluginSelection: TPlugin = {
@@ -13,20 +13,20 @@ const pluginSelection: TPlugin = {
       zoom: number
     ) {
       // continuar con esto
-      const parentWidth = node.parent.width || 0
-      const parentHeight = node.parent.height || 0
-      const parentScaleX = node.parent.scaleX || 1
-      const parentScaleY = node.parent.scaleY || 1
-      const parentX = node.parent.x || 0
-      const parentY = node.parent.y || 0
+      // const parentWidth = node.parentNode.width || 0
+      // const parentHeight = node.parentNode.height || 0
+      // const parentScaleX = node.parentNode.scaleX || 1
+      // const parentScaleY = node.parentNode.scaleY || 1
+      // const parentX = node.parentNode.x || 0
+      // const parentY = node.parentNode.y || 0
 
-      const mouseCoordsAdjust = {
-        x: mouseCoords.x / parentScaleX,
-        y: mouseCoords.y / parentScaleY
-      }
+      // const mouseCoordsAdjust = {
+      //   x: mouseCoords.x / parentScaleX,
+      //   y: mouseCoords.y / parentScaleY
+      // }
 
-      node.x = mouseCoordsAdjust.x - pan.x / zoom - startCoords.x
-      node.y = mouseCoordsAdjust.y - pan.y / zoom - startCoords.y
+      node.x = mouseCoords.x - pan.x / zoom - startCoords.x
+      node.y = mouseCoords.y - pan.y / zoom - startCoords.y
     },
     moveNodeByKeyboard(
       node: any,

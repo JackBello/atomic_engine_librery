@@ -2,10 +2,11 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { AbstractNode } from "../abstract/node.abstract"
 import {
-  IHandleNodes,
   INodeWorker,
   TAttribute,
   TAttributeTuple,
+  TComponent,
+  TComponentTuple,
   TExportNode,
   TFunctionTuple,
   TMetaKey,
@@ -24,13 +25,15 @@ import {
   PropAttributes,
   PropFunctions,
   PropMetaKeys,
-  PropNodes
+  PropNodes,
+  PropComponents,
+  MethodSetComponents
 } from "../symbols"
 import { makerNodes2D } from "../maker-2d"
 import { TFunction } from "../../types"
-import EventObserver from "../../utils/observer"
+import EventObserver from "../../app/utils/observer"
 import { v4 } from "@lukeed/uuid"
-import { handleScript } from "../../utils/script"
+import { handleScript } from "../../app/utils/script"
 import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "../../configs/nodes/@global/node"
 import { TEventGlobalNode } from "../event.type"
 import {
@@ -42,9 +45,9 @@ import {
 import { TAllDrawsContext, TTypeNodeOptionsContext2D } from "@/workers/types"
 import { AtomicEngine } from "@/atomic-engine"
 import { AtomicGame } from "@/atomic-game"
-import { omitKeys } from "@/utils/json"
+import { omitKeys } from "@/app/utils/json"
 
-export class PrimitiveNode extends AbstractNode implements IHandleNodes {
+export class PrimitiveNode extends AbstractNode {
   protected _omit: string[] = ["name", "description"]
   protected _options: TTypeNodeOptionsContext2D["primitive:node"]
   protected _initial: TTypeNodeOptionsContext2D["primitive:node"]
@@ -62,34 +65,47 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
   [PropNodes]: PrimitiveNode[];
   [PropFunctions]: Map<string, TFunction>;
   [PropAttributes]: Map<string, TAttribute>;
-  [PropMetaKeys]: Map<string, TMetaKey>
+  [PropMetaKeys]: Map<string, TMetaKey>;
+  [PropComponents]: Map<string, TComponent>
 
   get nodes(): PrimitiveNode[] {
     return this[PropNodes]
   }
 
-  get firstNode(): PrimitiveNode | undefined {
-    if (this._parent) return this._parent.nodes[0]
-    else return undefined
-  }
-
-  get lastNode(): PrimitiveNode | undefined {
-    if (this._parent) return this._parent.nodes[this._parent.nodes.length - 1]
-    else return undefined
-  }
-
-  get nextSiblingNode(): PrimitiveNode | undefined {
-    if (this._parent) return this._parent.nodes[this.index + 1]
-    else return undefined
-  }
-
-  get previousSiblingNode(): PrimitiveNode | undefined {
-    if (this._parent) return this._parent.nodes[this.index - 1]
-    else return undefined
-  }
-
-  get parent(): PrimitiveNode | null {
+  get parentNode(): PrimitiveNode | null {
     return this._parent
+  }
+
+  get firstNode(): PrimitiveNode | null {
+    if (this._parent) return this._parent.nodes[0]
+    else return null
+  }
+
+  get lastNode(): PrimitiveNode | null {
+    if (this._parent) return this._parent.nodes[this._parent.nodes.length - 1]
+    else return null
+  }
+
+  get nextSiblingNode(): PrimitiveNode | null {
+    if (this._parent) return this._parent.nodes[this.index + 1]
+    else return null
+  }
+
+  get previousSiblingNode(): PrimitiveNode | null {
+    if (this._parent) return this._parent.nodes[this.index - 1]
+    else return null
+  }
+
+  get nextSiblingsNode(): PrimitiveNode[] | null {
+    if (this._parent)
+      return this._parent.nodes.filter((node) => node.index > this.index)
+    else return null
+  }
+
+  get previousSiblingsNode(): PrimitiveNode[] | null {
+    if (this._parent)
+      return this._parent.nodes.filter((node) => node.index < this.index)
+    else return null
   }
 
   get uuid(): string {
@@ -101,7 +117,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
   }
 
   get deep(): string {
-    if (this.parent) return this.parent.deep + "_" + this.index
+    if (this.parentNode) return this.parentNode.deep + "_" + this.index
     else return this.index.toString()
   }
 
@@ -158,6 +174,7 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this[PropFunctions] = new Map()
     this[PropAttributes] = new Map()
     this[PropMetaKeys] = new Map()
+    this[PropComponents] = new Map()
   }
 
   cloneNode(): PrimitiveNode {
@@ -230,23 +247,6 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this.getApp().changeGlobal("re-draw", true)
   }
 
-  replaceNodeByIndex(index: number, node: PrimitiveNode): void {
-    if (index < 0 || index >= this[PropNodes].length)
-      throw new Error("Indexes out ranges")
-
-    const search = this[PropNodes][index]
-
-    if (!search) throw new Error("node not found")
-
-    node[MethodSetIndex](index)
-
-    this[PropNodes][index] = node
-
-    this.getApp().drawer.reDraw()
-
-    this.getApp().changeGlobal("re-draw", true)
-  }
-
   searchNode(uuid: string): PrimitiveNode | undefined {
     const nodes: PrimitiveNode[] = [this as any]
 
@@ -254,25 +254,6 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
       let node = nodes.shift()
 
       if (node?.uuid === uuid) {
-        return node
-      }
-
-      nodes.push(...Array.from(node?.nodes ?? []))
-    }
-
-    return undefined
-  }
-
-  searchNodeByIndex(index: number): PrimitiveNode | undefined {
-    if (index < 0 || index >= this[PropNodes].length)
-      throw new Error("Indexes out ranges")
-
-    const nodes: PrimitiveNode[] = [this as any]
-
-    while (nodes.length > 0) {
-      let node = nodes.shift()
-
-      if (node?.index === index) {
         return node
       }
 
@@ -293,32 +274,6 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     const nodes = this[PropNodes].slice()
 
     const [nodeMove] = nodes.splice(node.index, 1)
-
-    nodes.splice(to, 0, nodeMove)
-
-    for (let index = 0; index < nodes.length; index++) {
-      nodes[index][MethodSetIndex](index)
-    }
-
-    this[PropNodes] = nodes
-
-    this.getApp().drawer.reDraw()
-
-    this.getApp().changeGlobal("re-draw", true)
-  }
-
-  moveNodeByIndex(from: number, to: number): void {
-    if (
-      from < 0 ||
-      from >= this[PropNodes].length ||
-      to < 0 ||
-      to >= this[PropNodes].length
-    )
-      throw new Error("Indexes out ranges")
-
-    const nodes = this[PropNodes].slice()
-
-    const [nodeMove] = nodes.splice(from, 1)
 
     nodes.splice(to, 0, nodeMove)
 
@@ -453,6 +408,30 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this.getApp().changeGlobal("re-draw", true)
   }
 
+  getComponents(): TComponent[] {
+    return [...this[PropComponents].values()]
+  }
+
+  getComponent(name: string): TComponent | undefined {
+    return this[PropComponents].get(name)
+  }
+
+  addComponent(name: string, component: TComponent): void {
+    this[PropComponents].set(name, component)
+  }
+
+  hasComponent(name: string): boolean {
+    return this[PropComponents].has(name)
+  }
+
+  deleteComponent(name: string): boolean {
+    return this[PropComponents].delete(name)
+  }
+
+  clearComponents(): void {
+    this[PropComponents].clear()
+  }
+
   emit(event: TEventGlobalNode, callback: TFunction): void {
     return this._events.addEventListener(event, callback)
   }
@@ -538,6 +517,10 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this._index = index
   }
 
+  [MethodSetNodes](nodes: PrimitiveNode[]): void {
+    this[PropNodes] = nodes
+  }
+
   [MethodSetFunctions](functions: TFunctionTuple[]): void {
     this[PropFunctions] = new Map(functions)
   }
@@ -550,8 +533,8 @@ export class PrimitiveNode extends AbstractNode implements IHandleNodes {
     this[PropMetaKeys] = new Map(metaKeys)
   }
 
-  [MethodSetNodes](nodes: PrimitiveNode[]): void {
-    this[PropNodes] = nodes
+  [MethodSetComponents](components: TComponentTuple[]): void {
+    this[PropComponents] = new Map(components)
   }
 
   [MethodDispatchEvent](event: any, ...args: any[]): void {

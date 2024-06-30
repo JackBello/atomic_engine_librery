@@ -2,10 +2,12 @@ import { TAllDrawsContext } from "@/workers/types"
 import { TFunction } from "../types"
 import {
   MethodSetAttributes,
+  MethodSetComponents,
   MethodSetFunctions,
   MethodSetMetaKeys,
   MethodSetNodes,
   PropAttributes,
+  PropComponents,
   PropFunctions,
   PropMetaKeys,
   PropNodes
@@ -19,6 +21,8 @@ export type TTypeNode2D =
   | "LineFlowEffect2D"
   | "Selection2D"
   | "ControlEdition2D"
+  | "Collision2D"
+  | "CollisionShape2D"
 
 export type TTypeNode3D = "Cube3D" | "Sphere3D"
 
@@ -88,6 +92,8 @@ export type TAttributeTuple = [string, TAttribute]
 
 export type TMetaKeyTuple = [string, TMetaKey]
 
+export type TComponentTuple = [string, TComponent]
+
 export type TExportNode<O> = {
   uuid: string
   attributes: TAttributeTuple[]
@@ -98,6 +104,13 @@ export type TExportNode<O> = {
   deep: string
   index: number
   options: O
+}
+
+export type TComponent = {
+  name: string
+  description: string
+  script: string | URL | null
+  options: Record<string, any>
 }
 
 export type TMetaKey = {
@@ -135,7 +148,7 @@ export interface IControlEdition {
   cursor: TCursorOptions
 }
 
-export interface IHandleFunctions {
+export interface IHandleFunction {
   [PropFunctions]: Map<string, TFunction>
 
   getFunctions(): TFunction[]
@@ -149,7 +162,7 @@ export interface IHandleFunctions {
   [MethodSetFunctions](functions: TFunctionTuple[]): void
 }
 
-export interface IHandleAttributes {
+export interface IHandleAttribute {
   [PropAttributes]: Map<string, TAttribute>
 
   getAttributes(): TAttribute[]
@@ -175,14 +188,17 @@ export interface IHandleMetaKey {
   [MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void
 }
 
-export interface IHandleNodes {
+export interface IHandleNode {
   [PropNodes]: any[]
 
   get nodes(): any[]
+  get parentNode(): any | undefined
   get firstNode(): any | undefined
   get lastNode(): any | undefined
   get nextSiblingNode(): any | undefined
   get previousSiblingNode(): any | undefined
+  get nextSiblingsNode(): any | undefined
+  get previousSiblingsNode(): any | undefined
 
   cloneNode(): any
   getNode(uuid: string): any | undefined
@@ -191,11 +207,21 @@ export interface IHandleNodes {
   deleteNode(uuid: string): boolean
   clearNodes(): void
   replaceNode(uuid: string, node: any): void
-  replaceNodeByIndex(index: number, node: any): void
   searchNode(uuid: string): any | undefined
-  searchNodeByIndex(index: number): any | undefined
   moveNode(uuid: string, index: number): void
-  moveNodeByIndex(from: number, to: number): void
 
   [MethodSetNodes](nodes: any[]): void
+}
+
+export interface IHandleComponent {
+  [PropComponents]: Map<string, TComponent>
+
+  getComponents(): TComponent[]
+  getComponent(name: string): TComponent | undefined
+  addComponent(name: string, component: TComponent): void
+  hasComponent(name: string): boolean
+  deleteComponent(name: string): boolean
+  clearComponents(): void
+
+  [MethodSetComponents](attributes: TComponentTuple[]): void
 }

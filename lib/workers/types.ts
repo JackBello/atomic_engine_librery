@@ -31,6 +31,8 @@ export type TDrawsContext2D =
   | "draw:2D/selection"
   | "draw:2D/line-flow-effect"
   | "draw:2D/control-edition"
+  | "2D/collision"
+  | "2D/collision-shape"
 
 export type TDrawsContext3D = "draw:3D/cube"
 
@@ -114,4 +116,18 @@ export type TTypeNodeOptionsContext2D = {
     IControlEdition2D &
     IRectangle2D &
     IBorder2D
+
+  "2D/collision": IControlEditor &
+    IControlEdition &
+    IOpacity &
+    ICoords2D &
+    ISize2D &
+    INode2D
+
+  "2D/collision-shape": IControlEditor &
+    IControlEdition &
+    IOpacity &
+    ICoords2D &
+    ISize2D &
+    INode2D
 }

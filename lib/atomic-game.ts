@@ -1,9 +1,9 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
-import { EventController } from "./controllers/event.controller"
+import { EventController } from "./app/controllers/event.controller"
 import { TEventCanvas } from "./event.type"
-import { AnimationService } from "./services/animation.service"
-import { SceneService } from "./services/scene.service"
+import { AnimationService } from "./app/services/animation.service"
+import { SceneService } from "./app/services/scene.service"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
@@ -11,11 +11,11 @@ import {
   MethodSetRootNode
 } from "./symbols"
 import { IOptionsAtomicGame, TMode } from "./types"
-import EventObserver from "./utils/observer"
+import EventObserver from "./app/utils/observer"
 import { makerNodes2D } from "./nodes/maker-2d"
-import { CanvasService } from "./services/canvas.service"
-import { ScriptService } from "./services/script.service"
-import { DrawerService } from "./services/drawer.service"
+import { CanvasService } from "./app/services/canvas.service"
+import { ScriptService } from "./app/services/script.service"
+import { DrawerService } from "./app/services/drawer.service"
 
 export class AtomicGame {
   [key: string]: any

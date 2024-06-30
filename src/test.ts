@@ -13,7 +13,7 @@ import {
   moveNode,
   replaceNode,
   searchNode
-} from "@/utils/nodes"
+} from "@/app/utils/nodes"
 
 const buttonUploadGame = document.querySelector(
   `[data-id="uploadGame"]`
