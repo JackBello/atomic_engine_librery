@@ -1,6 +1,6 @@
 import { TMode } from "@/types"
-import { ISize2D } from "@/nodes/nodes-2d.types"
-import { INodeWorker } from "@/nodes/nodes.types"
+import { INodeWorker } from "../@global/node.types"
+import { ISize2D } from "../class/nodes-2D.types"
 
 export abstract class AbstractRender {
   protected abstract node: INodeWorker
@@ -32,11 +32,23 @@ export abstract class AbstractRender {
 
   protected abstract executeDrawEditor(
     node: INodeWorker,
-    parent: INodeWorker | undefined
+    parentTransform: {
+      x: number
+      y: number
+      scaleX: number
+      scaleY: number
+      rotation: number
+    }
   ): void
 
   protected abstract executeDrawGame(
     node: INodeWorker,
-    parent: INodeWorker | undefined
+    parentTransform: {
+      x: number
+      y: number
+      scaleX: number
+      scaleY: number
+      rotation: number
+    }
   ): void
 }

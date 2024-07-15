@@ -5,7 +5,9 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "typeRoots": [
-      "./node_modules/@webgpu/types"
+      "./node_modules/@webgpu/types",
+      "./node_modules/@types/wicg-file-system-access",
+      "./node_modules/@types/file-saver"
     ],
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,

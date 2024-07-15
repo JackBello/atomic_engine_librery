@@ -1,9 +1,9 @@
 import { TMode } from "@/types"
 import { handleContext2D } from "./handle"
-import { ISize2D } from "@/nodes/nodes-2d.types"
-import { nodeIsInEditor, nodeIsInViewport } from "@/app/utils/nodes"
-import { INodeWorker } from "@/nodes/nodes.types"
 import { AbstractRender } from "../../abstract/render.abstract"
+import { INodeWorker } from "@/nodes/@global/node.types"
+import { ISize2D } from "@/nodes/class/nodes-2D.types"
+import { RenderNode } from "../../@global/render-node"
 
 export class Render2D extends AbstractRender {
   protected node: INodeWorker = {} as any
@@ -74,10 +74,8 @@ export class Render2D extends AbstractRender {
         handleContext2D(draw.__type__, draw.options, this.context)
       }
 
-    if (this.mode === "editor" && this.node)
-      this.executeDrawEditor(this.node, undefined)
-    if (this.mode === "game" && this.node)
-      this.executeDrawGame(this.node, undefined)
+    if (this.mode === "editor" && this.node) this.executeDrawEditor(this.node)
+    if (this.mode === "game" && this.node) this.executeDrawGame(this.node)
 
     if (this.mode === "editor" && this.afterDraw.length > 0)
       for (const draw of this.afterDraw) {
@@ -87,15 +85,17 @@ export class Render2D extends AbstractRender {
 
   protected executeDrawEditor(
     node: INodeWorker,
-    parent: INodeWorker | undefined
+    parentTransform: {
+      x: number
+      y: number
+      scaleX: number
+      scaleY: number
+      rotation: number
+    } = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
   ) {
-    if (
-      node &&
-      node.__type__ === "primitive:2D/scene" &&
-      node.nodes.length > 0
-    ) {
+    if (node && node.__type__ === "global/scene" && node.nodes.length > 0) {
       for (const child of node.nodes) {
-        this.executeDrawEditor(child, undefined)
+        this.executeDrawEditor(child)
       }
     }
 
@@ -103,34 +103,20 @@ export class Render2D extends AbstractRender {
       node &&
       node.options &&
       node.options.visible &&
-      node.__type__.startsWith("draw:2D")
+      node.__type__.startsWith("2D")
     ) {
       const pan = this.configs.pan ?? { x: 0, y: 0 }
       const zoom = this.configs.zoom ?? 1
 
-      const coordsParent = parent
-        ? {
-            x: parent.options?.x,
-            y: parent.options?.y,
-            scaleX: parent.options?.scaleX,
-            scaleY: parent.options?.scaleY
-          }
-        : {
-            x: 0,
-            y: 0,
-            scaleX: 1,
-            scaleY: 1
-          }
-
       if (
-        nodeIsInEditor(
+        RenderNode.isInEditor(
           {
-            x: node.options.x + coordsParent.x,
-            y: node.options.y + coordsParent.y,
+            x: node.options.x + parentTransform.x,
+            y: node.options.y + parentTransform.y,
             width: node.options.width,
             height: node.options.height,
-            scaleX: node.options.scaleX * coordsParent.scaleX,
-            scaleY: node.options.scaleY * coordsParent.scaleY
+            scaleX: node.options.scaleX * parentTransform.scaleX,
+            scaleY: node.options.scaleY * parentTransform.scaleY
           },
           {
             height: this.editorSize.height,
@@ -140,41 +126,52 @@ export class Render2D extends AbstractRender {
           zoom
         )
       ) {
+        const globalTransform = RenderNode.calculateTransforms(
+          {
+            x: node.options.calculate.translate.x,
+            y: node.options.calculate.translate.y,
+            scaleX: node.options.calculate.scale.x,
+            scaleY: node.options.calculate.scale.y,
+            rotation: node.options.calculate.rotation
+          },
+          parentTransform
+        )
+
         this.context.save()
 
-        this.context.translate(
-          node.options.calculate.translate.x,
-          node.options.calculate.translate.y
-        )
+        this.context.translate(globalTransform.x, globalTransform.y)
 
-        this.context.scale(
-          node.options.calculate.scale.x,
-          node.options.calculate.scale.y
-        )
+        this.context.scale(globalTransform.scaleX, globalTransform.scaleY)
 
-        if (node.options.calculate.rotation !== 0)
-          this.context.rotate(node.options.calculate.rotation)
+        if (globalTransform.rotation !== 0)
+          this.context.rotate(globalTransform.rotation)
 
         handleContext2D(node.__type__ as any, node.options, this.context)
 
+        this.context.restore()
+
         if (node.nodes.length > 0) {
           for (const child of node.nodes) {
-            this.executeDrawEditor(child, node)
+            this.executeDrawEditor(child, globalTransform)
           }
         }
-
-        this.context.restore()
       }
     }
   }
 
   protected executeDrawGame(
     node: INodeWorker,
-    parent: INodeWorker | undefined
+    parentTransform: {
+      x: number
+      y: number
+      scaleX: number
+      scaleY: number
+      rotation: number
+    } = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
   ) {
-    if (node && node.__type__ === "primitive:2D/scene") {
+    if (node && node.__type__ === "global/scene") {
       for (const child of node.nodes) {
-        this.executeDrawGame(child, undefined)
+        this.executeDrawGame(child)
       }
     }
 
@@ -182,23 +179,13 @@ export class Render2D extends AbstractRender {
       node &&
       node.options &&
       node.options.visible &&
-      node.__type__.startsWith("draw:2D")
+      node.__type__.startsWith("2D")
     ) {
-      const coordsParent = parent
-        ? {
-            x: parent.options?.x,
-            y: parent.options?.y
-          }
-        : {
-            x: 0,
-            y: 0
-          }
-
       if (
-        nodeIsInViewport(
+        RenderNode.isInViewport(
           {
-            x: node.options.x + coordsParent.x,
-            y: node.options.y + coordsParent.y,
+            x: node.options.x + parentTransform.x,
+            y: node.options.y + parentTransform.y,
             width: node.options.width,
             height: node.options.height
           },
@@ -210,30 +197,41 @@ export class Render2D extends AbstractRender {
           }
         )
       ) {
+        const globalTransform = RenderNode.calculateTransforms(
+          {
+            x: node.options.calculate.translate.x,
+            y: node.options.calculate.translate.y,
+            scaleX: node.options.calculate.scale.x,
+            scaleY: node.options.calculate.scale.y,
+            rotation: node.options.calculate.rotation
+          },
+          parentTransform
+        )
+
         this.context.save()
 
         this.context.translate(
-          node.options.calculate.translate.x,
-          node.options.calculate.translate.y
+          globalTransform.x * this.scaleViewport,
+          globalTransform.y * this.scaleViewport
         )
 
         this.context.scale(
-          node.options.calculate.scale.x,
-          node.options.calculate.scale.y
+          globalTransform.scaleX * this.scaleViewport,
+          globalTransform.scaleY * this.scaleViewport
         )
 
-        if (node.options.calculate.rotation !== 0)
-          this.context.rotate(node.options.calculate.rotation)
+        if (globalTransform.rotation !== 0)
+          this.context.rotate(globalTransform.rotation)
 
         handleContext2D(node.__type__ as any, node.options, this.context)
 
+        this.context.restore()
+
         if (node.nodes.length > 0) {
           for (const child of node.nodes) {
-            this.executeDrawGame(child, node)
+            this.executeDrawGame(child, globalTransform)
           }
         }
-
-        this.context.restore()
       }
     }
   }

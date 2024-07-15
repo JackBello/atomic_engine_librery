@@ -1,7 +1,7 @@
 import { AtomicEngine } from "@/atomic-engine"
 import { AtomicGame } from "@/atomic-game"
-import { PrimitiveNode } from "@/nodes"
-import { CollisionShape2D } from "@/nodes/context/2d/class/2D/collision-shape"
+import { CollisionShape2D, GlobalNode } from "@/nodes"
+import { PropCollider } from "@/nodes/symbols"
 
 export class CollisionController {
   private $app: AtomicEngine | AtomicGame
@@ -17,18 +17,23 @@ export class CollisionController {
       firstCollision: CollisionShape2D,
       secondCollision: CollisionShape2D
     ) => {
-      const firstCollisionWidth = firstCollision.width * firstCollision.scale
-      const firstCollisionHeight = firstCollision.height * firstCollision.scale
+      const firstCollisionWidth = firstCollision.width * firstCollision.scaleX
+      const firstCollisionHeight = firstCollision.height * firstCollision.scaleY
+      const firstCollisionX = firstCollision.parent?.x ?? 0
+      const firstCollisionY = firstCollision.parent?.y ?? 0
 
-      const secondCollisionWidth = secondCollision.width * secondCollision.scale
+      const secondCollisionWidth =
+        secondCollision.width * secondCollision.scaleX
       const secondCollisionHeight =
-        secondCollision.height * secondCollision.scale
+        secondCollision.height * secondCollision.scaleY
+      const secondCollisionX = secondCollision.parent?.x ?? 0
+      const secondCollisionY = secondCollision.parent?.y ?? 0
 
       return (
-        firstCollision.x < secondCollision.x + secondCollisionWidth &&
-        firstCollision.x + firstCollisionWidth > secondCollision.x &&
-        firstCollision.y < secondCollision.y + secondCollisionHeight &&
-        firstCollision.y + firstCollisionHeight > secondCollision.y
+        firstCollisionX < secondCollisionX + secondCollisionWidth &&
+        firstCollisionX + firstCollisionWidth > secondCollisionX &&
+        firstCollisionY < secondCollisionY + secondCollisionHeight &&
+        firstCollisionY + firstCollisionHeight > secondCollisionY
       )
     },
     "circle-circle": (
@@ -64,23 +69,44 @@ export class CollisionController {
     this.$app = app
   }
 
-  public checkCollisions(nodes: PrimitiveNode[]) {
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const firstNode = nodes[i]
-        const secondNode = nodes[j]
+  public checkCollisions(nodes: GlobalNode[]) {
+    const mode = this.$app.useGlobal("mode") === "preview"
 
-        if (
-          firstNode instanceof CollisionShape2D &&
-          secondNode instanceof CollisionShape2D &&
-          this.isColliding(firstNode, secondNode)
-        ) {
-          this.resolveCollision(firstNode, secondNode)
+    if (this.$app.mode === "game" || mode) {
+      let firstNode: any = undefined,
+        secondNode: any = undefined
+
+      for (let i = 0; i < nodes.length; i++) {
+        firstNode = nodes[i]
+          ? nodes[i].$nodes.all.find(
+              (node) => node.NODE_NAME === "CollisionShape2D"
+            )
+          : undefined
+
+        for (let j = 0; j < nodes.length; j++) {
+          if (nodes[i].id === nodes[j].id) continue
+
+          secondNode = nodes[j]
+            ? nodes[j].$nodes.all.find(
+                (node) => node.NODE_NAME === "CollisionShape2D"
+              )
+            : undefined
+
+          if (
+            firstNode &&
+            secondNode &&
+            this.isColliding(firstNode, secondNode)
+          ) {
+            this.resolveCollision(firstNode, secondNode)
+            break
+          } else if (firstNode) {
+            firstNode[PropCollider] = null
+          }
         }
-      }
 
-      if (nodes[i].nodes.length > 0) {
-        this.checkCollisions(nodes[i].nodes)
+        if (nodes[i].$nodes.size > 0) {
+          this.checkCollisions(nodes[i].$nodes.all)
+        }
       }
     }
   }
@@ -102,6 +128,7 @@ export class CollisionController {
     firstNode: CollisionShape2D,
     secondNode: CollisionShape2D
   ) {
-    firstNode.collider = secondNode
+    firstNode[PropCollider] = secondNode
+    secondNode[PropCollider] = firstNode
   }
 }

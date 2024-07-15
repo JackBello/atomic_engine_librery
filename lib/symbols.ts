@@ -13,9 +13,8 @@ export const MethodDispatchScript = Symbol("MethodDispatchScript")
 export const MethodHasEvent = Symbol("MethodHasEvent")
 
 export const MethodStaticSetApp = Symbol("MethodStaticSetApp")
+export const MethodGetApp = Symbol("MethodGetApp")
 
 export const MethodGetAllInsideAtomic = Symbol("MethodGetAllInsideAtomic")
 
 export const MethodSetOptions = Symbol("MethodSetOptions")
-
-export const MethodSetRootNode = Symbol("MethodSetRootNode")

@@ -7,7 +7,12 @@ import { TEventDrawer } from "./event.type"
 import EditorCanvasWorker from "@/workers/editor-canvas.worker?worker&inline"
 import RenderCanvasWorker from "@/workers/render-canvas.worker?worker&inline"
 import NodesCanvasWorker from "@/workers/nodes-canvas.worker?worker&inline"
-import { INodeWorker, TCursorOptions } from "@/nodes/nodes.types"
+import {
+  INodeRootWorker,
+  INodeWorker,
+  TCursorOptions,
+  TMode
+} from "@/nodes/@global/node.types"
 
 export class DrawerService {
   private $app: AtomicEngine | AtomicGame
@@ -55,131 +60,348 @@ export class DrawerService {
     }
   }
 
-  setSize(width: number, height: number) {
-    this._workerRender.postMessage({
-      action: "resize:drawer",
-      options: {
-        width,
-        height
-      }
-    })
-  }
-
-  setAfterDraw(afterDraw: any[]) {
-    this._workerRender.postMessage({
-      action: "set:after-draw",
-      list: afterDraw
-    })
-  }
-
-  setBeforeDraw(beforeDraw: any[]) {
-    this._workerRender.postMessage({
-      action: "set:before-draw",
-      list: beforeDraw
-    })
-  }
-
-  setSizeEditor(width: number, height: number) {
-    this._workerRender.postMessage({
-      action: "set:size-editor",
-      size: {
-        width,
-        height
-      }
-    })
-  }
-
-  setViewportGame(width: number, height: number) {
-    this._workerRender.postMessage({
-      action: "set:viewport-game",
-      viewport: {
-        width,
-        height
-      }
-    })
-  }
-
-  setScaleViewport(scale: number) {
-    this._workerRender.postMessage({
-      action: "set:scale-viewport",
-      scaleViewport: scale
-    })
-  }
-
-  setAnimation(animation: { timestamp: number; deltaTime: number }) {
-    this._workerRender.postMessage({
-      action: "set:animation",
-      animation
-    })
-  }
-
-  setFrame(control: { velocity: number; delay: number }) {
-    this._workerRender.postMessage({
-      action: "set:frame",
-      control
-    })
-  }
-
-  setConfigs(configs: any) {
-    this._workerRender.postMessage({
-      action: "set:configs",
-      configs
-    })
-  }
-
-  async getRootNode() {
-    this._workerNodes.postMessage({
-      action: "get:root"
-    })
-
-    return new Promise((resolve) => {
-      this._workerNodes.onmessage = (event) => {
-        if (event.data.type === "get:root") {
-          resolve(event.data.node)
+  readonly render = {
+    setSize: (width: number, height: number) => {
+      this._workerRender.postMessage({
+        action: "resize:drawer",
+        options: {
+          width,
+          height
         }
+      })
+    },
+    setAfterDraw: (afterDraw: any[]) => {
+      this._workerRender.postMessage({
+        action: "set:after-draw",
+        list: afterDraw
+      })
+    },
+    setBeforeDraw: (beforeDraw: any[]) => {
+      this._workerRender.postMessage({
+        action: "set:before-draw",
+        list: beforeDraw
+      })
+    },
+    setSizeEditor: (width: number, height: number) => {
+      this._workerRender.postMessage({
+        action: "set:size-editor",
+        size: {
+          width,
+          height
+        }
+      })
+    },
+    setViewportGame: (width: number, height: number) => {
+      this._workerRender.postMessage({
+        action: "set:viewport-game",
+        viewport: {
+          width,
+          height
+        }
+      })
+    },
+    setScaleViewport: (scale: number) => {
+      this._workerRender.postMessage({
+        action: "set:scale-viewport",
+        scaleViewport: scale
+      })
+    },
+    setAnimation: (animation: { timestamp: number; deltaTime: number }) => {
+      this._workerRender.postMessage({
+        action: "set:animation",
+        animation
+      })
+    },
+    setFrame: (control: { velocity: number; delay: number }) => {
+      this._workerRender.postMessage({
+        action: "set:frame",
+        control
+      })
+    },
+    setConfigs: (configs: any) => {
+      this._workerRender.postMessage({
+        action: "set:configs",
+        configs
+      })
+    },
+    reDraw: () => {
+      this._workerRender.postMessage({
+        action: "re-draw"
+      })
+    }
+  }
+
+  readonly nodes = {
+    getRoot: async (): Promise<INodeRootWorker> => {
+      this._workerNodes.postMessage({
+        action: "get:root"
+      })
+
+      return new Promise((resolve) => {
+        this._workerNodes.onmessage = (event) => {
+          if (event.data.type === "get:root") {
+            resolve(event.data.node)
+          }
+        }
+      })
+    },
+    setRoot: (root: INodeRootWorker) => {
+      this._workerNodes.postMessage({
+        action: "set:root",
+        root
+      })
+    },
+    getNodes: async (
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const action = type === "path" ? "path/get:nodes" : "get:nodes"
+
+      const options: Record<string, any> = {
+        action,
+        mode
       }
-    })
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+
+      return new Promise((resolve) => {
+        this._workerNodes.onmessage = (event) => {
+          if (event.data.type === action) {
+            resolve(event.data.node)
+          }
+        }
+      })
+    },
+    getNode: async (
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const action = type === "path" ? "path/get:node" : "get:node"
+
+      const options: Record<string, any> = {
+        action,
+        mode
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+
+      return new Promise((resolve) => {
+        this._workerNodes.onmessage = (event) => {
+          if (event.data.type === action) {
+            resolve(event.data.node)
+          }
+        }
+      })
+    },
+    addNode: (
+      node: INodeWorker,
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index",
+      insert: "after" | "before" = "before"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/add:node" : "add:node",
+        value: node,
+        mode,
+        insert
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+    },
+    updateNode: (
+      value: Record<string, any>,
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/update:node" : "update:node",
+        value,
+        mode
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+    },
+    hasNode: async (
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const action = type === "path" ? "path/has:node" : "has:node"
+
+      const options: Record<string, any> = {
+        action,
+        mode
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+
+      return new Promise((resolve) => {
+        this._workerNodes.onmessage = (event) => {
+          if (event.data.type === action) {
+            resolve(event.data.node)
+          }
+        }
+      })
+    },
+    deleteNode: (
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/delete:node" : "delete:node",
+        mode
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+    },
+    clearNodes: (
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/clear:nodes" : "clear:nodes",
+        mode
+      }
+
+      type === "location" ? (options.location = from) : (options.path = from)
+
+      this._workerNodes.postMessage(options)
+    },
+    replaceNode: (
+      node: INodeWorker,
+      from: string | number,
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/replace:node" : "replace:node",
+        value: node,
+        mode,
+        from
+      }
+
+      this._workerNodes.postMessage(options)
+    },
+    searchNode: async (
+      from: string | number,
+      search: {
+        value: string
+        mode: TMode
+      },
+      type: "location" | "path" = "location",
+      mode: TMode = "index"
+    ) => {
+      const action = type === "path" ? "path/get:node" : "get:node"
+
+      const options: Record<string, any> = {
+        action,
+        mode,
+        from,
+        search
+      }
+
+      this._workerNodes.postMessage(options)
+
+      return new Promise((resolve) => {
+        this._workerNodes.onmessage = (event) => {
+          if (event.data.type === action) {
+            resolve(event.data.node)
+          }
+        }
+      })
+    },
+    moveNode: (
+      from: {
+        search: string | number
+        mode: TMode
+      },
+      to: {
+        search: string | number
+        mode: TMode
+      },
+      type: "location" | "path" = "location",
+      insert: "after" | "before" = "before"
+    ) => {
+      const options: Record<string, any> = {
+        action: type === "path" ? "path/get:node" : "get:node",
+        from,
+        to,
+        insert
+      }
+
+      this._workerNodes.postMessage(options)
+    }
   }
 
-  setRootNode(node: any) {
-    this._workerNodes.postMessage({
-      action: "set:root",
-      root: node
-    })
-  }
+  readonly editor = {
+    selectNode: async (mouseCoords: {
+      x: number
+      y: number
+    }): Promise<
+      | {
+          node: INodeWorker
+          transform: {
+            x: number
+            y: number
+            scaleX: number
+            scaleY: number
+            rotation: number
+          }
+        }
+      | undefined
+    > => {
+      this._workerEditor.postMessage({
+        action: "select:node",
+        mouseCoords
+      })
 
-  addNode(node: any, location: string, mode: "uuid" | "index" | "deep") {
-    this._workerNodes.postMessage({
-      action: "add:node",
-      location,
-      mode,
-      node
-    })
-  }
+      return new Promise((resolve) => {
+        this._workerEditor.onmessage = function (event) {
+          if (event.data.type === "select:node") {
+            resolve(event.data.result)
+          }
+        }
+      })
+    },
+    cursorNode: async (mouseCoords: {
+      x: number
+      y: number
+    }): Promise<TCursorOptions> => {
+      this._workerEditor.postMessage({
+        action: "cursor:node",
+        mouseCoords
+      })
 
-  updateNode(
-    location: string,
-    type: "property" | "properties",
-    mode: "uuid" | "index" | "deep",
-    options: any
-  ) {
-    this._workerNodes.postMessage({
-      action: "update:node",
-      location,
-      type,
-      mode,
-      options
-    })
-  }
-
-  reDraw() {
-    this._workerRender.postMessage({
-      action: "re-draw"
-    })
+      return new Promise((resolve) => {
+        this._workerEditor.onmessage = function (event) {
+          if (event.data.type === "cursor:node") {
+            resolve(event.data.result)
+          }
+        }
+      })
+    }
   }
 
   async process() {
-    const root = await this.getRootNode()
+    const root = await this.nodes.getRoot()
 
     this._workerEditor.postMessage({
       action: "set:root",
@@ -189,45 +411,6 @@ export class DrawerService {
       action: "render",
       root
     })
-  }
-
-  editor() {
-    return {
-      selectNode: async (mouseCoords: {
-        x: number
-        y: number
-      }): Promise<INodeWorker | undefined> => {
-        this._workerEditor.postMessage({
-          action: "select:node",
-          mouseCoords
-        })
-
-        return new Promise((resolve) => {
-          this._workerEditor.onmessage = function (event) {
-            if (event.data.type === "select:node") {
-              resolve(event.data.result)
-            }
-          }
-        })
-      },
-      cursorNode: async (mouseCoords: {
-        x: number
-        y: number
-      }): Promise<TCursorOptions> => {
-        this._workerEditor.postMessage({
-          action: "cursor:node",
-          mouseCoords
-        })
-
-        return new Promise((resolve) => {
-          this._workerEditor.onmessage = function (event) {
-            if (event.data.type === "cursor:node") {
-              resolve(event.data.result)
-            }
-          }
-        })
-      }
-    }
   }
 
   emit(name: TEventDrawer, callback: TFunction) {

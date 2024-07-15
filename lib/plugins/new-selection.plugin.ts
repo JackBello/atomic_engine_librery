@@ -12,21 +12,11 @@ const pluginSelection: TPlugin = {
       pan: { x: number; y: number },
       zoom: number
     ) {
-      // continuar con esto
-      // const parentWidth = node.parentNode.width || 0
-      // const parentHeight = node.parentNode.height || 0
-      // const parentScaleX = node.parentNode.scaleX || 1
-      // const parentScaleY = node.parentNode.scaleY || 1
-      // const parentX = node.parentNode.x || 0
-      // const parentY = node.parentNode.y || 0
+      const dx = mouseCoords.x - pan.x / zoom - startCoords.x
+      const dy = mouseCoords.y - pan.y / zoom - startCoords.y
 
-      // const mouseCoordsAdjust = {
-      //   x: mouseCoords.x / parentScaleX,
-      //   y: mouseCoords.y / parentScaleY
-      // }
-
-      node.x = mouseCoords.x - pan.x / zoom - startCoords.x
-      node.y = mouseCoords.y - pan.y / zoom - startCoords.y
+      node.x += dx
+      node.y += dy
     },
     moveNodeByKeyboard(
       node: any,
@@ -56,17 +46,19 @@ const pluginSelection: TPlugin = {
       }
 
       const config = app.use("@config/selection")
-      const node = await app.drawer.editor().selectNode(mouseCoords)
+      const result = await app.drawer.editor().selectNode(mouseCoords)
+
+      if (!result) return
+
+      const { node } = result
 
       if (node && node.options) {
         config.isDragging = true
 
         config.startCoords.x =
-          (mouseCoords.x - panAndZoomConfig.pan.x) / panAndZoomConfig.zoom -
-          node.options.x
+          (mouseCoords.x - panAndZoomConfig.pan.x) / panAndZoomConfig.zoom
         config.startCoords.y =
-          (mouseCoords.y - panAndZoomConfig.pan.y) / panAndZoomConfig.zoom -
-          node.options.y
+          (mouseCoords.y - panAndZoomConfig.pan.y) / panAndZoomConfig.zoom
 
         config._.node = node
       }
@@ -128,6 +120,11 @@ const pluginSelection: TPlugin = {
           panAndZoomConfig.zoom
         )
       }
+
+      config.startCoords.x =
+        (mouseCoords.x - panAndZoomConfig.pan.x) / panAndZoomConfig.zoom
+      config.startCoords.y =
+        (mouseCoords.y - panAndZoomConfig.pan.y) / panAndZoomConfig.zoom
     },
     "canvas/key:down": (app, event: KeyboardEvent) => {
       const panAndZoomConfig = app.use("@config/pan-and-zoom")

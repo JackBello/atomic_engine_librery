@@ -1,25 +1,11 @@
-import {
-  IBorder2D,
-  ICalculate,
-  ICoords2D,
-  INode2D,
-  IRectangle2D,
-  ISize2D
-} from "../../../nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes.types"
+import { TCanvasNodeOptions } from "@/nodes/types"
 import { loadShader } from "../functions/load-shader"
 import { serializeOptions } from "../functions/utils"
+import { ICalculate } from "@/nodes/class/nodes-2D.types"
 
 const shader_rectangle_webgl = (
   context: WebGL2RenderingContext,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    IRectangle2D &
-    IBorder2D &
-    ICalculate
+  options: TCanvasNodeOptions["2D/rectangle"] & ICalculate
 ) => {
   const { width, height, x, y, background } = serializeOptions(context, options)
 
@@ -105,14 +91,7 @@ const shader_rectangle_webgl = (
 
 export const rectangle_webgl = (
   context: WebGL2RenderingContext,
-  options: IControlEditor &
-    IControlEdition &
-    ICoords2D &
-    ISize2D &
-    INode2D &
-    IRectangle2D &
-    IBorder2D &
-    ICalculate
+  options: TCanvasNodeOptions["2D/rectangle"] & ICalculate
 ) => {
   const rectangle = shader_rectangle_webgl(context, options)
 

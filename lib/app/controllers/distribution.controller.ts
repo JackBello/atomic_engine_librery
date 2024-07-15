@@ -6,7 +6,7 @@ import {
   MethodGetAllInsideAtomic,
   MethodSetOptions
 } from "../../symbols"
-import { makerNodes2D } from "../../nodes/maker-2d"
+import { constructorNode } from "../../nodes/@global/constructor-node"
 import { IOptionsAtomicGame } from "@/types"
 
 export class DistributionController {
@@ -22,7 +22,7 @@ export class DistributionController {
 
     this.$app[MethodSetOptions](structure.options)
 
-    const scenes = makerNodes2D(structure.scenes)
+    const scenes = constructorNode(structure.scenes)
 
     this.$app.scenes.add(...scenes)
 
@@ -64,14 +64,17 @@ export class DistributionController {
         full_size: all.options.game.full_size,
         icon: all.options.game.icon,
         resizable: all.options.game.resizable,
-        title: all.options.game.title
+        title: all.options.game.title,
+        nodes: {
+          typeID: all.options.nodes.typeID
+        }
       }
 
       return {
         options: optionsGame,
         scenes,
         $global: all.global,
-        scene: this.$app.scenes.currentScene.uuid
+        scene: this.$app.scenes.currentScene?.slug
       }
     }
 
@@ -83,7 +86,7 @@ export class DistributionController {
       $controls: all.controls,
       $nodes: all.nodes,
       $global: all.global,
-      scene: this.$app.scenes.currentScene.uuid
+      scene: this.$app.scenes.currentScene?.slug
     }
   }
 }

@@ -1,11 +1,10 @@
-import { ICoords2D } from "../../../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../../../nodes/nodes.types"
+import { IControlEdition, IControlEditor } from "@/nodes/@global/node.types"
+import { ICoords2D } from "../../../nodes/class/nodes-2D.types"
 
 export const DEFAULT_CONFIG_EMPTY_2D: Omit<IControlEdition, "visible"> &
   ICoords2D &
   IControlEditor = {
   cursor: "default",
-  name: "Empty2D",
   description: "",
   title: "",
   lock: false,

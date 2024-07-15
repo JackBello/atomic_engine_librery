@@ -8,8 +8,7 @@ import {
   MethodGetAllInsideAtomic,
   MethodHasEvent,
   MethodReloadEvents,
-  MethodSetOptions,
-  MethodSetRootNode
+  MethodSetOptions
 } from "./symbols"
 import EventObserver from "./app/utils/observer"
 import { DEFAULT_CONFIG_ATOMIC } from "./configs/engine/atomic"
@@ -21,6 +20,7 @@ import { CanvasService } from "./app/services/canvas.service"
 import { WindowController } from "./app/controllers/window.controller"
 import { ScriptService } from "./app/services/script.service"
 import { DrawerService } from "./app/services/drawer.service"
+import { CollisionController } from "./app/controllers/collision.controller"
 
 export class AtomicEngine {
   [key: string]: any
@@ -40,6 +40,7 @@ export class AtomicEngine {
   protected $$events!: EventController
   protected $$distribution!: DistributionController
   protected $$window!: WindowController
+  protected $$collision!: CollisionController
 
   protected $animation!: AnimationService
   protected $scenes!: SceneService
@@ -48,6 +49,10 @@ export class AtomicEngine {
   protected $drawer!: DrawerService
 
   readonly mode: TMode = "editor"
+
+  get $collision() {
+    return this.$$collision
+  }
 
   get animation() {
     return this.$animation
@@ -89,6 +94,7 @@ export class AtomicEngine {
     this.$$distribution = new DistributionController(this)
     this.$$window = new WindowController(this)
     this.$$events = new EventController(this)
+    this.$$collision = new CollisionController(this)
   }
 
   protected init() {
@@ -104,14 +110,11 @@ export class AtomicEngine {
     this._global.set("re-draw", true)
     this._global.set("scale-viewport", 1)
 
-    this.animation.setDelayFrames(this.options.fps.delay)
-    this.animation.setVelocityFrames(this.options.fps.velocity)
-
     this.scenes.emit("scene:change", () => {
       if (this.scenes.currentScene) {
-        this.script[MethodSetRootNode](this.scenes.currentScene)
-
-        this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+        this.drawer.nodes.setRoot(
+          this.scenes.currentScene[MethodExportWorker]()
+        )
       }
     })
 
@@ -122,8 +125,8 @@ export class AtomicEngine {
     this._options.width = width
     this._options.height = height
     this.canvas.setSize(width, height)
-    this.drawer.setSize(width, height)
-    this.drawer.setSizeEditor(width, height)
+    this.drawer.render.setSize(width, height)
+    this.drawer.render.setSizeEditor(width, height)
   }
 
   setExport(

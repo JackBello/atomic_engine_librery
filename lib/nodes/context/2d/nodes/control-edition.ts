@@ -1,9 +1,9 @@
-import { TTypeNodeOptionsContext2D } from "@/workers/types"
-import { ICalculate } from "../../../nodes-2d.types"
+import { ICalculate } from "../../../class/nodes-2D.types"
+import { TCanvasNodeOptions } from "@/nodes/types"
 
 export const control_edition_2D = (
   context: CanvasRenderingContext2D,
-  options: TTypeNodeOptionsContext2D["draw:2D/control-edition"] & ICalculate
+  options: TCanvasNodeOptions["2D/control-edition"] & ICalculate
 ) => {
   const { calculate } = options
 

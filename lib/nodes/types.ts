@@ -1,5 +1,7 @@
+import { IControlEdition, IControlEditor } from "./@global/node.types"
 import {
   IBorder2D,
+  ICollisionShape2D,
   IControlEdition2D,
   ICoords2D,
   ILineFlowEffect2D,
@@ -9,8 +11,7 @@ import {
   ISelection2D,
   ISize2D,
   IText2D
-} from "../nodes/nodes-2d.types"
-import { IControlEdition, IControlEditor } from "../nodes/nodes.types"
+} from "./class/nodes-2D.types"
 
 export type TCanvasActions =
   | "canvas:clear"
@@ -20,28 +21,23 @@ export type TCanvasActions =
 
 export type TCanvasActionsContext2D = "canvas:save" | "canvas:restore"
 
-export type TPrimitiveContext =
-  | "primitive:node"
-  | "primitive:2D/scene"
-  | "primitive:2D/node"
+export type TCanvasNodePrimitive = "global/node" | "global/scene"
 
-export type TDrawsContext2D =
-  | "draw:2D/rectangle"
-  | "draw:2D/text"
-  | "draw:2D/selection"
-  | "draw:2D/line-flow-effect"
-  | "draw:2D/control-edition"
-  | "2D/collision"
-  | "2D/collision-shape"
+export type TCanvasNode2D =
+  | "2D/node"
+  | "2D/handler/collision"
+  | "2D/handler/collision-shape"
+  | "2D/rectangle"
+  | "2D/text"
+  | "2D/selection"
+  | "2D/line-flow-effect"
+  | "2D/control-edition"
 
-export type TDrawsContext3D = "draw:3D/cube"
+export type TCanvasNode3D = "3D/cube"
 
-export type TAllDrawsContext =
-  | TPrimitiveContext
-  | TDrawsContext3D
-  | TDrawsContext2D
+export type TCanvasNodes = TCanvasNodePrimitive | TCanvasNode3D | TCanvasNode2D
 
-export type TTypeNodeOptionsContext2D = {
+export type TCanvasNodeOptions = {
   "canvas:save": undefined
   "canvas:restore": undefined
 
@@ -60,18 +56,33 @@ export type TTypeNodeOptionsContext2D = {
   }
   "canvas:rotation": number
 
-  "primitive:node": IControlEditor
+  "global/node": IControlEditor
 
-  "primitive:2D/scene": IControlEditor
+  "global/scene": IControlEditor
 
-  "primitive:2D/node": IControlEditor &
+  "2D/node": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
     ISize2D &
     INode2D
 
-  "draw:2D/rectangle": IControlEditor &
+  "2D/handler/collision": IControlEditor &
+    IControlEdition &
+    IOpacity &
+    ICoords2D &
+    ISize2D &
+    INode2D
+
+  "2D/handler/collision-shape": IControlEditor &
+    IControlEdition &
+    IOpacity &
+    ICoords2D &
+    ISize2D &
+    INode2D &
+    ICollisionShape2D
+
+  "2D/rectangle": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
@@ -80,7 +91,7 @@ export type TTypeNodeOptionsContext2D = {
     IRectangle2D &
     IBorder2D
 
-  "draw:2D/text": IControlEditor &
+  "2D/text": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
@@ -89,7 +100,7 @@ export type TTypeNodeOptionsContext2D = {
     IBorder2D &
     IText2D
 
-  "draw:2D/line-flow-effect": IControlEditor &
+  "2D/line-flow-effect": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
@@ -97,7 +108,7 @@ export type TTypeNodeOptionsContext2D = {
     INode2D &
     ILineFlowEffect2D
 
-  "draw:2D/selection": IControlEditor &
+  "2D/selection": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
@@ -107,7 +118,7 @@ export type TTypeNodeOptionsContext2D = {
     IRectangle2D &
     IBorder2D
 
-  "draw:2D/control-edition": IControlEditor &
+  "2D/control-edition": IControlEditor &
     IControlEdition &
     IOpacity &
     ICoords2D &
@@ -116,18 +127,4 @@ export type TTypeNodeOptionsContext2D = {
     IControlEdition2D &
     IRectangle2D &
     IBorder2D
-
-  "2D/collision": IControlEditor &
-    IControlEdition &
-    IOpacity &
-    ICoords2D &
-    ISize2D &
-    INode2D
-
-  "2D/collision-shape": IControlEditor &
-    IControlEdition &
-    IOpacity &
-    ICoords2D &
-    ISize2D &
-    INode2D
 }

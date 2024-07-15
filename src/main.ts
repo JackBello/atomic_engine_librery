@@ -1,12 +1,13 @@
 import {
   AtomicEngine,
-  Scene2D,
+  Scene,
   Rectangle2D,
   AtomicGame,
-  LineFlowEffect2D
+  LineFlowEffect2D,
+  CollisionShape2D
 } from "../lib"
-import pluginSelection from "@/plugins/new-selection.plugin"
-import pluginPanAndZoom from "@/plugins/pan-and-zoom.plugin"
+// import pluginSelection from "@/plugins/new-selection.plugin"
+// import pluginPanAndZoom from "@/plugins/pan-and-zoom.plugin"
 
 const buttonAddRect = document.querySelector(
   `[data-id="button-add-rect"]`
@@ -48,6 +49,10 @@ const uploadDirectory = document.querySelector(
   `[data-id="uploadDirectory"]`
 ) as HTMLInputElement
 
+const saveFileTest = document.querySelector(
+  `[data-id="saveFileTest"]`
+) as HTMLInputElement
+
 const app = new AtomicEngine({
   background: "#eeeeee",
   context: "2d",
@@ -76,83 +81,94 @@ const app = new AtomicEngine({
   selector: "[data-canvas]"
 })
 
-app.plugin(pluginPanAndZoom)
-app.plugin(pluginSelection)
+// app.plugin(pluginPanAndZoom)
+// app.plugin(pluginSelection)
 
-const lv1 = new Scene2D({
-  name: "lv-1"
-})
+const lv1 = new Scene("lv-1")
 
-const rect1 = new Rectangle2D({
+const rect1 = new Rectangle2D("player", {
   background: "red",
   width: 100,
   height: 100,
   x: 100,
-  y: 100,
-  name: "player",
-  scaleX: 1,
-  scaleY: 1
+  y: 100
 })
 
 rect1.script = `
-addAttribute("vx", {
+$attributes.add("vx", {
   value: 0.8
 })
-addAttribute("vy", {
+$attributes.add("vy", {
   value: 0.5
 })
-addAttribute("vs", {
+$attributes.add("vs", {
   value: 0.001
 })
 
 function _ready() {
-  // console.log(x, y)
-
   console.log("ready block")
+
+  console.log($collider())
 }
 
 function _process() {
-  x += getAttribute("vx").value;
-  y += getAttribute("vy").value;
+  // const collider = $collider()
 
-  scaleX += getAttribute("vs").value;
-  scaleY += getAttribute("vs").value;
+  // if (!collider) return
 
-  if ((scaleX < 0.5 || scaleX > 1.5) && (scaleY < 0.5 || scaleY > 1.5)) getAttribute("vs").value *= -1
+  // if (collider.name === "enemy") {
+  //   $destroy()
+  // }
+
+  console.log($collider()?.slug)
+
+  x += $attributes.get("vx").value;
+  y += $attributes.get("vy").value;
+
+  scaleX += $attributes.get("vs").value;
+  scaleY += $attributes.get("vs").value;
+
+  if ((scaleX < 0.5 || scaleX > 1.5) && (scaleY < 0.5 || scaleY > 1.5)) $attributes.get("vs").value *= -1
 
   if ((x - (width * scaleX / 2)) < 0 || x + (width * scaleX / 2) > viewport.width) {
-    getAttribute("vx").value *= -1;
+    $attributes.get("vx").value *= -1;
     background = "#" + Math.floor(Math.random() * 16777215).toString(16)
   }
   if ((y - (height * scaleY / 2)) < 0 || y + (height * scaleY / 2) > viewport.height) {
-    getAttribute("vy").value *= -1;
+    $attributes.get("vy").value *= -1;
     background = "#" + Math.floor(Math.random() * 16777215).toString(16)
   }
 }
+
+function _destroyed() {
+  $finish();
+  console.log("game over")
+}
 `
 
-const lineFlow = new LineFlowEffect2D({
+const lineFlow = new LineFlowEffect2D("effect-1", {
   width: 200,
   height: 200,
-  x: 0,
-  y: 0,
+  x: 50,
+  y: 50,
   color:
     "linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)",
   cellSize: 12,
   spacing: 30,
   lineWidth: 1,
+  rotation: 0,
   radius: 0
 })
 
 lineFlow.script = `
-addAttribute("vr", {
+$attributes.add("vr", {
   value: 0.03
 })
 
 function _process() {
-  if (radius > 5 || radius < -5) getAttribute("vr").value *= -1
+  if (radius > 5 || radius < -5) $attributes.get("vr").value *= -1
 
-  radius += getAttribute("vr").value
+  radius += $attributes.get("vr").value
 }
 
 function _ready() {
@@ -160,19 +176,29 @@ function _ready() {
 }
 `
 
-rect1.addNode(lineFlow)
-lv1.addNode(rect1)
+const collision = new CollisionShape2D("collision", {
+  shape: "rectangle",
+  width: 100,
+  height: 100,
+  x: 0,
+  y: 0
+})
+
+rect1.$nodes.add(lineFlow)
+rect1.$nodes.add(collision)
+lv1.$nodes.add(rect1)
 // lv1.addNode(lineFlow)
 
 app.scenes.add(lv1)
+app.scenes.change(lv1.slug)
 
-app.scenes.change(lv1.uuid)
+// console.log(lv1.nodes)
 
 await app.start()
 
-console.log(app.export("game"))
+// console.log(app.export("game"))
 
-const vx = rect1.getAttribute("vx")
+const vx = rect1.$attributes.get("vx")
 
 if (vx) {
   inputVelocity.value = vx?.value
@@ -205,7 +231,7 @@ buttonPausePreview.addEventListener("click", () => {
 })
 
 buttonAddRect.addEventListener("click", () => {
-  const randomRect = new Rectangle2D({
+  const randomRect = new Rectangle2D("enemy", {
     background: "#" + Math.floor(Math.random() * 16777215).toString(16),
     width: 100,
     height: 100,
@@ -213,7 +239,16 @@ buttonAddRect.addEventListener("click", () => {
     y: 50
   })
 
-  lv1.addNode(randomRect)
+  const collision = new CollisionShape2D("collision", {
+    shape: "rectangle",
+    width: 100,
+    height: 100,
+    x: 0,
+    y: 0
+  })
+
+  lv1.$nodes.add(randomRect)
+  randomRect.$nodes.add(collision)
 
   // randomRect.center()
 })
@@ -258,5 +293,36 @@ uploadDirectory?.addEventListener("click", async () => {
     // console.log(entry.kind, entry.name)
   }
 
-  console.log(dirHandle.getDirectoryHandle(".godot"))
+  console.log(await dirHandle.getDirectoryHandle(".godot"))
 })
+
+saveFileTest.addEventListener("click", async () => {
+  try {
+    const contents = app.export("game")
+    await saveNewFile(contents)
+  } catch (err) {
+    console.error("Error to save file:", err)
+  }
+})
+
+async function saveFile(handle: FileSystemFileHandle, contents: string) {
+  const writable = await handle.createWritable()
+  await writable.write(contents)
+  await writable.close()
+}
+
+async function saveNewFile(contents: string) {
+  const options: SaveFilePickerOptions = {
+    types: [
+      {
+        description: "Game Format Export",
+        accept: {
+          "application/json": [".json5"]
+        }
+      }
+    ]
+  }
+
+  const handle = await window.showSaveFilePicker(options)
+  await saveFile(handle, contents)
+}

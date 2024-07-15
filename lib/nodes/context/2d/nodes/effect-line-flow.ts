@@ -1,10 +1,10 @@
-import { TTypeNodeOptionsContext2D } from "@/workers/types"
-import { ICalculate } from "../../../nodes-2d.types"
+import { ICalculate } from "../../../class/nodes-2D.types"
 import { validColor } from "../functions"
+import { TCanvasNodeOptions } from "@/nodes/types"
 
 export const effect_line_flow_2D = (
   context: CanvasRenderingContext2D,
-  options: TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"] & ICalculate
+  options: TCanvasNodeOptions["2D/line-flow-effect"] & ICalculate
 ) => {
   const { calculate } = options
 

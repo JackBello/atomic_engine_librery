@@ -1,4 +1,5 @@
-import { INodeWorker, TCursorOptions } from "@/nodes/nodes.types"
+import { INodeWorker, TCursorOptions } from "@/nodes/@global/node.types"
+import { RenderNode } from "@/nodes/@global/render-node"
 
 let root: INodeWorker[] = []
 
@@ -48,7 +49,19 @@ function intersectionNodeWithCursor({
 
 const cursorNode = (
   nodes: INodeWorker[],
-  parent: INodeWorker | undefined,
+  parentTransform: {
+    x: number
+    y: number
+    scaleX: number
+    scaleY: number
+    rotation: number
+  } = {
+    x: 0,
+    y: 0,
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0
+  },
   mouseCoords: { x: number; y: number }
 ): TCursorOptions => {
   let cursor: TCursorOptions = "default"
@@ -56,53 +69,44 @@ const cursorNode = (
   for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index]
 
-    const coordsParent = parent
-      ? {
-          x: parent.options?.x,
-          y: parent.options?.y,
-          scaleX: parent.options?.scaleX,
-          scaleY: parent.options?.scaleY,
-          rotation: parent.options?.rotation
-        }
-      : {
-          x: 0,
-          y: 0,
-          scaleX: 1,
-          scaleY: 1,
-          rotation: 0
-        }
-
-    const globalX = node.options?.x * coordsParent.scaleX + coordsParent.x
-    const globalY = node.options?.y * coordsParent.scaleY + coordsParent.y
-    const globalScaleX = node.options?.scaleX * coordsParent.scaleX
-    const globalScaleY = node.options?.scaleY * coordsParent.scaleY
-    const globalRotation = node.options?.rotation + coordsParent.rotation
-
-    if (
-      node.options &&
-      intersectionNodeWithCursor({
-        zoom: 1,
-        pan: {
-          x: 0,
-          y: 0
+    if (node.options) {
+      const globalTransform = RenderNode.calculateTransforms(
+        {
+          x: node.options.calculate.translate.x,
+          y: node.options.calculate.translate.y,
+          scaleX: node.options.calculate.scale.x,
+          scaleY: node.options.calculate.scale.y,
+          rotation: node.options.calculate.rotation
         },
-        node: {
-          x: globalX,
-          y: globalY,
-          width: node.options.width,
-          height: node.options.height,
-          scaleX: globalScaleX,
-          scaleY: globalScaleY,
-          rotation: globalRotation
-        },
-        mouseCoords
-      })
-    ) {
-      cursor = node.options.cursor === "default" ? "move" : node.options.cursor
+        parentTransform
+      )
 
-      break
-    } else {
-      cursor = cursorNode(node.nodes, node, mouseCoords)
+      if (
+        intersectionNodeWithCursor({
+          zoom: 1,
+          pan: {
+            x: 0,
+            y: 0
+          },
+          node: {
+            x: globalTransform.x,
+            y: globalTransform.y,
+            width: node.options.width,
+            height: node.options.height,
+            scaleX: globalTransform.scaleX,
+            scaleY: globalTransform.scaleY,
+            rotation: globalTransform.rotation
+          },
+          mouseCoords
+        })
+      ) {
+        cursor =
+          node.options.cursor === "default" ? "move" : node.options.cursor
+
+        break
+      } else {
+        cursor = cursorNode(node.nodes, globalTransform, mouseCoords)
+      }
     }
   }
 
@@ -111,82 +115,85 @@ const cursorNode = (
 
 const selectNode = (
   nodes: INodeWorker[],
-  parent: INodeWorker | undefined,
+  parentTransform: {
+    x: number
+    y: number
+    scaleX: number
+    scaleY: number
+    rotation: number
+  } = {
+    x: 0,
+    y: 0,
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0
+  },
   mouseCoords: { x: number; y: number }
-) => {
-  let select: INodeWorker | undefined
-  let minDistance = Number.MAX_VALUE
+): any => {
+  let result:
+    | {
+        node: INodeWorker
+        transform: {
+          x: number
+          y: number
+          scaleX: number
+          scaleY: number
+          rotation: number
+        }
+      }
+    | undefined = undefined
 
   for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index]
 
-    const coordsParent = parent
-      ? {
-          x: parent.options?.x,
-          y: parent.options?.y,
-          scaleX: parent.options?.scaleX,
-          scaleY: parent.options?.scaleY,
-          rotation: parent.options?.rotation
-        }
-      : {
-          x: 0,
-          y: 0,
-          scaleX: 1,
-          scaleY: 1,
-          rotation: 0
-        }
-
-    const globalX = node.options?.x * coordsParent.scaleX + coordsParent.x
-    const globalY = node.options?.y * coordsParent.scaleY + coordsParent.y
-    const globalScaleX = node.options?.scaleX * coordsParent.scaleX
-    const globalScaleY = node.options?.scaleY * coordsParent.scaleY
-    const globalRotation = node.options?.rotation + coordsParent.rotation
-
-    if (
-      node.options &&
-      intersectionNodeWithCursor({
-        zoom: 1,
-        pan: {
-          x: 0,
-          y: 0
+    if (node.options) {
+      const globalTransform = RenderNode.calculateTransforms(
+        {
+          x: node.options.calculate.translate.x,
+          y: node.options.calculate.translate.y,
+          scaleX: node.options.calculate.scale.x,
+          scaleY: node.options.calculate.scale.y,
+          rotation: node.options.calculate.rotation
         },
-        node: {
-          x: globalX,
-          y: globalY,
-          width: node.options.width,
-          height: node.options.height,
-          scaleX: globalScaleX,
-          scaleY: globalScaleY,
-          rotation: globalRotation
-        },
-        mouseCoords
-      })
-    ) {
-      const centerX = node.options.x + node.options.width / 2
-      const centerY = node.options.y + node.options.height / 2
-
-      let distance = Math.sqrt(
-        Math.pow(mouseCoords.x - centerX, 2) +
-          Math.pow(mouseCoords.y - centerY, 2)
+        parentTransform
       )
 
-      if (distance < minDistance) {
-        minDistance = distance
-      }
+      if (
+        intersectionNodeWithCursor({
+          zoom: 1,
+          pan: {
+            x: 0,
+            y: 0
+          },
+          node: {
+            x: globalTransform.x,
+            y: globalTransform.y,
+            width: node.options.width,
+            height: node.options.height,
+            scaleX: globalTransform.scaleX,
+            scaleY: globalTransform.scaleY,
+            rotation: globalTransform.rotation
+          },
+          mouseCoords
+        })
+      ) {
+        if (node.options.lock) {
+          break
+        }
 
-      if (node.options.lock) {
+        result = {
+          transform: globalTransform,
+          node
+        }
+
         break
+      } else {
+        result = selectNode(node.nodes, globalTransform, mouseCoords)
       }
-
-      select = node
-
-      break
-    } else {
-      select = selectNode(node.nodes, node, mouseCoords)
     }
   }
 
-  return select
+  return result
 }
 
 self.onmessage = function (event) {

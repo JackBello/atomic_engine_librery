@@ -1,10 +1,9 @@
-import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { TCanvasNodeOptions } from "@/nodes/types"
 
-export const DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D: TTypeNodeOptionsContext2D["draw:2D/line-flow-effect"] =
+export const DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D: TCanvasNodeOptions["2D/line-flow-effect"] =
   {
     opacity: 1,
     cursor: "default",
-    name: "LineFlowEffect2D",
     visible: true,
     lock: false,
     selectable: true,

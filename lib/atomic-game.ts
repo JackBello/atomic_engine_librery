@@ -7,15 +7,15 @@ import { SceneService } from "./app/services/scene.service"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
-  MethodExportWorker,
-  MethodSetRootNode
+  MethodExportWorker
 } from "./symbols"
 import { IOptionsAtomicGame, TMode } from "./types"
 import EventObserver from "./app/utils/observer"
-import { makerNodes2D } from "./nodes/maker-2d"
+import { constructorNode } from "./nodes/@global/constructor-node"
 import { CanvasService } from "./app/services/canvas.service"
 import { ScriptService } from "./app/services/script.service"
 import { DrawerService } from "./app/services/drawer.service"
+import { CollisionController } from "./app/controllers/collision.controller"
 
 export class AtomicGame {
   [key: string]: any
@@ -26,6 +26,7 @@ export class AtomicGame {
   protected _events: EventObserver = new EventObserver()
 
   protected $$events!: EventController
+  protected $$collision!: CollisionController
 
   protected $animation!: AnimationService
   protected $scenes!: SceneService
@@ -34,6 +35,10 @@ export class AtomicGame {
   protected $drawer!: DrawerService
 
   readonly mode: TMode = "game"
+
+  get $collision() {
+    return this.$$collision
+  }
 
   get animation() {
     return this.$animation
@@ -93,12 +98,12 @@ export class AtomicGame {
       this.canvas.instance.width / this.options.viewport.width
     )
 
-    this.drawer.setScaleViewport(this.useGlobal("scale-viewport"))
+    this.drawer.render.setScaleViewport(this.useGlobal("scale-viewport"))
   }
 
   setSize(width: number, height: number) {
     this.canvas.setSize(width, height, true)
-    this.drawer.setSize(width, height)
+    this.drawer.render.setSize(width, height)
   }
 
   useGlobal(name: string) {
@@ -122,7 +127,8 @@ export class AtomicGame {
     this._options = structure.options
 
     this._global.set("mode", "game") // "edition" = 0 | "game" = 1 | "preview" = 2
-    this._global.set("status", null) //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
+    this._global.set("status", "play") // "play" | "pause"
+    // | "game-over" | "stop" | "start" | "intro" | "cinematic"
     this._global.set("scale-viewport", 1)
     this._global.set("re-draw", true)
 
@@ -133,28 +139,26 @@ export class AtomicGame {
     this.$animation = new AnimationService(this)
 
     this.$$events = new EventController(this)
+    this.$$collision = new CollisionController(this)
 
-    this.drawer.setViewportGame(
+    this.drawer.render.setViewportGame(
       this.options.viewport.width,
       this.options.viewport.height
     )
 
     this.scenes.emit("scene:change", () => {
       if (this.scenes.currentScene) {
-        this.script[MethodSetRootNode](this.scenes.currentScene)
-
-        this.drawer.setRootNode(this.scenes.currentScene[MethodExportWorker]())
+        this.drawer.nodes.setRoot(
+          this.scenes.currentScene[MethodExportWorker]()
+        )
       }
     })
 
-    const scenes = makerNodes2D(structure.scenes)
+    const scenes = constructorNode(structure.scenes)
 
     this.scenes.add(...scenes)
 
     this.scenes.change(structure.scene)
-
-    this.animation.setDelayFrames(this.options.fps.delay)
-    this.animation.setVelocityFrames(this.options.fps.velocity)
 
     this.resize()
   }

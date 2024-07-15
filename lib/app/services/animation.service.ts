@@ -10,21 +10,12 @@ export class AnimationService {
 
   protected _ref!: number
   protected _events: EventObserver = new EventObserver()
-  protected _framesPerSeconds = {
-    delay: 0, // 1000 ms to delay
-    velocity: 0 // 60 fps per 1000 ms
-  }
+
   protected _deltaTime: number = 0
   protected _lastTime: number = 0
-  protected _frame: number = 0
   protected _status = {
     pause: false,
     playing: false
-  }
-  protected _state = {
-    frames: 0,
-    startTime: performance.now(),
-    fps: 0
   }
 
   get DELTA_TIME() {
@@ -33,21 +24,6 @@ export class AnimationService {
 
   get TIME_STAMP() {
     return this._lastTime
-  }
-
-  get FRAME() {
-    return this._frame
-  }
-
-  get FPS() {
-    return this._state.fps
-  }
-
-  get framesPerSeconds() {
-    return Object.freeze({
-      delay: this._framesPerSeconds.delay,
-      velocity: this._framesPerSeconds.velocity
-    })
   }
 
   get isPlaying() {
@@ -62,43 +38,14 @@ export class AnimationService {
     this.$app = app
   }
 
-  /**
-   *
-   * pasar a otro worker
-   */
-  // protected calculateFPS() {
-  //   const time = performance.now()
-  //   const delayTime = time - this._state.startTime
-
-  //   if (delayTime > this._framesPerSeconds.delay) {
-  //     this._state.fps = Math.round(
-  //       (this._state.frames * this._framesPerSeconds.delay) / delayTime
-  //     )
-
-  //     this._state.frames = 0
-  //     this._state.startTime = time
-  //   }
-
-  //   this._state.frames++
-  // }
-
   protected async loop(timestamp: number) {
     if (!this._lastTime) this._lastTime = timestamp
     this._deltaTime = timestamp - this._lastTime
 
     const mode = this.$app.useGlobal("mode") === "preview"
-    const reDraw = this.$app.useGlobal("re-draw")
+    const status = this.$app.useGlobal("status") === "play"
 
-    if (this.$app.mode === "game") {
-      // let framePerSecond = Math.floor(
-      //   this._deltaTime /
-      //     (this._framesPerSeconds.delay / this._framesPerSeconds.velocity)
-      // )
-      // if (framePerSecond > this._frame) {
-      //   this._frame = framePerSecond
-      // await this.$app.scenes.process()
-      // }
-
+    if (this.$app.mode === "game" && status) {
       await this.$app.script.process({
         timestamp,
         deltaTime: this._deltaTime
@@ -106,6 +53,10 @@ export class AnimationService {
 
       await this.$app.drawer.process()
     } else if (this.$app.mode === "editor" || mode) {
+      this.$app.$collision.checkCollisions(
+        this.$app.scenes.currentScene?.$nodes.all ?? []
+      )
+
       await this.$app.script.process({
         timestamp,
         deltaTime: this._deltaTime
@@ -139,24 +90,9 @@ export class AnimationService {
       this._status.playing = false
       this._status.pause = true
 
-      this._frame = 0
       this._lastTime = 0
       this._deltaTime = 0
     }
-  }
-
-  setDelayFrames(value: number) {
-    this._framesPerSeconds.delay = value
-    this._frame = 0
-    this._lastTime = 0
-    this._deltaTime = 0
-  }
-
-  setVelocityFrames(value: number) {
-    this._framesPerSeconds.velocity = value
-    this._frame = 0
-    this._lastTime = 0
-    this._deltaTime = 0
   }
 
   emit(name: TEventAnimation, callback: TFunction) {

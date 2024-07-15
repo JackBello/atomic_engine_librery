@@ -1,6 +1,6 @@
-import { TTypeNodeOptionsContext2D } from "@/workers/types"
+import { TCanvasNodeOptions } from "@/nodes/types"
 
-export const DEFAULT_CONFIG_CONTROL_EDITION_2D: TTypeNodeOptionsContext2D["draw:2D/control-edition"] =
+export const DEFAULT_CONFIG_CONTROL_EDITION_2D: TCanvasNodeOptions["2D/control-edition"] =
   {
     opacity: 1,
     background: "#fff",
@@ -20,7 +20,6 @@ export const DEFAULT_CONFIG_CONTROL_EDITION_2D: TTypeNodeOptionsContext2D["draw:
     height: 0,
     width: 0,
     lock: false,
-    name: "ControlEdition2D",
     originX: "center",
     originY: "center",
     padding: 10,

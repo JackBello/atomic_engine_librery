@@ -1,4 +1,4 @@
-import { ICoords2D, ISize2D } from "../../nodes-2d.types"
+import { ICoords2D, ISize2D } from "../../class/nodes-2D.types"
 
 export const validColor = (
   color: string,

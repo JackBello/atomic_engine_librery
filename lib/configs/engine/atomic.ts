@@ -30,5 +30,8 @@ export const DEFAULT_CONFIG_ATOMIC: IOptionsAtomicEngine = {
     exclude: [],
     format: "JSON",
     include: []
+  },
+  nodes: {
+    typeID: "uid"
   }
 }

@@ -2,8 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import EventObserver from "../utils/observer"
 import { TFunction } from "../../types"
-import { IControlEditor, TExportNode } from "../../nodes/nodes.types"
-import { makerNodes2D } from "../../nodes/maker-2d"
+import { constructorNodes } from "../../nodes/@global/constructor-node"
 import { TEventScenes } from "./event.type"
 import {
   MethodDispatchEvent,
@@ -13,13 +12,14 @@ import {
 import { AtomicEngine } from "../../atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 import { AbstractNode } from "@/nodes/abstract/node.abstract"
-import { PrimitiveNode, Scene2D } from "@/nodes"
+import { GlobalNode, Scene } from "@/nodes"
+import { IControlEditor, TExportNode } from "@/nodes/@global/node.types"
 
 export class SceneService {
   private $app: AtomicEngine | AtomicGame
 
-  protected _scenes = new Map<string, any>()
-  protected _scene?: Scene2D
+  protected _scenes = new Map<string, Scene>()
+  protected _scene?: Scene
   protected _events: EventObserver = new EventObserver()
 
   constructor(app: AtomicEngine | AtomicGame) {
@@ -32,42 +32,42 @@ export class SceneService {
     return this._scene
   }
 
-  get(uuid: string) {
-    if (!this._scenes.has(uuid))
-      throw new Error('not found scene "' + uuid + '"')
+  get(slug: string) {
+    if (!this._scenes.has(slug))
+      throw new Error('not found scene "' + slug + '"')
 
-    return this._scenes.get(uuid)
+    return this._scenes.get(slug)
   }
 
-  add(...scenes: Scene2D[]) {
+  add(...scenes: Scene[]) {
     for (let scene of scenes) {
-      if (scene instanceof Scene2D) this._scenes.set(scene.uuid, scene)
+      if (scene instanceof Scene) this._scenes.set(scene.slug, scene)
       else throw new Error("this instance is not a scene")
     }
 
     this[MethodDispatchEvent]("scene:add", scenes)
   }
 
-  delete(uuid: string) {
-    this._scenes.delete(uuid)
+  delete(slug: string) {
+    this._scenes.delete(slug)
 
-    if (uuid === this.currentScene?.uuid) this._scene = undefined
+    if (slug === this.currentScene?.uuid) this._scene = undefined
 
-    this[MethodDispatchEvent]("scene:delete", uuid)
+    this[MethodDispatchEvent]("scene:delete", slug)
   }
 
-  change(uuid: string) {
-    this._scene = this.get(uuid)
+  change(slug: string) {
+    this._scene = this.get(slug)
 
-    this[MethodDispatchEvent]("scene:change", uuid)
+    this[MethodDispatchEvent]("scene:change", slug)
   }
 
-  reset(node: PrimitiveNode) {
+  reset(node: GlobalNode) {
     if (node) {
       node.reset()
 
-      if (node.nodes.length > 0)
-        for (const child of node.nodes) {
+      if (node.$nodes.size > 0)
+        for (const child of node.$nodes.all) {
           this.reset(child)
         }
     }
@@ -90,10 +90,10 @@ export class SceneService {
     const structure: TExportNode<IControlEditor>[] =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
 
-    const scenes = (makerNodes2D(structure) as any[]).map((scene) => [
-      scene.uuid,
+    const scenes = constructorNodes(structure).map((scene) => [
+      scene.slug,
       scene
-    ]) as [string, any][]
+    ]) as [string, Scene][]
 
     this._scenes = new Map(scenes)
   }

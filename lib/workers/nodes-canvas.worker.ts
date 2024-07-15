@@ -1,113 +1,165 @@
-import { INodeWorker } from "@/nodes/nodes.types"
-import {
-  addNode,
-  clearNodes,
-  deleteNode,
-  getNode,
-  getNodes,
-  hasNode,
-  moveNode,
-  replaceNode,
-  searchNode,
-  updatePropertiesNode,
-  updatePropertyNode
-} from "@/app/utils/nodes"
+import { RenderNode } from "@/nodes/@global/render-node"
 
-let root: INodeWorker[] = []
+const nodes = new RenderNode()
 
 self.onmessage = function (event) {
+  // root
   if (event.data.action === "get:root") {
     self.postMessage({
       type: "get:root",
-      node: root
+      node: nodes.root
     })
   } else if (event.data.action === "set:root") {
-    root = [event.data.root]
-  } else if (event.data.action === "get:nodes") {
-    if (!root.length) return
+    nodes.root = [event.data.root]
+  }
 
-    const { location, mode = "uuid" } = event.data
+  // location
+  if (event.data.action === "get:nodes") {
+    if (!nodes.root.length) return
+
+    const { location, mode = "index" } = event.data
 
     self.postMessage({
       type: "get:nodes",
-      node: getNodes(root, location, mode)
+      nodes: nodes.getNodes(location, mode)
     })
   } else if (event.data.action === "get:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, mode = "uuid" } = event.data
+    const { location, mode = "index" } = event.data
 
     self.postMessage({
       type: "get:node",
-      node: getNode(root, location, mode)
+      node: nodes.getNode(location, mode)
     })
   } else if (event.data.action === "add:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { node, location, mode = "uuid" } = event.data
+    const { value, location, mode = "index", insert = "before" } = event.data
 
-    addNode(root, node, location, mode)
+    nodes.addNode(location, value, mode, insert)
   } else if (event.data.action === "update:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, type = "property", mode = "uuid" } = event.data
+    const { location, value, mode = "index" } = event.data
 
-    if (type === "property") {
-      const { property, value } = event.data.options
-
-      updatePropertyNode(root, location, property, value, mode)
-    }
-
-    if (type === "properties") {
-      const { properties } = event.data.options
-
-      updatePropertiesNode(root, location, properties, mode)
-    }
+    nodes.updateNode(location, value, mode)
   } else if (event.data.action === "has:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, mode = "uuid" } = event.data
+    const { location, mode = "index" } = event.data
 
     self.postMessage({
       type: "has:node",
-      node: hasNode(root, location, mode)
+      node: nodes.hasNode(location, mode)
     })
   } else if (event.data.action === "delete:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, mode = "uuid" } = event.data
+    const { location, mode = "index" } = event.data
 
-    deleteNode(root, location, mode)
+    nodes.deleteNode(location, mode)
   } else if (event.data.action === "clear:nodes") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, mode = "uuid" } = event.data
+    const { location, mode = "index" } = event.data
 
-    clearNodes(root, location, mode)
+    nodes.clearNodes(location, mode)
   } else if (event.data.action === "replace:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, node, mode = "uuid" } = event.data
+    const { from, value, mode = "index" } = event.data
 
-    replaceNode(root, location, node, mode)
+    nodes.replaceNode(from, value, mode)
   } else if (event.data.action === "search:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const { location, mode = "uuid" } = event.data
+    const { from, search, mode = "index" } = event.data
 
     self.postMessage({
       type: "search:node",
-      node: searchNode(root, location, mode)
+      node: nodes.searchNode(from, search, mode)
     })
   } else if (event.data.action === "move:node") {
-    if (!root.length) return
+    if (!nodes.root.length) return
 
-    const {
-      position,
-      modes = { from: "uuid", to: "uuid" },
-      insert = "after"
-    } = event.data.options
+    const { from, to, insert = "after" } = event.data.options
 
-    moveNode(root, position, modes, insert)
+    nodes.moveNode(from, to, insert)
+  }
+
+  // path
+  if (event.data.action === "path/get:nodes") {
+    if (!nodes.root.length) return
+
+    const { path, mode = "index" } = event.data
+
+    self.postMessage({
+      type: "path/get:nodes",
+      nodes: nodes.getNodesByPath(path, mode)
+    })
+  } else if (event.data.action === "path/get:node") {
+    if (!nodes.root.length) return
+
+    const { path, mode = "index" } = event.data
+
+    self.postMessage({
+      type: "path/get:node",
+      node: nodes.getNodeByPath(path, mode)
+    })
+  } else if (event.data.action === "path/add:node") {
+    if (!nodes.root.length) return
+
+    const { value, path, mode = "index", insert = "before" } = event.data
+
+    nodes.addNodeByPath(path, value, mode, insert)
+  } else if (event.data.action === "path/update:node") {
+    if (!nodes.root.length) return
+
+    const { path, value, mode = "index" } = event.data
+
+    nodes.updateNodeByPath(path, value, mode)
+  } else if (event.data.action === "path/has:node") {
+    if (!nodes.root.length) return
+
+    const { path, mode = "index" } = event.data
+
+    self.postMessage({
+      type: "path/has:node",
+      node: nodes.hasNodeByPath(path, mode)
+    })
+  } else if (event.data.action === "path/delete:node") {
+    if (!nodes.root.length) return
+
+    const { path, mode = "index" } = event.data
+
+    nodes.deleteNodeByPath(path, mode)
+  } else if (event.data.action === "path/clear:nodes") {
+    if (!nodes.root.length) return
+
+    const { path, mode = "index" } = event.data
+
+    nodes.clearNodesByPath(path, mode)
+  } else if (event.data.action === "path/replace:node") {
+    if (!nodes.root.length) return
+
+    const { from, value, mode = "index" } = event.data
+
+    nodes.replaceNodeByPath(from, value, mode)
+  } else if (event.data.action === "path/search:node") {
+    if (!nodes.root.length) return
+
+    const { from, search, mode = "index" } = event.data
+
+    self.postMessage({
+      type: "path/search:node",
+      node: nodes.searchNodeByPath(from, search, mode)
+    })
+  } else if (event.data.action === "path/move:node") {
+    if (!nodes.root.length) return
+
+    const { from, to, insert = "after" } = event.data.options
+
+    nodes.moveNodeByPath(from, to, insert)
   }
 }

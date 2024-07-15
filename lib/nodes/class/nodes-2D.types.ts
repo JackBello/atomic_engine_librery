@@ -4,7 +4,7 @@ import {
   TTypeOrigin,
   TTypeOriginX,
   TTypeOriginY
-} from "./nodes.types"
+} from "../@global/node.types"
 
 export interface IOpacity {
   opacity: number
@@ -74,6 +74,11 @@ export interface ISelection2D {
   startX: number
   startY: number
   shape: "rectangle" | "circle" | "triangle" | "polygon"
+}
+
+export interface ICollisionShape2D {
+  shape: "rectangle" | "circle" | "triangle" | "polygon"
+  color: string
 }
 
 export interface IControlEdition2D {

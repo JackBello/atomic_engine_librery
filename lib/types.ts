@@ -1,4 +1,4 @@
-import { ISize2D } from "./nodes/nodes-2d.types"
+import { ISize2D } from "./nodes/class/nodes-2D.types"
 
 export type TClass<C> = new (...args: any[]) => C
 
@@ -63,6 +63,9 @@ export interface IOptionsAtomicEngine extends ISize2D {
   game: IOptionsGame
   fps: IOptionsFramePerSecond
   export: IOptionsExport
+  nodes: {
+    typeID: "uuid" | "uid"
+  }
 }
 
 export interface IOptionsAtomicGame extends IOptionsGame {
@@ -70,4 +73,7 @@ export interface IOptionsAtomicGame extends IOptionsGame {
   selector: string
   fps: IOptionsFramePerSecond
   dimension: TDimension
+  nodes: {
+    typeID: "uuid" | "uid"
+  }
 }

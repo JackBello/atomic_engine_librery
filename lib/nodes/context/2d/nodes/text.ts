@@ -1,9 +1,9 @@
-import { TTypeNodeOptionsContext2D } from "@/workers/types"
-import { ICalculate } from "../../../nodes-2d.types"
+import { ICalculate } from "../../../class/nodes-2D.types"
+import { TCanvasNodeOptions } from "@/nodes/types"
 
 export const text_2D = (
   context: CanvasRenderingContext2D,
-  options: TTypeNodeOptionsContext2D["draw:2D/text"] & ICalculate
+  options: TCanvasNodeOptions["2D/text"] & ICalculate
 ) => {
   context.globalAlpha = options.opacity
 
