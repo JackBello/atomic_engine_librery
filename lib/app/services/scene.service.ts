@@ -2,7 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import EventObserver from "../utils/observer"
 import { TFunction } from "../../types"
-import { constructorNodes } from "../../nodes/@global/constructor-node"
+import { constructorNodes } from "../../nodes/global/constructor-node"
 import { TEventScenes } from "./event.type"
 import {
   MethodDispatchEvent,
@@ -13,7 +13,7 @@ import { AtomicEngine } from "../../atomic-engine"
 import { AtomicGame } from "@/atomic-game"
 import { AbstractNode } from "@/nodes/abstract/node.abstract"
 import { GlobalNode, Scene } from "@/nodes"
-import { IControlEditor, TExportNode } from "@/nodes/@global/node.types"
+import { IControlEditor, TExportNode } from "@/nodes/global/node.types"
 
 export class SceneService {
   private $app: AtomicEngine | AtomicGame

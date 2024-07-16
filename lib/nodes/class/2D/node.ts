@@ -1,8 +1,8 @@
 import * as YAML from "yaml"
 import JSON5 from "json5"
 import { DEFAULT_CONFIG_NODE_2D } from "../../../configs/nodes/2D/node"
-import { constructorNode } from "../../@global/constructor-node"
-import { GlobalNode } from "../../@global/global-node"
+import { constructorNode } from "../../global/constructor-node"
+import { GlobalNode } from "../../global/global-node"
 import { ICalculate, IControlNode2D, IHandleCoords2D } from "../nodes-2D.types"
 import { PropType } from "../../symbols"
 import { TEventGlobalNode, TEventNode2D } from "../../event.type"
@@ -21,7 +21,7 @@ import {
   TTypeOrigin,
   TTypeOriginX,
   TTypeOriginY
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 import { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types"
 
 export class Node2D

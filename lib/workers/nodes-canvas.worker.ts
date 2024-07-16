@@ -1,4 +1,4 @@
-import { RenderNode } from "@/nodes/@global/render-node"
+import { RenderNode } from "@/nodes/global/render-node"
 
 const nodes = new RenderNode()
 

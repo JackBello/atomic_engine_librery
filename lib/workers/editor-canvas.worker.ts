@@ -1,5 +1,5 @@
-import { INodeWorker, TCursorOptions } from "@/nodes/@global/node.types"
-import { RenderNode } from "@/nodes/@global/render-node"
+import { INodeWorker, TCursorOptions } from "@/nodes/global/node.types"
+import { RenderNode } from "@/nodes/global/render-node"
 
 let root: INodeWorker[] = []
 

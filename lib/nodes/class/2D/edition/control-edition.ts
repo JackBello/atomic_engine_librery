@@ -2,7 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { PropType } from "../../../symbols"
 import { Node2D } from "../node"
-import { constructorNode } from "../../../@global/constructor-node"
+import { constructorNode } from "../../../global/constructor-node"
 import {
   MethodExport,
   MethodExportWorker,
@@ -13,7 +13,7 @@ import {
   INodeWorker,
   TExportNode,
   TTypeNodes
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 import { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types"
 import { omitKeys } from "@/app/utils/json"
 

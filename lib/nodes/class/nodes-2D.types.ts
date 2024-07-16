@@ -4,7 +4,7 @@ import {
   TTypeOrigin,
   TTypeOriginX,
   TTypeOriginY
-} from "../@global/node.types"
+} from "../global/node.types"
 
 export interface IOpacity {
   opacity: number

@@ -2,7 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { PropType } from "../../../symbols"
 import { Node2D } from "../node"
-import { constructorNode } from "../../../@global/constructor-node"
+import { constructorNode } from "../../../global/constructor-node"
 import { DEFAULT_CONFIG_TEXT_2D } from "../../../../configs/nodes/2D/interface/text"
 import {
   MethodExport,
@@ -15,7 +15,7 @@ import {
   TExportNode,
   TTypeGlobalFont,
   TTypeNodes
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 import { omitKeys } from "@/app/utils/json"
 
 export class Text2D extends Node2D {

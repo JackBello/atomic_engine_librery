@@ -1,5 +1,5 @@
 import { TMode } from "@/types"
-import { INodeWorker } from "../@global/node.types"
+import { INodeWorker } from "../global/node.types"
 import { ISize2D } from "../class/nodes-2D.types"
 
 export abstract class AbstractRender {

@@ -1,5 +1,5 @@
-export * from "./@global/global-node"
-export * from "./@global/scene"
+export * from "./global/global-node"
+export * from "./global/scene"
 
 export * from "./class/2D/node"
 

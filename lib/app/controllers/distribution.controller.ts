@@ -6,7 +6,7 @@ import {
   MethodGetAllInsideAtomic,
   MethodSetOptions
 } from "../../symbols"
-import { constructorNode } from "../../nodes/@global/constructor-node"
+import { constructorNode } from "../../nodes/global/constructor-node"
 import { IOptionsAtomicGame } from "@/types"
 
 export class DistributionController {

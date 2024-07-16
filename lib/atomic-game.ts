@@ -11,7 +11,7 @@ import {
 } from "./symbols"
 import { IOptionsAtomicGame, TMode } from "./types"
 import EventObserver from "./app/utils/observer"
-import { constructorNode } from "./nodes/@global/constructor-node"
+import { constructorNode } from "./nodes/global/constructor-node"
 import { CanvasService } from "./app/services/canvas.service"
 import { ScriptService } from "./app/services/script.service"
 import { DrawerService } from "./app/services/drawer.service"

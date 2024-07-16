@@ -24,7 +24,7 @@ import { constructorNode } from "./constructor-node"
 import { TFunction } from "../../types"
 import EventObserver from "../../app/utils/observer"
 import { handleScript } from "../../app/utils/script"
-import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "../../configs/nodes/@global/node"
+import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "../../configs/nodes/global/node"
 import { TEventGlobalNode } from "../event.type"
 import {
   MethodDispatchEvent,

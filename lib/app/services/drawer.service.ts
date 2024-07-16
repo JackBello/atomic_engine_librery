@@ -12,7 +12,7 @@ import {
   INodeWorker,
   TCursorOptions,
   TMode
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 
 export class DrawerService {
   private $app: AtomicEngine | AtomicGame

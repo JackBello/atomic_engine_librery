@@ -1,4 +1,4 @@
-import { IControlEdition, IControlEditor } from "@/nodes/@global/node.types"
+import { IControlEdition, IControlEditor } from "@/nodes/global/node.types"
 import { ICoords2D } from "../../../nodes/class/nodes-2D.types"
 
 export const DEFAULT_CONFIG_EMPTY_2D: Omit<IControlEdition, "visible"> &

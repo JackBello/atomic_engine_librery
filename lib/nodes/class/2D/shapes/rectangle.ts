@@ -2,7 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { DEFAULT_CONFIG_RECTANGLE_2D } from "../../../../configs/nodes/2D/shapes/rectangle"
 import { Node2D } from "../node"
-import { constructorNode } from "../../../@global/constructor-node"
+import { constructorNode } from "../../../global/constructor-node"
 import { PropType } from "../../../symbols"
 import {
   MethodExport,
@@ -15,7 +15,7 @@ import {
   INodeWorker,
   TExportNode,
   TTypeNodes
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 
 export class Rectangle2D extends Node2D {
   [PropType]: TCanvasNodes = "2D/rectangle"

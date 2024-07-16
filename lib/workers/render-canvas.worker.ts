@@ -2,7 +2,7 @@ import { Render2D } from "@/nodes/context/2d/render"
 import { TContextName, TContextObject, TDimension, TMode } from "../types"
 import { ISize2D } from "@/nodes/class/nodes-2D.types"
 import { AbstractRender } from "@/nodes/abstract/render.abstract"
-import { INodeWorker } from "@/nodes/@global/node.types"
+import { INodeWorker } from "@/nodes/global/node.types"
 
 const rendered: {
   mode: TMode

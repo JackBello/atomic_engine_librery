@@ -1,4 +1,4 @@
-import { IControlEdition, IControlEditor } from "./@global/node.types"
+import { IControlEdition, IControlEditor } from "./global/node.types"
 import {
   IBorder2D,
   ICollisionShape2D,

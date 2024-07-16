@@ -90,8 +90,9 @@ const rect1 = new Rectangle2D("player", {
   background: "red",
   width: 100,
   height: 100,
-  x: 100,
-  y: 100
+  x: 200,
+  y: 200,
+  rotation: 0
 })
 
 rect1.script = `
@@ -184,8 +185,22 @@ const collision = new CollisionShape2D("collision", {
   y: 0
 })
 
-rect1.$nodes.add(lineFlow)
-rect1.$nodes.add(collision)
+const rect2 = new Rectangle2D("other", {
+  width: rect1.width,
+  height: rect1.height,
+  background: "blue",
+  opacity: 0.5,
+  scaleX: 2,
+  scaleY: 2,
+  x: 50,
+  y: 50,
+  rotation: 0
+})
+
+// rect1.$nodes.add(rect2)
+// rect1.$nodes.add(lineFlow)
+// rect1.$nodes.add(collision)
+
 lv1.$nodes.add(rect1)
 // lv1.addNode(lineFlow)
 

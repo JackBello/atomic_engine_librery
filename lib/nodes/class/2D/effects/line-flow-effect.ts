@@ -2,7 +2,7 @@ import * as YAML from "yaml"
 import JSON5 from "json5"
 import { PropType } from "../../../symbols"
 import { Node2D } from "../node"
-import { constructorNode } from "../../../@global/constructor-node"
+import { constructorNode } from "../../../global/constructor-node"
 import { DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D } from "../../../../configs/nodes/2D/effects/line-flow-effect"
 import {
   MethodExport,
@@ -15,7 +15,7 @@ import {
   INodeWorker,
   TExportNode,
   TTypeNodes
-} from "@/nodes/@global/node.types"
+} from "@/nodes/global/node.types"
 
 export class LineFlowEffect2D extends Node2D {
   [PropType]: TCanvasNodes = "2D/line-flow-effect"

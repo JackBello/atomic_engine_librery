@@ -12,8 +12,8 @@ import {
   INodeWorker,
   TExportNode,
   TTypeNodes
-} from "@/nodes/@global/node.types"
-import { constructorNode } from "@/nodes/@global/constructor-node"
+} from "@/nodes/global/node.types"
+import { constructorNode } from "@/nodes/global/constructor-node"
 
 export class Collision2D extends Node2D {
   [PropType]: TCanvasNodes = "2D/handler/collision";

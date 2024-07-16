@@ -1,9 +1,9 @@
 import { TMode } from "@/types"
 import { handleContext2D } from "./handle"
 import { AbstractRender } from "../../abstract/render.abstract"
-import { INodeWorker } from "@/nodes/@global/node.types"
+import { INodeWorker } from "@/nodes/global/node.types"
 import { ISize2D } from "@/nodes/class/nodes-2D.types"
-import { RenderNode } from "../../@global/render-node"
+import { RenderNode } from "../../global/render-node"
 
 export class Render2D extends AbstractRender {
   protected node: INodeWorker = {} as any
@@ -139,22 +139,28 @@ export class Render2D extends AbstractRender {
 
         this.context.save()
 
-        this.context.translate(globalTransform.x, globalTransform.y)
+        this.context.translate(
+          node.options.calculate.translate.x,
+          node.options.calculate.translate.y
+        )
 
-        this.context.scale(globalTransform.scaleX, globalTransform.scaleY)
+        if (node.options.calculate.rotation !== 0)
+          this.context.rotate(node.options.calculate.rotation)
 
-        if (globalTransform.rotation !== 0)
-          this.context.rotate(globalTransform.rotation)
+        this.context.scale(
+          node.options.calculate.scale.x,
+          node.options.calculate.scale.y
+        )
 
         handleContext2D(node.__type__ as any, node.options, this.context)
-
-        this.context.restore()
 
         if (node.nodes.length > 0) {
           for (const child of node.nodes) {
             this.executeDrawEditor(child, globalTransform)
           }
         }
+
+        this.context.restore()
       }
     }
   }
@@ -211,27 +217,27 @@ export class Render2D extends AbstractRender {
         this.context.save()
 
         this.context.translate(
-          globalTransform.x * this.scaleViewport,
-          globalTransform.y * this.scaleViewport
+          node.options.calculate.translate.x,
+          node.options.calculate.translate.y
         )
+
+        if (node.options.calculate.rotation !== 0)
+          this.context.rotate(node.options.calculate.rotation)
 
         this.context.scale(
-          globalTransform.scaleX * this.scaleViewport,
-          globalTransform.scaleY * this.scaleViewport
+          node.options.calculate.scale.x,
+          node.options.calculate.scale.y
         )
 
-        if (globalTransform.rotation !== 0)
-          this.context.rotate(globalTransform.rotation)
-
         handleContext2D(node.__type__ as any, node.options, this.context)
-
-        this.context.restore()
 
         if (node.nodes.length > 0) {
           for (const child of node.nodes) {
             this.executeDrawGame(child, globalTransform)
           }
         }
+
+        this.context.restore()
       }
     }
   }
