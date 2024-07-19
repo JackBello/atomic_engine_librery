@@ -5,7 +5,7 @@ import { constructorNode } from "../../global/constructor-node"
 import { GlobalNode } from "../../global/global-node"
 import { ICalculate, IControlNode2D, IHandleCoords2D } from "../nodes-2D.types"
 import { PropType } from "../../symbols"
-import { TEventGlobalNode, TEventNode2D } from "../../event.type"
+import { TEventNode, TEventNode2D } from "../../event.type"
 import { TFunction } from "../../../types"
 import {
   MethodExport,
@@ -574,7 +574,7 @@ export class Node2D
     return constructorNode(this[MethodExport](true))
   }
 
-  emit(event: TEventGlobalNode | TEventNode2D, callback: TFunction): void {
+  emit(event: TEventNode | TEventNode2D, callback: TFunction): void {
     return this._events.addEventListener(event, callback)
   }
 

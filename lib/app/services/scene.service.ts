@@ -45,7 +45,7 @@ export class SceneService {
       else throw new Error("this instance is not a scene")
     }
 
-    this[MethodDispatchEvent]("scene:add", scenes)
+    this[MethodDispatchEvent]("scenes:add", scenes)
   }
 
   delete(slug: string) {
@@ -53,13 +53,19 @@ export class SceneService {
 
     if (slug === this.currentScene?.uuid) this._scene = undefined
 
-    this[MethodDispatchEvent]("scene:delete", slug)
+    this[MethodDispatchEvent]("scenes:delete", slug)
   }
 
   change(slug: string) {
-    this._scene = this.get(slug)
+    if (this._scene) this._scene[MethodDispatchEvent]("finish")
 
-    this[MethodDispatchEvent]("scene:change", slug)
+    const preScene = this.get(slug)
+
+    if (preScene) preScene[MethodDispatchEvent]("preload")
+
+    this._scene = preScene
+
+    this[MethodDispatchEvent]("scenes:change", slug)
   }
 
   reset(node: GlobalNode) {
@@ -78,14 +84,14 @@ export class SceneService {
   }
 
   export(format: "JSON" | "YAML" = "JSON") {
-    this[MethodDispatchEvent]("scene:export")
+    this[MethodDispatchEvent]("scenes:export")
     return format === "YAML"
       ? YAML.stringify(this[MethodExport]())
       : JSON5.stringify(this[MethodExport]())
   }
 
   import(data: string, format: "JSON" | "YAML" = "JSON") {
-    this[MethodDispatchEvent]("scene:import")
+    this[MethodDispatchEvent]("scenes:import")
 
     const structure: TExportNode<IControlEditor>[] =
       format === "YAML" ? YAML.parse(data) : JSON5.parse(data)

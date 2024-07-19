@@ -197,9 +197,9 @@ const rect2 = new Rectangle2D("other", {
   rotation: 0
 })
 
-// rect1.$nodes.add(rect2)
-// rect1.$nodes.add(lineFlow)
-// rect1.$nodes.add(collision)
+rect1.$nodes.add(rect2)
+rect1.$nodes.add(lineFlow)
+rect1.$nodes.add(collision)
 
 lv1.$nodes.add(rect1)
 // lv1.addNode(lineFlow)

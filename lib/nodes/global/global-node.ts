@@ -25,7 +25,6 @@ import { TFunction } from "../../types"
 import EventObserver from "../../app/utils/observer"
 import { handleScript } from "../../app/utils/script"
 import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "../../configs/nodes/global/node"
-import { TEventGlobalNode } from "../event.type"
 import {
   MethodDispatchEvent,
   MethodDispatchScript,
@@ -40,6 +39,7 @@ import { HandlerComponent } from "./handlers/components"
 import { HandlerFunction } from "./handlers/functions"
 import { HandlerMetaKey } from "./handlers/meta-keys"
 import { HandlerNode } from "./handlers/nodes"
+import { TEventNode } from "../event.type"
 
 export class GlobalNode
   extends AbstractNode
@@ -194,7 +194,7 @@ export class GlobalNode
     return constructorNode(this[MethodExport](true))
   }
 
-  emit(event: TEventGlobalNode, callback: TFunction): void {
+  emit(event: TEventNode, callback: TFunction): void {
     return this._events.addEventListener(event, callback)
   }
 

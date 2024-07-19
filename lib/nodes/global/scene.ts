@@ -12,6 +12,8 @@ import {
 import { omitKeys } from "@/app/utils/json"
 import { constructorNode } from "./constructor-node"
 import { MethodExport, MethodExportWorker, MethodGetApp } from "@/symbols"
+import { TEventNode, TEventScene } from "../event.type"
+import { TFunction } from "@/types"
 
 export class Scene extends GlobalNode {
   [PropType]: TCanvasNodes = "global/scene"
@@ -27,6 +29,10 @@ export class Scene extends GlobalNode {
 
   clone(): Scene {
     return constructorNode(this[MethodExport](true))
+  }
+
+  emit(event: TEventNode | TEventScene, callback: TFunction): void {
+    return this._events.addEventListener(event, callback)
   }
 
   reset(property?: keyof TCanvasNodeOptions["global/scene"]): void {

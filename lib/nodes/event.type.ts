@@ -1,25 +1,32 @@
-export type TEventGlobalNode =
-  | "global-node:change_script"
-  | "global-node:change_properties"
-  | "global-node:ready"
-  | "global-node:destroy"
-  | "global-node:renamed"
+export type TEventNode =
+  | "node:change_script"
+  | "node:change_properties"
+  | "node:ready"
+  | "node:destroy"
+  | "node:renamed"
+  | "node:three_nodes_open"
+  | "node:three_nodes_close"
+  | "node:three_nodes_remove_child"
+  | "node:three_nodes_add_child"
+  | "node:three_nodes_clear"
+
+export type TEventScene = "scene:preload" | "scene:ready" | "scene:finish"
 
 export type TEventNode2D =
-  | "node2D:modified"
-  | "node2D:moving"
-  | "node2D:rotated"
-  | "node2D:locked"
-  | "node2D:visible"
-  | "node2D:scaling"
-  | "node2D:select"
-  | "node2D:unselect"
-  | "node2D:hover"
+  | "node/2D:modified"
+  | "node/2D:moving"
+  | "node/2D:rotated"
+  | "node/2D:locked"
+  | "node/2D:visible"
+  | "node/2D:scaling"
+  | "node/2D:select"
+  | "node/2D:unselect"
+  | "node/2D:hover"
 
-export type TEventSelection2D =
-  | "selection2D:start"
-  | "selection2D:end"
-  | "selection2D:moving"
-  | "selection2D:nodes"
+export type TEventSelection =
+  | "selection:start"
+  | "selection:end"
+  | "selection:moving"
+  | "selection:nodes"
 
 export type TEventText2D = ""

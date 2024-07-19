@@ -1,11 +1,11 @@
 export type TEventScript = "script:execute" | "script:export" | "script:import"
 
 export type TEventScenes =
-  | "scene:add"
-  | "scene:delete"
-  | "scene:change"
-  | "scene:export"
-  | "scene:import"
+  | "scenes:add"
+  | "scenes:delete"
+  | "scenes:change"
+  | "scenes:export"
+  | "scenes:import"
 
 export type TEventAnimation =
   | "animation:play"
