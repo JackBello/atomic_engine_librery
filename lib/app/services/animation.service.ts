@@ -1,105 +1,114 @@
-import { AtomicGame } from "@/atomic-game"
-import { AtomicEngine } from "../../atomic-engine"
-import { MethodDispatchEvent } from "../../symbols"
-import { TFunction } from "../../types"
-import EventObserver from "../utils/observer"
-import { TEventAnimation } from "./event.type"
+import type { TAnything, TFunction } from "@/types";
+import type { TEventAnimation } from "./event.type";
+import type { AtomicGame } from "@/atomic-game";
+import type { AtomicEngine } from "@/atomic-engine";
 
-export class AnimationService {
-  private $app: AtomicEngine | AtomicGame
+import {
+	DispatchEvent,
+	_Script,
+	_Drawer,
+	_Collision,
+	SetGlobal,
+} from "@/symbols";
 
-  protected _ref!: number
-  protected _events: EventObserver = new EventObserver()
+import EventObserver from "../utils/observer";
 
-  protected _deltaTime: number = 0
-  protected _lastTime: number = 0
-  protected _status = {
-    pause: false,
-    playing: false
-  }
+export default class AnimationService {
+	private $app: AtomicEngine | AtomicGame;
 
-  get DELTA_TIME() {
-    return this._deltaTime
-  }
+	protected _loop!: number;
+	protected _events: EventObserver = new EventObserver();
 
-  get TIME_STAMP() {
-    return this._lastTime
-  }
+	protected _deltaTime = 0;
+	protected _lastTime = 0;
+	protected _status = {
+		pause: false,
+		playing: false,
+	};
 
-  get isPlaying() {
-    return this._status.playing
-  }
+	get DELTA_TIME() {
+		return this._deltaTime;
+	}
 
-  get isPause() {
-    return this._status.pause
-  }
+	get TIME_STAMP() {
+		return this._lastTime;
+	}
 
-  constructor(app: AtomicEngine | AtomicGame) {
-    this.$app = app
-  }
+	get isPlaying() {
+		return this._status.playing;
+	}
 
-  protected async loop(timestamp: number) {
-    if (!this._lastTime) this._lastTime = timestamp
-    this._deltaTime = timestamp - this._lastTime
+	get isPause() {
+		return this._status.pause;
+	}
 
-    const mode = this.$app.useGlobal("mode") === "preview"
-    const status = this.$app.useGlobal("status") === "play"
+	constructor(app: AtomicEngine | AtomicGame) {
+		this.$app = app;
+	}
 
-    if (this.$app.mode === "game" && status) {
-      await this.$app.script.process({
-        timestamp,
-        deltaTime: this._deltaTime
-      })
+	protected async loop(timestamp: number) {
+		if (!this._lastTime) this._lastTime = timestamp;
 
-      await this.$app.drawer.process()
-    } else if (this.$app.mode === "editor" || mode) {
-      this.$app.$collision.checkCollisions(
-        this.$app.scenes.currentScene?.$nodes.all ?? []
-      )
+		this._deltaTime = timestamp - this._lastTime;
 
-      await this.$app.script.process({
-        timestamp,
-        deltaTime: this._deltaTime
-      })
+		const isPreview = this.$app.global("mode") === "preview";
+		const isPlayingGame =
+			this.$app.mode === "game" && this.$app.global("status") === "play";
 
-      await this.$app.drawer.process()
+		if (isPlayingGame || isPreview) {
+			this.$app[_Collision].process();
 
-      this.$app.changeGlobal("re-draw", false)
-    }
+			await this.$app[_Script].process({
+				timestamp,
+				deltaTime: this._deltaTime,
+			});
+		}
 
-    this._ref = window.requestAnimationFrame(this.loop.bind(this))
-  }
+		if (isPlayingGame || this.$app.mode === "editor") {
+			await this.$app[_Drawer].process();
 
-  play() {
-    if (!this._status.playing) {
-      this[MethodDispatchEvent]("animation:play")
+			this.$app[SetGlobal]("re-draw", false);
+		}
 
-      this._status.playing = true
-      this._status.pause = false
+		this._loop = window.requestAnimationFrame(this.loop.bind(this));
+	}
 
-      this._ref = window.requestAnimationFrame(this.loop.bind(this))
-    }
-  }
+	play() {
+		if (!this._status.playing) {
+			this[DispatchEvent]("animation:play");
 
-  pause() {
-    if (this._status.playing) {
-      this[MethodDispatchEvent]("animation:pause")
+			this._status.playing = true;
+			this._status.pause = false;
 
-      window.cancelAnimationFrame(this._ref)
+			this._loop = window.requestAnimationFrame(this.loop.bind(this));
+		}
 
-      this._status.playing = false
-      this._status.pause = true
+		return this;
+	}
 
-      this._lastTime = 0
-      this._deltaTime = 0
-    }
-  }
+	pause() {
+		if (this._status.playing) {
+			this[DispatchEvent]("animation:pause");
 
-  emit(name: TEventAnimation, callback: TFunction) {
-    this._events.addEventListener(name, callback)
-  }
+			window.cancelAnimationFrame(this._loop);
 
-  [MethodDispatchEvent](name: TEventAnimation, ...args: any[]) {
-    this._events.emitEvent(name, args)
-  }
+			this._status.playing = false;
+			this._status.pause = true;
+
+			this._lastTime = 0;
+			this._deltaTime = 0;
+		}
+
+		return this;
+	}
+
+	emit(name: TEventAnimation, callback: TFunction) {
+		this._events.addEventListener(name, callback);
+
+		return this;
+	}
+
+	[DispatchEvent](name: TEventAnimation, ...args: TAnything[]) {
+		this._events.emitEvent(name, args);
+	}
 }

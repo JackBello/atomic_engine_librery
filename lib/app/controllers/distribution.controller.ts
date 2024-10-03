@@ -1,92 +1,80 @@
-import * as YAML from "yaml"
-import JSON5 from "json5"
-import { AtomicEngine } from "../../atomic-engine"
-import {
-  MethodExport,
-  MethodGetAllInsideAtomic,
-  MethodSetOptions
-} from "../../symbols"
-import { constructorNode } from "../../nodes/global/constructor-node"
-import { IOptionsAtomicGame } from "@/types"
+import * as YAML from "yaml";
+import JSON5 from "json5";
 
-export class DistributionController {
-  private $app: AtomicEngine
-  protected _formatExport: "JSON" | "YAML" = "JSON"
+import type { AtomicEngine } from "@/atomic-engine";
+import type { IOptionsAtomicGame } from "@/types";
 
-  constructor(app: AtomicEngine) {
-    this.$app = app
-  }
+import { $Scenes, ExportData, GetOptions, SetOptions } from "@/symbols";
 
-  import(text: string, format: "JSON" | "YAML" = "JSON") {
-    const structure = format === "JSON" ? JSON5.parse(text) : YAML.parse(text)
+import { Scene } from "@/nodes";
 
-    this.$app[MethodSetOptions](structure.options)
+export default class DistributionController {
+	private $app: AtomicEngine;
 
-    const scenes = constructorNode(structure.scenes)
+	constructor(app: AtomicEngine) {
+		this.$app = app;
+	}
 
-    this.$app.scenes.add(...scenes)
+	import(data: string, format: "JSON" | "YAML" = "JSON") {
+		const structure = format === "JSON" ? JSON5.parse(data) : YAML.parse(data);
 
-    this.$app.scenes.change(structure.scene)
-    // const $config = structure.$config
-  }
+		this.$app[SetOptions](structure.options);
 
-  export(
-    mode: "editor" | "game",
-    format: "JSON" | "YAML" = this.$app.options.export.format
-  ) {
-    return format === "YAML"
-      ? YAML.stringify(this[MethodExport](mode))
-      : JSON5.stringify(this[MethodExport](mode))
-  }
+		const scenes: Scene[] = [];
 
-  [MethodExport](mode: "editor" | "game") {
-    const scenes = this.$app.scenes[MethodExport]()
-    const all = this.$app[MethodGetAllInsideAtomic]()
+		for (const scene of structure.scenes) {
+			scenes.push(Scene.make(scene));
+		}
 
-    if (mode === "game") {
-      const optionsGame: IOptionsAtomicGame = {
-        background: all.options.game.background,
-        context: all.options.context,
-        dimension: all.options.dimension,
-        fps: {
-          delay: all.options.fps.delay,
-          velocity: all.options.fps.velocity
-        },
-        selector: all.options.selector,
-        viewport: {
-          height: all.options.game.viewport.height,
-          width: all.options.game.viewport.width
-        },
-        x: all.options.game.x,
-        y: all.options.game.y,
-        center: all.options.game.center,
-        full_screen: all.options.game.full_screen,
-        full_size: all.options.game.full_size,
-        icon: all.options.game.icon,
-        resizable: all.options.game.resizable,
-        title: all.options.game.title,
-        nodes: {
-          typeID: all.options.nodes.typeID
-        }
-      }
+		this.$app[$Scenes].add(...scenes);
+	}
 
-      return {
-        options: optionsGame,
-        scenes,
-        $global: all.global,
-        scene: this.$app.scenes.currentScene?.slug
-      }
-    }
+	export(
+		mode: "editor" | "game",
+		format: "JSON" | "YAML" = this.$app.options.export.format,
+	) {
+		return format === "YAML"
+			? YAML.stringify(this[ExportData](mode))
+			: JSON5.stringify(this[ExportData](mode));
+	}
 
-    return {
-      options: all.options,
-      scenes,
-      $plugins: all.plugins,
-      $configs: all.configs,
-      $controls: all.controls,
-      $nodes: all.nodes,
-      $global: all.global,
-      scene: this.$app.scenes.currentScene?.slug
-    }
-  }
+	[ExportData](mode: "editor" | "game") {
+		const scenes = this.$app[$Scenes][ExportData]();
+		const options = structuredClone(this.$app[GetOptions]());
+
+		if (mode === "game")
+			return {
+				options: {
+					background: options.game.background,
+					context: options.context,
+					dimension: options.dimension,
+					fps: {
+						delay: options.fps.delay,
+						velocity: options.fps.velocity,
+					},
+					selector: options.selector,
+					viewport: {
+						height: options.game.viewport.height,
+						width: options.game.viewport.width,
+					},
+					x: options.game.x,
+					y: options.game.y,
+					center: options.game.center,
+					full_screen: options.game.full_screen,
+					full_size: options.game.full_size,
+					icon: options.game.icon,
+					resizable: options.game.resizable,
+					title: options.game.title,
+					scene: options.game.scene,
+				} as IOptionsAtomicGame,
+				scenes,
+				version: this.$app.VERSION,
+			};
+
+		return {
+			options,
+			scenes,
+			version: this.$app.VERSION,
+		};
+	}
 }

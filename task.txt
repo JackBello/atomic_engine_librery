@@ -17,6 +17,10 @@
 
 - agregar el resto de nodos
 
-- hacer root node (GlobalNode)
+- hacer root node (GlobalNode) *LISTO
 
-- hacer motor de script
+- hacer motor de script *LISTO
+
+- arreglar el import del atomic engine
+
+- 

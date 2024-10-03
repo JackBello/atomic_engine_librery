@@ -1,307 +1,285 @@
-import { IOptionsAtomicEngine, TMode, TPropsAtomic } from "./types"
-import { TPlugin } from "./plugins/types"
-import { TEventCanvas } from "./event.type"
+import type {
+	AllTypesSimple,
+	IOptionsAtomicEngine,
+	TAnything,
+	TFunction,
+	TMode,
+} from "./types";
+import type { TPlugin, TPluginReturn } from "./plugins/types";
+import type { TEventCanvas } from "./event.type";
+
 import {
-  MethodDispatchEvent,
-  MethodDispatchScript,
-  MethodExportWorker,
-  MethodGetAllInsideAtomic,
-  MethodHasEvent,
-  MethodReloadEvents,
-  MethodSetOptions
-} from "./symbols"
-import EventObserver from "./app/utils/observer"
-import { DEFAULT_CONFIG_ATOMIC } from "./configs/engine/atomic"
-import { EventController } from "./app/controllers/event.controller"
-import { DistributionController } from "./app/controllers/distribution.controller"
-import { AnimationService } from "./app/services/animation.service"
-import { SceneService } from "./app/services/scene.service"
-import { CanvasService } from "./app/services/canvas.service"
-import { WindowController } from "./app/controllers/window.controller"
-import { ScriptService } from "./app/services/script.service"
-import { DrawerService } from "./app/services/drawer.service"
-import { CollisionController } from "./app/controllers/collision.controller"
+	$Canvas,
+	HiddenPlugin,
+	DispatchEvent,
+	SetOptions,
+	SetApp,
+	$Scenes,
+	$Animation,
+	_Drawer,
+	_Events,
+	_Window,
+	_Script,
+	_Collision,
+	_Distribution,
+	_ROOT_,
+	SetGlobal,
+	GetOptions,
+} from "./symbols";
+import { AddNodesToConstructorNode } from "./nodes/symbols";
+
+import EventObserver from "./app/utils/observer";
+
+import AnimationService from "./app/services/animation.service";
+import CanvasService from "./app/services/canvas.service";
+import ScenesService from "./app/services/scenes.service";
+
+import DistributionController from "./app/controllers/distribution.controller";
+import CollisionController from "./app/controllers/collision.controller";
+import EventController from "./app/controllers/event.controller";
+import WindowController from "./app/controllers/window.controller";
+import ScriptController from "./app/controllers/script.controller";
+import DrawerController from "./app/controllers/drawer.controller";
+
+import ConstructorNodes from "./nodes/global/constructors/constructor-nodes";
+
+import AbstractNode from "./nodes/abstract/node.abstract";
+import RootNode from "./nodes/global/root-node";
+
+import {
+	GlobalNode,
+	Collision2D,
+	CollisionShape2D,
+	ControlEdition2D,
+	LineFlowEffect2D,
+	Node2D,
+	Rectangle2D,
+	Scene,
+	Selection2D,
+	Text2D,
+} from "@/nodes";
+
+import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "./configs/engine/editor";
 
 export class AtomicEngine {
-  [key: string]: any
+	[key: string]: TAnything;
 
-  protected _options: IOptionsAtomicEngine
-  protected _plugins: Map<
-    string,
-    Omit<TPlugin, "install" | "name" | "events" | "inject">
-  > = new Map()
-  protected _configs: Map<string, Record<any, any>> = new Map()
-  protected _providers: Map<any, any> = new Map()
-  protected _nodes: Map<any, any> = new Map()
-  protected _controls: Map<string, any> = new Map()
-  protected _global: Map<string, any> = new Map()
-  protected _events: EventObserver = new EventObserver()
+	readonly VERSION = "1.0.0";
 
-  protected $$events!: EventController
-  protected $$distribution!: DistributionController
-  protected $$window!: WindowController
-  protected $$collision!: CollisionController
+	protected _options: IOptionsAtomicEngine;
+	protected _plugins: Map<string, Omit<TPluginReturn, "inject">> = new Map();
+	protected _providers: Map<string, AllTypesSimple> = new Map();
+	protected _configs: Map<string, AllTypesSimple> = new Map();
+	protected _nodes: Map<string, AllTypesSimple> = new Map();
+	protected _global: Map<string, AllTypesSimple> = new Map();
+	protected _events: EventObserver = new EventObserver();
 
-  protected $animation!: AnimationService
-  protected $scenes!: SceneService
-  protected $canvas!: CanvasService
-  protected $script!: ScriptService
-  protected $drawer!: DrawerService
+	readonly mode: TMode = "editor";
 
-  readonly mode: TMode = "editor"
+	[_ROOT_]!: RootNode;
 
-  get $collision() {
-    return this.$$collision
-  }
+	[$Animation]!: AnimationService;
+	[$Canvas]!: CanvasService;
+	[$Scenes]!: ScenesService;
 
-  get animation() {
-    return this.$animation
-  }
+	[_Drawer]!: DrawerController;
+	[_Events]!: EventController;
+	[_Window]!: WindowController;
+	[_Script]!: ScriptController;
+	[_Collision]!: CollisionController;
+	[_Distribution]!: DistributionController;
 
-  get scenes() {
-    return this.$scenes
-  }
+	get control() {
+		return {
+			preview: {
+				play: async () => {
+					if (this.global("mode") === "edition") {
+						if (this.global("reset")) {
+							await this[_Script].ready();
+							this._global.set("reset", false);
+						}
 
-  get canvas() {
-    return this.$canvas
-  }
+						this._global.set("mode", "preview");
+					}
+				},
+				stop: () => {
+					if (this[$Scenes].currentScene) {
+						this._global.set("mode", "edition");
+						this._global.set("reset", true);
 
-  get script() {
-    return this.$script
-  }
+						this[$Scenes].reset(this[$Scenes].currentScene);
+					}
+				},
+				pause: () => {
+					if (this.global("mode") === "preview")
+						this._global.set("mode", "edition");
+				},
+			},
+			game: {
+				play: () => {
+					this[_Window].createWindow();
+				},
+				stop: () => {
+					this[_Window].closeWindow();
+				},
+			},
+		};
+	}
 
-  get drawer() {
-    return this.$drawer
-  }
+	get ROOT() {
+		return this[_ROOT_];
+	}
 
-  get options() {
-    return Object.freeze({ ...this._options })
-  }
+	get animation() {
+		return this[$Animation];
+	}
 
-  get width() {
-    return this.options.width
-  }
+	get canvas() {
+		return this[$Canvas];
+	}
 
-  get height() {
-    return this.options.height
-  }
+	get scenes() {
+		return this[$Scenes];
+	}
 
-  constructor(options?: Partial<IOptionsAtomicEngine>) {
-    this._options = { ...DEFAULT_CONFIG_ATOMIC, ...options }
+	get size() {
+		return {
+			width: this.options.width,
+			height: this.options.height,
+		};
+	}
 
-    this.init()
+	constructor(options?: Partial<IOptionsAtomicEngine>) {
+		this._options = { ...DEFAULT_CONFIG_ATOMIC_ENGINE, ...options };
 
-    this.$$distribution = new DistributionController(this)
-    this.$$window = new WindowController(this)
-    this.$$events = new EventController(this)
-    this.$$collision = new CollisionController(this)
-  }
+		this.init();
+	}
 
-  protected init() {
-    this.$scenes = new SceneService(this)
-    this.$canvas = new CanvasService(this)
-    this.$script = new ScriptService(this)
-    this.$drawer = new DrawerService(this)
-    this.$animation = new AnimationService(this)
+	protected init() {
+		this._global.set("mode", "edition"); // "edition" = 0 | "game" = 1 | "preview" = 2
+		this._global.set("status", null); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
+		this._global.set("fps", null);
+		this._global.set("re-draw", true);
+		this._global.set("scale-viewport", 1);
+		this._global.set("reset", true);
 
-    this._global.set("mode", "edition") // "edition" = 0 | "game" = 1 | "preview" = 2
-    this._global.set("status", null) //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
-    this._global.set("fps", null)
-    this._global.set("re-draw", true)
-    this._global.set("scale-viewport", 1)
+		AbstractNode[SetApp](this);
+		ConstructorNodes[AddNodesToConstructorNode]({
+			GlobalNode,
+			Collision2D,
+			CollisionShape2D,
+			ControlEdition2D,
+			LineFlowEffect2D,
+			Node2D,
+			Rectangle2D,
+			Scene,
+			Selection2D,
+			Text2D,
+		});
 
-    this.scenes.emit("scene:change", () => {
-      if (this.scenes.currentScene) {
-        this.drawer.nodes.setRoot(
-          this.scenes.currentScene[MethodExportWorker]()
-        )
-      }
-    })
+		this[_ROOT_] = new RootNode();
 
-    this.setSize(this._options.width, this._options.height)
-  }
+		this[$Animation] = new AnimationService(this);
+		this[$Canvas] = new CanvasService(this);
+		this[$Scenes] = new ScenesService(this);
 
-  setSize(width: number, height: number) {
-    this._options.width = width
-    this._options.height = height
-    this.canvas.setSize(width, height)
-    this.drawer.render.setSize(width, height)
-    this.drawer.render.setSizeEditor(width, height)
-  }
+		this[_Drawer] = new DrawerController(this);
+		this[_Events] = new EventController(this);
+		this[_Window] = new WindowController(this);
+		this[_Script] = new ScriptController(this);
+		this[_Collision] = new CollisionController(this);
+		this[_Distribution] = new DistributionController(this);
 
-  setExport(
-    format: "JSON" | "YAML",
-    exclude: TPropsAtomic[] = [],
-    include: TPropsAtomic[] = []
-  ) {
-    this._options.export.format = format
-    this._options.export.exclude = exclude
-    this._options.export.include = include
-  }
+		this.setSize(this._options.width, this._options.height);
 
-  plugin(plugin: TPlugin, options?: any) {
-    this._plugins.set(plugin.name, {
-      config: plugin?.config,
-      nodes: plugin?.nodes,
-      providers: plugin?.providers
-    })
+		this[$Animation].play();
+	}
 
-    if (plugin.inject) {
-      this[plugin.name] = {}
-      for (const [name, method] of Object.entries(plugin.inject)) {
-        this[plugin.name][name] = method.bind(this)
-      }
-    }
+	setSize(width: number, height: number) {
+		this._options.width = width;
+		this._options.height = height;
 
-    if (plugin.events)
-      for (const [event, callback] of Object.entries(plugin.events)) {
-        if (callback) this._events.addEventListener(event, callback)
-      }
+		this[$Canvas].setSize(width, height);
 
-    if (plugin.install) plugin.install(this, options)
-  }
+		this[_Drawer].render.setSize(width, height);
+		this[_Drawer].render.setSizeEditor(width, height);
 
-  use(
-    path:
-      | `@${"config" | "providers" | "nodes"}/${string}`
-      | `@${"config" | "providers" | "nodes"}/${string}/${string}`
-  ) {
-    const app: Record<string, Map<any, any>> = {
-      config: this._configs,
-      providers: this._providers,
-      nodes: this._nodes
-    }
+		return this;
+	}
 
-    let plugin
+	setImport() {
+		return this;
+	}
 
-    if (
-      /@(config|providers|nodes)\/[a-zA-Z-_)(.$]+\/[a-zA-Z-_)(.$]+/g.test(path)
-    ) {
-      const [type, name, prop] = path.substring(1).split("/") as [
-        "config" | "providers" | "nodes",
-        string,
-        string
-      ]
+	use(plugin: TPlugin, options?: object) {
+		const install = plugin.install(this, options);
 
-      plugin = this._plugins.get(name)
+		this._plugins.set(plugin.name, {
+			nodes: install.nodes,
+			config: install.config,
+			process: install.process,
+			[HiddenPlugin]: install[HiddenPlugin],
+		});
 
-      return plugin ? plugin[type]?.[prop] : app[type].get(name)?.[prop]
-    }
+		if (install.functions) {
+			const processPlugin: Record<string, AllTypesSimple> = {};
 
-    if (/@(config|providers|nodes)\/[a-zA-Z-_)(.$]+/g.test(path)) {
-      const [type, name] = path.substring(1).split("/") as [
-        "config" | "providers" | "nodes",
-        string
-      ]
+			for (const [name, method] of Object.entries(install.functions)) {
+				processPlugin[name] = method.bind(this);
+			}
 
-      plugin = this._plugins.get(name)
+			this[plugin.name] = processPlugin;
+		}
 
-      return plugin ? plugin[type] : app[type].get(name)
-    }
-  }
+		return this;
+	}
 
-  useGlobal(name: string) {
-    return this._global.get(name)
-  }
+	emit(name: TEventCanvas, callback: TFunction) {
+		this._events.addEventListener(name, callback);
 
-  emit(
-    name: TEventCanvas,
-    callback: (app: AtomicEngine, event: Event) => void
-  ) {
-    this._events.addEventListener(name, callback)
-  }
+		return this;
+	}
 
-  config(name: string, config: Record<any, any>) {
-    if (this._plugins.has(name)) return
-    this._configs.set(name, config)
-  }
+	plugin(name: string) {
+		return this._plugins.get(name);
+	}
 
-  provide(name: string, provider: any) {
-    if (this._plugins.has(name)) return
-    this._providers.set(name, provider)
-  }
+	global(name: string) {
+		return this._global.get(name);
+	}
 
-  node(name: string, node: any) {
-    if (this._plugins.has(name)) return
-    this._nodes.set(name, node)
-  }
+	helpers() {
+		return {
+			Root: this[_ROOT_],
+			Scenes: this[$Scenes],
+			Canvas: this[$Canvas],
+			Animation: this[$Animation],
+		};
+	}
 
-  export(mode: "editor" | "game" = "editor", format: "JSON" | "YAML" = "JSON") {
-    return this.$$distribution.export(mode, format)
-  }
+	export(mode: "editor" | "game" = "editor", format: "JSON" | "YAML" = "JSON") {
+		return this[_Distribution].export(mode, format);
+	}
 
-  import(text: string, format: "JSON" | "YAML" = "JSON") {
-    this.$$distribution.import(text, format)
-  }
+	import(data: string, format: "JSON" | "YAML" = "JSON") {
+		this[_Distribution].import(data, format);
 
-  async start() {
-    if (this.$scenes.currentScene) await this.$script[MethodDispatchScript]()
-    this.animation.play()
-  }
+		return this;
+	}
 
-  changeGlobal(config: "mode" | "fps" | "status" | "re-draw", value: any) {
-    this._global.set(config, value)
-  }
+	[GetOptions]() {
+		return this._options;
+	}
 
-  preview() {
-    return {
-      play: async () => {
-        if (this.useGlobal("mode") === "edition") {
-          this._global.set("mode", "preview")
-          await this.$script.ready()
-        }
-      },
-      stop: () => {
-        if (this.useGlobal("mode") === "preview" && this.$scenes.currentScene) {
-          this._global.set("mode", "edition")
-          this.$scenes.reset(this.$scenes.currentScene)
-        }
-      },
-      pause: () => {
-        if (this.useGlobal("mode") === "preview")
-          this._global.set("mode", "edition")
-      }
-    }
-  }
+	[SetGlobal](name: string, value: AllTypesSimple) {
+		this._global.set(name, value);
+	}
 
-  game() {
-    return {
-      play: () => {
-        this.$$window.createWindow()
-      },
-      stop: () => {
-        this.$$window.closeWindow()
-      }
-    }
-  }
+	[SetOptions](options?: Partial<IOptionsAtomicEngine>) {
+		this._options = { ...DEFAULT_CONFIG_ATOMIC_ENGINE, ...options };
+	}
 
-  [MethodSetOptions](options?: Partial<IOptionsAtomicEngine>) {
-    this._options = { ...DEFAULT_CONFIG_ATOMIC, ...options }
-
-    this.init()
-
-    this.$$events[MethodReloadEvents]()
-  }
-
-  [MethodGetAllInsideAtomic]() {
-    return JSON.parse(
-      JSON.stringify({
-        options: this._options,
-        plugins: this._plugins,
-        configs: this._configs,
-        global: this._global,
-        controls: this._controls,
-        nodes: this._nodes,
-        providers: this._providers
-      })
-    )
-  }
-
-  [MethodDispatchEvent](event: TEventCanvas, ...args: any[]): void {
-    return this._events.emitEvent(event, ...args)
-  }
-
-  [MethodHasEvent](event: TEventCanvas): boolean {
-    return this._events.hasEventListener(event)
-  }
+	[DispatchEvent](event: TEventCanvas, ...args: AllTypesSimple[]): void {
+		this._events.emitEvent(event, ...args);
+	}
 }

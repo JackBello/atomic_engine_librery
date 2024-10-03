@@ -1,23 +1,24 @@
-import { formatterColor } from "./colors"
+import { formatterColor } from "./colors";
 
 export const serializeOptions = (
-  context: WebGL2RenderingContext,
-  options: any
+	context: WebGL2RenderingContext,
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	options: any,
 ) => {
-  const canvasWidth = context.canvas.width
-  const canvasHeight = context.canvas.height
+	const canvasWidth = context.canvas.width;
+	const canvasHeight = context.canvas.height;
 
-  const background = formatterColor(options.background)
-  const x = (options.x / canvasWidth) * 2 - 1
-  const y = 1 - (options.y / canvasHeight) * 2
-  const width = options.width / canvasWidth
-  const height = options.width / canvasHeight
+	const background = formatterColor(options.background);
+	const x = (options.x / canvasWidth) * 2 - 1;
+	const y = 1 - (options.y / canvasHeight) * 2;
+	const width = options.width / canvasWidth;
+	const height = options.width / canvasHeight;
 
-  return {
-    width,
-    height,
-    x,
-    y,
-    background
-  }
-}
+	return {
+		width,
+		height,
+		x,
+		y,
+		background,
+	};
+};

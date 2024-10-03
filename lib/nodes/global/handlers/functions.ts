@@ -1,73 +1,75 @@
-import { GlobalNode } from "@/nodes"
-import { IHandleFunction, TFunctionTuple } from "../node.types"
-import { AtomicGame } from "@/atomic-game"
-import { AtomicEngine } from "@/atomic-engine"
-import { TFunction } from "@/types"
-import { MethodGetApp } from "@/symbols"
-import { MethodSetFunctions, PropFunctions } from "@/nodes/symbols"
+import type { IHandleFunction, TFunctionTuple } from "../node.types";
+import type { GlobalNode } from "@/nodes";
+import type { AtomicGame } from "@/atomic-game";
+import type { AtomicEngine } from "@/atomic-engine";
+import type { TFunction } from "@/types";
+
+import { MethodSetFunctions, PropFunctions } from "@/nodes/symbols";
+import { _Drawer, GetApp, SetGlobal } from "@/symbols";
 
 export class HandlerFunction implements IHandleFunction {
-  private $node: GlobalNode
-  private $app: AtomicEngine | AtomicGame;
+	private $node: GlobalNode;
+	private $app: AtomicEngine | AtomicGame;
 
-  [PropFunctions]: Map<string, TFunction>
+	[PropFunctions]: Map<string, TFunction>;
 
-  constructor($node: GlobalNode) {
-    this.$node = $node
-    this.$app = this.$node[MethodGetApp]()
+	constructor($node: GlobalNode) {
+		this.$node = $node;
+		this.$app = this.$node[GetApp]();
 
-    this[PropFunctions] = new Map()
-  }
+		this[PropFunctions] = new Map();
+	}
 
-  toEntries(): TFunctionTuple[] {
-    return [...this[PropFunctions].entries()]
-  }
+	toEntries(): TFunctionTuple[] {
+		return [...this[PropFunctions].entries()];
+	}
 
-  gelAll(): TFunction[] {
-    return [...this[PropFunctions].values()]
-  }
+	gelAll(): TFunction[] {
+		return [...this[PropFunctions].values()];
+	}
 
-  get(name: string): TFunction | undefined {
-    return this[PropFunctions].get(name)
-  }
+	get(name: string): TFunction | undefined {
+		return this[PropFunctions].get(name);
+	}
 
-  add(name: string, func: TFunction): void {
-    this[PropFunctions].set(name, func)
+	add(name: string, func: TFunction): void {
+		this[PropFunctions].set(name, func);
 
-    this.$app.drawer.render.reDraw()
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.changeGlobal("re-draw", true)
-  }
+		this.$app[SetGlobal]("re-draw", true);
+	}
 
-  has(name: string): boolean {
-    return this[PropFunctions].has(name)
-  }
+	has(name: string): boolean {
+		return this[PropFunctions].has(name);
+	}
 
-  delete(name: string): boolean {
-    this.$app.drawer.render.reDraw()
+	delete(name: string): boolean {
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.changeGlobal("re-draw", true)
+		this.$app[SetGlobal]("re-draw", true);
 
-    return this[PropFunctions].delete(name)
-  }
+		return this[PropFunctions].delete(name);
+	}
 
-  execute(name: string, ...args: any[]): void {
-    const func = this.get(name)
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	execute(name: string, ...args: any[]): void {
+		const func = this.get(name);
 
-    if (!func) return
+		if (!func) return;
 
-    func(args)
-  }
+		func(args);
+	}
 
-  clear(): void {
-    this[PropFunctions].clear()
+	clear(): void {
+		this[PropFunctions].clear();
 
-    this.$app.drawer.render.reDraw()
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.changeGlobal("re-draw", true)
-  }
+		this.$app[SetGlobal]("re-draw", true);
+	}
 
-  [MethodSetFunctions](functions: TFunctionTuple[]): void {
-    this[PropFunctions] = new Map(functions)
-  }
+	[MethodSetFunctions](functions: TFunctionTuple[]): void {
+		this[PropFunctions] = new Map(functions);
+	}
 }

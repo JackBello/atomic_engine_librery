@@ -1,52 +1,59 @@
-import { AtomicGame } from "@/atomic-game"
-import { IHandleComponent, TComponent, TComponentTuple } from "../node.types"
-import { AtomicEngine } from "@/atomic-engine"
-import { MethodGetApp } from "@/symbols"
-import { GlobalNode } from "../global-node"
-import { MethodSetComponents, PropComponents } from "@/nodes/symbols"
+import type {
+	IHandleComponent,
+	TComponent,
+	TComponentTuple,
+} from "../node.types";
+import type { AtomicGame } from "@/atomic-game";
+import type { AtomicEngine } from "@/atomic-engine";
+import type { GlobalNode } from "@/nodes";
+
+import { MethodSetComponents, PropComponents } from "@/nodes/symbols";
+import { GetApp } from "@/symbols";
 
 export class HandlerComponent implements IHandleComponent {
-  private $node: GlobalNode
-  private $app: AtomicEngine | AtomicGame;
+	private $node: GlobalNode;
+	private $app: AtomicEngine | AtomicGame;
 
-  [PropComponents]: Map<string, TComponent>
+	[PropComponents]: Map<string, TComponent>;
 
-  constructor($node: GlobalNode) {
-    this.$node = $node
-    this.$app = this.$node[MethodGetApp]()
+	constructor($node: GlobalNode) {
+		this.$node = $node;
+		this.$app = this.$node[GetApp]();
 
-    this[PropComponents] = new Map()
-  }
+		this[PropComponents] = new Map();
 
-  toEntries(): TComponentTuple[] {
-    return [...this[PropComponents].entries()]
-  }
+		this.$app;
+	}
 
-  getAll(): TComponent[] {
-    return [...this[PropComponents].values()]
-  }
+	toEntries(): TComponentTuple[] {
+		return [...this[PropComponents].entries()];
+	}
 
-  get(name: string): TComponent | undefined {
-    return this[PropComponents].get(name)
-  }
+	getAll(): TComponent[] {
+		return [...this[PropComponents].values()];
+	}
 
-  add(name: string, component: TComponent): void {
-    this[PropComponents].set(name, component)
-  }
+	get(name: string): TComponent | undefined {
+		return this[PropComponents].get(name);
+	}
 
-  has(name: string): boolean {
-    return this[PropComponents].has(name)
-  }
+	add(name: string, component: TComponent): void {
+		this[PropComponents].set(name, component);
+	}
 
-  delete(name: string): boolean {
-    return this[PropComponents].delete(name)
-  }
+	has(name: string): boolean {
+		return this[PropComponents].has(name);
+	}
 
-  clear(): void {
-    this[PropComponents].clear()
-  }
+	delete(name: string): boolean {
+		return this[PropComponents].delete(name);
+	}
 
-  [MethodSetComponents](components: TComponentTuple[]): void {
-    this[PropComponents] = new Map(components)
-  }
+	clear(): void {
+		this[PropComponents].clear();
+	}
+
+	[MethodSetComponents](components: TComponentTuple[]): void {
+		this[PropComponents] = new Map(components);
+	}
 }

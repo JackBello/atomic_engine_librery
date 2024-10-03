@@ -1,244 +1,250 @@
-import { TMode } from "@/types"
-import { handleContext2D } from "./handle"
-import { AbstractRender } from "../../abstract/render.abstract"
-import { INodeWorker } from "@/nodes/global/node.types"
-import { ISize2D } from "@/nodes/class/nodes-2D.types"
-import { RenderNode } from "../../global/render-node"
+import type { TMode } from "@/types";
+import { handleContext2D } from "./handle";
+import { AbstractRender } from "../../abstract/render.abstract";
+import type { INodeWorker } from "@/nodes/global/node.types";
+import type { ISize2D } from "@/nodes/class/nodes-2D.types";
+import { RenderNode } from "../../global/render-node";
 
 export class Render2D extends AbstractRender {
-  protected node: INodeWorker = {} as any
-  protected mode: TMode
-  protected afterDraw: any[] = []
-  protected beforeDraw: any[] = []
-  protected scaleViewport: number = 1
-  protected gameSize: ISize2D = {
-    height: 0,
-    width: 0
-  }
-  protected editorSize: ISize2D = {
-    height: 0,
-    width: 0
-  }
+	protected node!: INodeWorker;
+	protected mode: TMode;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	protected afterDraw: any[] = [];
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	protected beforeDraw: any[] = [];
+	protected scaleViewport = 1;
+	protected gameSize: ISize2D = {
+		height: 0,
+		width: 0,
+	};
+	protected editorSize: ISize2D = {
+		height: 0,
+		width: 0,
+	};
 
-  configs: Record<string, any>
-  context: CanvasRenderingContext2D
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	configs: Record<string, any>;
+	context: CanvasRenderingContext2D;
 
-  constructor(
-    context: CanvasRenderingContext2D,
-    configs: Record<string, any>,
-    mode: TMode
-  ) {
-    super()
+	constructor(
+		context: CanvasRenderingContext2D,
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		configs: Record<string, any>,
+		mode: TMode,
+	) {
+		super();
 
-    this.context = context
-    this.configs = configs
-    this.mode = mode
-  }
+		this.context = context;
+		this.configs = configs;
+		this.mode = mode;
+	}
 
-  setScaleViewport(scale: number) {
-    this.scaleViewport = scale
-  }
+	setScaleViewport(scale: number) {
+		this.scaleViewport = scale;
+	}
 
-  setGameSize(size: ISize2D) {
-    this.gameSize = size
-  }
+	setGameSize(size: ISize2D) {
+		this.gameSize = size;
+	}
 
-  setEditorSize(size: ISize2D) {
-    this.editorSize = size
-  }
+	setEditorSize(size: ISize2D) {
+		this.editorSize = size;
+	}
 
-  setAfterDraw(draw: any[]) {
-    this.afterDraw = draw
-  }
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	setAfterDraw(draw: any[]) {
+		this.afterDraw = draw;
+	}
 
-  setBeforeDraw(draw: any[]) {
-    this.beforeDraw = draw
-  }
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	setBeforeDraw(draw: any[]) {
+		this.beforeDraw = draw;
+	}
 
-  loadNode(node: INodeWorker) {
-    this.node = node
-  }
+	loadNode(node: INodeWorker) {
+		this.node = node;
+	}
 
-  clear() {
-    this.context.clearRect(
-      0,
-      0,
-      this.context.canvas.width,
-      this.context.canvas.height
-    )
-  }
+	clear() {
+		this.context.clearRect(
+			0,
+			0,
+			this.context.canvas.width,
+			this.context.canvas.height,
+		);
+	}
 
-  draw() {
-    if (this.mode === "editor" && this.beforeDraw.length)
-      for (const draw of this.beforeDraw) {
-        handleContext2D(draw.__type__, draw.options, this.context)
-      }
+	draw() {
+		if (this.mode === "editor" && this.beforeDraw.length)
+			for (const draw of this.beforeDraw) {
+				handleContext2D(draw.__type__, draw.options, this.context);
+			}
 
-    if (this.mode === "editor" && this.node) this.executeDrawEditor(this.node)
-    if (this.mode === "game" && this.node) this.executeDrawGame(this.node)
+		if (this.mode === "editor" && this.node) this.executeDrawEditor(this.node);
+		if (this.mode === "game" && this.node) this.executeDrawGame(this.node);
 
-    if (this.mode === "editor" && this.afterDraw.length > 0)
-      for (const draw of this.afterDraw) {
-        handleContext2D(draw.__type__, draw.options, this.context)
-      }
-  }
+		if (this.mode === "editor" && this.afterDraw.length > 0)
+			for (const draw of this.afterDraw) {
+				handleContext2D(draw.__type__, draw.options, this.context);
+			}
+	}
 
-  protected executeDrawEditor(
-    node: INodeWorker,
-    parentTransform: {
-      x: number
-      y: number
-      scaleX: number
-      scaleY: number
-      rotation: number
-    } = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
-  ) {
-    if (node && node.__type__ === "global/scene" && node.nodes.length > 0) {
-      for (const child of node.nodes) {
-        this.executeDrawEditor(child)
-      }
-    }
+	protected executeDrawEditor(
+		node: INodeWorker,
+		parentTransform: {
+			x: number;
+			y: number;
+			scaleX: number;
+			scaleY: number;
+			rotation: number;
+			alpha: number;
+		} = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0, alpha: 1 },
+	) {
+		if (node && node.__type__ === "global/scene" && node.nodes.length > 0) {
+			for (const child of node.nodes) {
+				this.executeDrawEditor(child);
+			}
+		}
 
-    if (
-      node &&
-      node.options &&
-      node.options.visible &&
-      node.__type__.startsWith("2D")
-    ) {
-      const pan = this.configs.pan ?? { x: 0, y: 0 }
-      const zoom = this.configs.zoom ?? 1
+		if (node?.options?.visible && node.__type__.startsWith("2D")) {
+			const pan = this.configs.pan ?? { x: 0, y: 0 };
+			const zoom = this.configs.zoom ?? 1;
 
-      if (
-        RenderNode.isInEditor(
-          {
-            x: node.options.x + parentTransform.x,
-            y: node.options.y + parentTransform.y,
-            width: node.options.width,
-            height: node.options.height,
-            scaleX: node.options.scaleX * parentTransform.scaleX,
-            scaleY: node.options.scaleY * parentTransform.scaleY
-          },
-          {
-            height: this.editorSize.height,
-            width: this.editorSize.width
-          },
-          pan,
-          zoom
-        )
-      ) {
-        const globalTransform = RenderNode.calculateTransforms(
-          {
-            x: node.options.calculate.translate.x,
-            y: node.options.calculate.translate.y,
-            scaleX: node.options.calculate.scale.x,
-            scaleY: node.options.calculate.scale.y,
-            rotation: node.options.calculate.rotation
-          },
-          parentTransform
-        )
+			if (
+				RenderNode.isInEditor(
+					{
+						x: node.options.x + parentTransform.x,
+						y: node.options.y + parentTransform.y,
+						width: node.options.width,
+						height: node.options.height,
+						scaleX: node.options.scaleX * parentTransform.scaleX,
+						scaleY: node.options.scaleY * parentTransform.scaleY,
+					},
+					{
+						height: this.editorSize.height,
+						width: this.editorSize.width,
+					},
+					pan,
+					zoom,
+				)
+			) {
+				const globalTransform = RenderNode.calculateTransforms(
+					{
+						x: node.options.calculate.translate.x,
+						y: node.options.calculate.translate.y,
+						scaleX: node.options.calculate.scale.x,
+						scaleY: node.options.calculate.scale.y,
+						rotation: node.options.calculate.rotation,
+						alpha: node.options.opacity,
+					},
+					parentTransform,
+				);
 
-        this.context.save()
+				this.context.save();
 
-        this.context.translate(
-          node.options.calculate.translate.x,
-          node.options.calculate.translate.y
-        )
+				this.context.globalAlpha = globalTransform.alpha;
 
-        if (node.options.calculate.rotation !== 0)
-          this.context.rotate(node.options.calculate.rotation)
+				this.context.translate(
+					node.options.calculate.translate.x,
+					node.options.calculate.translate.y,
+				);
 
-        this.context.scale(
-          node.options.calculate.scale.x,
-          node.options.calculate.scale.y
-        )
+				if (node.options.calculate.rotation !== 0)
+					this.context.rotate(node.options.calculate.rotation);
 
-        handleContext2D(node.__type__ as any, node.options, this.context)
+				this.context.scale(
+					node.options.calculate.scale.x,
+					node.options.calculate.scale.y,
+				);
 
-        if (node.nodes.length > 0) {
-          for (const child of node.nodes) {
-            this.executeDrawEditor(child, globalTransform)
-          }
-        }
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				handleContext2D(node.__type__ as any, node.options, this.context);
 
-        this.context.restore()
-      }
-    }
-  }
+				if (node.nodes.length > 0) {
+					for (const child of node.nodes) {
+						this.executeDrawEditor(child, globalTransform);
+					}
+				}
 
-  protected executeDrawGame(
-    node: INodeWorker,
-    parentTransform: {
-      x: number
-      y: number
-      scaleX: number
-      scaleY: number
-      rotation: number
-    } = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 }
-  ) {
-    if (node && node.__type__ === "global/scene") {
-      for (const child of node.nodes) {
-        this.executeDrawGame(child)
-      }
-    }
+				this.context.restore();
+			}
+		}
+	}
 
-    if (
-      node &&
-      node.options &&
-      node.options.visible &&
-      node.__type__.startsWith("2D")
-    ) {
-      if (
-        RenderNode.isInViewport(
-          {
-            x: node.options.x + parentTransform.x,
-            y: node.options.y + parentTransform.y,
-            width: node.options.width,
-            height: node.options.height
-          },
-          {
-            x: 0,
-            y: 0,
-            height: this.gameSize.height,
-            width: this.gameSize.width
-          }
-        )
-      ) {
-        const globalTransform = RenderNode.calculateTransforms(
-          {
-            x: node.options.calculate.translate.x,
-            y: node.options.calculate.translate.y,
-            scaleX: node.options.calculate.scale.x,
-            scaleY: node.options.calculate.scale.y,
-            rotation: node.options.calculate.rotation
-          },
-          parentTransform
-        )
+	protected executeDrawGame(
+		node: INodeWorker,
+		parentTransform: {
+			x: number;
+			y: number;
+			scaleX: number;
+			scaleY: number;
+			rotation: number;
+			alpha: number;
+		} = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0, alpha: 1 },
+	) {
+		if (node && node.__type__ === "global/scene") {
+			for (const child of node.nodes) {
+				this.executeDrawGame(child);
+			}
+		}
 
-        this.context.save()
+		if (node?.options?.visible && node.__type__.startsWith("2D")) {
+			if (
+				RenderNode.isInViewport(
+					{
+						x: node.options.x + parentTransform.x,
+						y: node.options.y + parentTransform.y,
+						width: node.options.width,
+						height: node.options.height,
+					},
+					{
+						x: 0,
+						y: 0,
+						height: this.gameSize.height,
+						width: this.gameSize.width,
+					},
+				)
+			) {
+				const globalTransform = RenderNode.calculateTransforms(
+					{
+						x: node.options.calculate.translate.x,
+						y: node.options.calculate.translate.y,
+						scaleX: node.options.calculate.scale.x,
+						scaleY: node.options.calculate.scale.y,
+						rotation: node.options.calculate.rotation,
+						alpha: node.options.opacity,
+					},
+					parentTransform,
+				);
 
-        this.context.translate(
-          node.options.calculate.translate.x,
-          node.options.calculate.translate.y
-        )
+				this.context.save();
 
-        if (node.options.calculate.rotation !== 0)
-          this.context.rotate(node.options.calculate.rotation)
+				this.context.globalAlpha = globalTransform.alpha;
 
-        this.context.scale(
-          node.options.calculate.scale.x,
-          node.options.calculate.scale.y
-        )
+				this.context.translate(
+					node.options.calculate.translate.x * this.scaleViewport,
+					node.options.calculate.translate.y * this.scaleViewport,
+				);
 
-        handleContext2D(node.__type__ as any, node.options, this.context)
+				if (node.options.calculate.rotation !== 0)
+					this.context.rotate(node.options.calculate.rotation);
 
-        if (node.nodes.length > 0) {
-          for (const child of node.nodes) {
-            this.executeDrawGame(child, globalTransform)
-          }
-        }
+				this.context.scale(
+					node.options.calculate.scale.x * this.scaleViewport,
+					node.options.calculate.scale.y * this.scaleViewport,
+				);
 
-        this.context.restore()
-      }
-    }
-  }
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				handleContext2D(node.__type__ as any, node.options, this.context);
+
+				if (node.nodes.length > 0) {
+					for (const child of node.nodes) {
+						this.executeDrawGame(child, globalTransform);
+					}
+				}
+
+				this.context.restore();
+			}
+		}
+	}
 }

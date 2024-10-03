@@ -1,175 +1,225 @@
-import * as YAML from "yaml"
-import JSON5 from "json5"
-import { EventController } from "./app/controllers/event.controller"
-import { TEventCanvas } from "./event.type"
-import { AnimationService } from "./app/services/animation.service"
-import { SceneService } from "./app/services/scene.service"
+import * as YAML from "yaml";
+import JSON5 from "json5";
+
+import type {
+	AllTypesSimple,
+	IOptionsAtomicGame,
+	TAnything,
+	TFunction,
+	TMode,
+} from "./types";
+import type { TEventCanvas } from "./event.type";
+
 import {
-  MethodDispatchEvent,
-  MethodDispatchScript,
-  MethodExportWorker
-} from "./symbols"
-import { IOptionsAtomicGame, TMode } from "./types"
-import EventObserver from "./app/utils/observer"
-import { constructorNode } from "./nodes/global/constructor-node"
-import { CanvasService } from "./app/services/canvas.service"
-import { ScriptService } from "./app/services/script.service"
-import { DrawerService } from "./app/services/drawer.service"
-import { CollisionController } from "./app/controllers/collision.controller"
+	DispatchEvent,
+	SetApp,
+	$Scenes,
+	_ROOT_,
+	$Animation,
+	$Canvas,
+	_Drawer,
+	_Events,
+	_Script,
+	_Collision,
+	SetGlobal,
+	GetOptions,
+	SetOptions,
+} from "./symbols";
+import { AddNodesToConstructorNode } from "./nodes/symbols";
+
+import EventObserver from "./app/utils/observer";
+
+import AnimationService from "./app/services/animation.service";
+import CanvasService from "./app/services/canvas.service";
+import ScenesService from "./app/services/scenes.service";
+
+import CollisionController from "./app/controllers/collision.controller";
+import ScriptController from "./app/controllers/script.controller";
+import EventController from "./app/controllers/event.controller";
+import DrawerController from "./app/controllers/drawer.controller";
+
+import ConstructorNodes from "./nodes/global/constructors/constructor-nodes";
+
+import AbstractNode from "./nodes/abstract/node.abstract";
+import RootNode from "./nodes/global/root-node";
+
+import {
+	GlobalNode,
+	Collision2D,
+	CollisionShape2D,
+	ControlEdition2D,
+	LineFlowEffect2D,
+	Node2D,
+	Rectangle2D,
+	Scene,
+	Selection2D,
+	Text2D,
+} from "@/nodes";
+
+import { DEFAULT_CONFIG_ATOMIC_GAME } from "./configs/engine/game";
 
 export class AtomicGame {
-  [key: string]: any
+	[key: string]: TAnything;
 
-  protected _options!: IOptionsAtomicGame
-  protected _controls: Map<string, any> = new Map()
-  protected _global: Map<string, any> = new Map()
-  protected _events: EventObserver = new EventObserver()
+	readonly VERSION = "1.0.0";
 
-  protected $$events!: EventController
-  protected $$collision!: CollisionController
+	protected _options!: IOptionsAtomicGame;
+	protected _global: Map<string, AllTypesSimple> = new Map();
+	protected _events: EventObserver = new EventObserver();
 
-  protected $animation!: AnimationService
-  protected $scenes!: SceneService
-  protected $canvas!: CanvasService
-  protected $script!: ScriptService
-  protected $drawer!: DrawerService
+	readonly mode: TMode = "game";
 
-  readonly mode: TMode = "game"
+	[_ROOT_]!: RootNode;
 
-  get $collision() {
-    return this.$$collision
-  }
+	[$Animation]!: AnimationService;
+	[$Canvas]!: CanvasService;
+	[$Scenes]!: ScenesService;
 
-  get animation() {
-    return this.$animation
-  }
+	[_Drawer]!: DrawerController;
+	[_Events]!: EventController;
+	[_Script]!: ScriptController;
+	[_Collision]!: CollisionController;
 
-  get scenes() {
-    return this.$scenes
-  }
+	get ROOT() {
+		return this[_ROOT_];
+	}
 
-  get canvas() {
-    return this.$canvas
-  }
+	get animation() {
+		return this[$Animation];
+	}
 
-  get script() {
-    return this.$script
-  }
+	get canvas() {
+		return this[$Canvas];
+	}
 
-  get drawer() {
-    return this.$drawer
-  }
+	get scenes() {
+		return this[$Scenes];
+	}
 
-  get options() {
-    return Object.freeze(this._options)
-  }
+	get size() {
+		return {
+			width: this.options.width,
+			height: this.options.height,
+		};
+	}
 
-  get width() {
-    return this.options.viewport.width
-  }
+	resize() {
+		const windowAspect = window.innerWidth / window.innerHeight;
+		const gameAspect =
+			this._options.viewport.width / this._options.viewport.height;
 
-  get height() {
-    return this.options.viewport.height
-  }
+		if (windowAspect > gameAspect) {
+			this[$Canvas].instance.height = window.innerHeight;
+			this[$Canvas].instance.width =
+				this._options.viewport.width *
+				(this[$Canvas].instance.height / this._options.viewport.height);
 
-  resize() {
-    const windowAspect = window.innerWidth / window.innerHeight
-    const gameAspect =
-      this.options.viewport.width / this.options.viewport.height
+			this.setSize(this[$Canvas].instance.width, this[$Canvas].instance.height);
+		} else {
+			this[$Canvas].instance.width = window.innerWidth;
+			this[$Canvas].instance.height =
+				this._options.viewport.height *
+				(this[$Canvas].instance.width / this._options.viewport.width);
 
-    if (windowAspect > gameAspect) {
-      this.canvas.instance.height = window.innerHeight
-      this.canvas.instance.width =
-        this.options.viewport.width *
-        (this.canvas.instance.height / this.options.viewport.height)
+			this.setSize(this[$Canvas].instance.width, this[$Canvas].instance.height);
+		}
 
-      this.setSize(this.canvas.instance.width, this.canvas.instance.height)
-    } else {
-      this.canvas.instance.width = window.innerWidth
-      this.canvas.instance.height =
-        this.options.viewport.height *
-        (this.canvas.instance.width / this.options.viewport.width)
+		this[SetGlobal](
+			"scale-viewport",
+			this[$Canvas].instance.width / this._options.viewport.width,
+		);
 
-      this.setSize(this.canvas.instance.width, this.canvas.instance.height)
-    }
+		this.drawer.render.setScaleViewport(
+			this.global("scale-viewport") as number,
+		);
 
-    this.changeGlobal(
-      "scale-viewport",
-      this.canvas.instance.width / this.options.viewport.width
-    )
+		return this;
+	}
 
-    this.drawer.render.setScaleViewport(this.useGlobal("scale-viewport"))
-  }
+	setSize(width: number, height: number) {
+		this.canvas.setSize(width, height, true);
 
-  setSize(width: number, height: number) {
-    this.canvas.setSize(width, height, true)
-    this.drawer.render.setSize(width, height)
-  }
+		this[_Drawer].render.setSize(width, height);
 
-  useGlobal(name: string) {
-    return this._global.get(name)
-  }
+		return this;
+	}
 
-  emit(name: TEventCanvas, callback: (app: AtomicGame, event: Event) => void) {
-    this._events.addEventListener(name, callback)
-  }
+	global(name: string) {
+		return this._global.get(name);
+	}
 
-  changeGlobal(
-    config: "mode" | "scale-viewport" | "status" | "re-draw",
-    value: any
-  ) {
-    this._global.set(config, value)
-  }
+	emit(name: TEventCanvas, callback: TFunction) {
+		this._events.addEventListener(name, callback);
 
-  async load(text: string, format: "JSON" | "YAML" = "JSON") {
-    const structure = format === "JSON" ? JSON5.parse(text) : YAML.parse(text)
+		return this;
+	}
 
-    this._options = structure.options
+	async load(text: string, format: "JSON" | "YAML" = "JSON") {
+		const structure = format === "JSON" ? JSON5.parse(text) : YAML.parse(text);
 
-    this._global.set("mode", "game") // "edition" = 0 | "game" = 1 | "preview" = 2
-    this._global.set("status", "play") // "play" | "pause"
-    // | "game-over" | "stop" | "start" | "intro" | "cinematic"
-    this._global.set("scale-viewport", 1)
-    this._global.set("re-draw", true)
+		this._options = structure.options;
 
-    this.$scenes = new SceneService(this)
-    this.$canvas = new CanvasService(this)
-    this.$script = new ScriptService(this)
-    this.$drawer = new DrawerService(this)
-    this.$animation = new AnimationService(this)
+		this._global.set("mode", "game"); // "edition" = 0 | "game" = 1 | "preview" = 2
+		this._global.set("status", "play"); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
+		this._global.set("re-draw", true);
+		this._global.set("scale-viewport", 1);
 
-    this.$$events = new EventController(this)
-    this.$$collision = new CollisionController(this)
+		AbstractNode[SetApp](this);
+		ConstructorNodes[AddNodesToConstructorNode]({
+			GlobalNode,
+			Collision2D,
+			CollisionShape2D,
+			ControlEdition2D,
+			LineFlowEffect2D,
+			Node2D,
+			Rectangle2D,
+			Scene,
+			Selection2D,
+			Text2D,
+		});
 
-    this.drawer.render.setViewportGame(
-      this.options.viewport.width,
-      this.options.viewport.height
-    )
+		this[_ROOT_] = new RootNode();
 
-    this.scenes.emit("scene:change", () => {
-      if (this.scenes.currentScene) {
-        this.drawer.nodes.setRoot(
-          this.scenes.currentScene[MethodExportWorker]()
-        )
-      }
-    })
+		this[$Animation] = new AnimationService(this);
+		this[$Canvas] = new CanvasService(this);
+		this[$Scenes] = new ScenesService(this);
 
-    const scenes = constructorNode(structure.scenes)
+		this[_Drawer] = new DrawerController(this);
+		this[_Events] = new EventController(this);
+		this[_Script] = new ScriptController(this);
+		this[_Collision] = new CollisionController(this);
 
-    this.scenes.add(...scenes)
+		this[_Drawer].render.setViewportGame(
+			this.options.viewport.width,
+			this.options.viewport.height,
+		);
 
-    this.scenes.change(structure.scene)
+		this[$Scenes].add(Scene.make(structure.scenes[0]));
 
-    this.resize()
-  }
+		await this[$Scenes].change(this._options.scene ?? "");
 
-  async start() {
-    if (this.$scenes.currentScene) await this.$script[MethodDispatchScript]()
-    await this.$script.ready()
-    this.$animation.play()
-  }
+		this.resize();
 
-  [MethodDispatchEvent](event: TEventCanvas, ...args: any[]): void {
-    return this._events.emitEvent(event, ...args)
-  }
+		this[$Animation].play();
+
+		await this[_Script].ready();
+	}
+
+	[GetOptions]() {
+		return this._options;
+	}
+
+	[SetGlobal](name: string, value: AllTypesSimple) {
+		this._global.set(name, value);
+	}
+
+	[SetOptions](options?: Partial<IOptionsAtomicGame>) {
+		this._options = { ...DEFAULT_CONFIG_ATOMIC_GAME, ...options };
+
+		this.init();
+	}
+
+	[DispatchEvent](event: TEventCanvas, ...args: AllTypesSimple[]): void {
+		this._events.emitEvent(event, ...args);
+	}
 }

@@ -1,59 +1,60 @@
-import { AtomicEngine } from "../../atomic-engine"
-import { IOptionsGame } from "../../types"
-import jsonEscape from "json-escaping"
+import type { AtomicEngine } from "@/atomic-engine";
+import type { AtomicGame } from "@/atomic-game";
+import type { IOptionsGame } from "@/types";
 
-export class WindowController {
-  private $app: AtomicEngine
+export default class WindowController {
+	private $app: AtomicEngine | AtomicGame;
 
-  protected _window!: Window | null
+	protected _window!: Window | null;
 
-  constructor(app: AtomicEngine) {
-    this.$app = app
-  }
+	constructor(app: AtomicEngine | AtomicGame) {
+		this.$app = app;
+	}
 
-  protected makeConfigWindow(game: IOptionsGame) {
-    let config = `scrollbars=no,status=no,menubar=no,toolbar=no,location=no,directories=no`
+	protected makeConfigWindow(game: IOptionsGame) {
+		let config =
+			"scrollbars=no,status=no,menubar=no,toolbar=no,location=no,directories=no";
 
-    if (game.full_size) {
-      config += `,width=${screen.availWidth},height=${screen.availHeight}`
-    } else {
-      config += `,width=${game.viewport.width},height=${game.viewport.height}`
-    }
+		if (game.full_size) {
+			config += `,width=${screen.availWidth},height=${screen.availHeight}`;
+		} else {
+			config += `,width=${game.viewport.width},height=${game.viewport.height}`;
+		}
 
-    if (game.center && !game.full_size) {
-      const top = screen.height / 2 - game.viewport.height / 2
-      const left = screen.width / 2 - game.viewport.width / 2
+		if (game.center && !game.full_size) {
+			const top = screen.height / 2 - game.viewport.height / 2;
+			const left = screen.width / 2 - game.viewport.width / 2;
 
-      config += `,top=${top},left=${left}`
-    } else if (!game.full_size) {
-      config += `,top=${game.y},left=${game.x}`
-    } else {
-      config += `,top=0,left=0`
-    }
+			config += `,top=${top},left=${left}`;
+		} else if (!game.full_size) {
+			config += `,top=${game.y},left=${game.x}`;
+		} else {
+			config += ",top=0,left=0";
+		}
 
-    if (game.resizable) {
-      config += `,resizable=yes`
-    } else {
-      config += `,resizable=no`
-    }
+		if (game.resizable) {
+			config += ",resizable=yes";
+		} else {
+			config += ",resizable=no";
+		}
 
-    if (game.full_screen) {
-      config += `,fullscreen=yes`
-    } else {
-      config += `,fullscreen=no`
-    }
+		if (game.full_screen) {
+			config += ",fullscreen=yes";
+		} else {
+			config += ",fullscreen=no";
+		}
 
-    if (game.title) {
-      config += `,titlebar=yes`
-    } else {
-      config += `,titlebar=no`
-    }
+		if (game.title) {
+			config += ",titlebar=yes";
+		} else {
+			config += ",titlebar=no";
+		}
 
-    return config.trim()
-  }
+		return config.trim();
+	}
 
-  protected makeCanvas(game: IOptionsGame) {
-    const template = /* html */ `
+	protected makeCanvas(game: IOptionsGame) {
+		const template = /* html */ `
     <!DOCTYPE html>
     <html>
     <head>
@@ -61,10 +62,10 @@ export class WindowController {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <script src="https://localhost:5173/atomic-engine.iife.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
       ${
-        game.icon
-          ? `<link rel="icon" type="image/png" href="${game.icon}">`
-          : ""
-      }
+				game.icon
+					? `<link rel="icon" type="image/png" href="${game.icon}">`
+					: ""
+			}
       <title>${game.title ? game.title : "Atomic Engine"}</title>
       <style>
         body, html {
@@ -84,62 +85,62 @@ export class WindowController {
             (async ({ AtomicGame }) => {
               const app = new AtomicGame()
 
-              await app.load(${jsonEscape(this.$app.export("game"))})
+              await app.load(${JSON.stringify(`${this.$app.export("game")}`)})
 
               app.start()
             })(Atomic)
 
             ${
-              game.full_screen
-                ? `
+							game.full_screen
+								? `
             if (!document.fullscreenElement) {
               app.canvas.instance.requestFullscreen();
             } else {
               document.exitFullscreen();
             }
             `
-                : ""
-            }
+								: ""
+						}
 
             ${
-              game.resizable
-                ? ""
-                : `window.onresize = function() {
+							game.resizable
+								? ""
+								: `window.onresize = function() {
               window.resizeTo(${game.viewport.width}, ${game.viewport.height});
             }`
-            }
+						}
           })
         </script>
     </body>
     </html>
-`
+`;
 
-    return template
-  }
+		return template;
+	}
 
-  createWindow() {
-    if (this._window) return
+	createWindow() {
+		if (this._window) return;
 
-    this._window = window.open(
-      "",
-      "window-game",
-      this.makeConfigWindow(this.$app.options.game)
-    )
+		this._window = window.open(
+			"",
+			"window-game",
+			this.makeConfigWindow(this.$app.options.game),
+		);
 
-    if (this.$app.options.game.full_size) {
-      this._window?.focus()
-    }
+		if (this.$app.options.game.full_size) {
+			this._window?.focus();
+		}
 
-    this._window?.document.write(this.makeCanvas(this.$app.options.game))
+		this._window?.document.write(this.makeCanvas(this.$app.options.game));
 
-    this._window?.document.close()
-  }
+		this._window?.document.close();
+	}
 
-  closeWindow() {
-    if (!this._window) return
+	closeWindow() {
+		if (!this._window) return;
 
-    this._window.close()
+		this._window.close();
 
-    this._window = null
-  }
+		this._window = null;
+	}
 }

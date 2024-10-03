@@ -1,31 +1,31 @@
-import { AtomicGame } from "../lib"
+import { AtomicGame } from "../lib";
 
 const buttonUploadGame = document.querySelector(
-  `[data-id="uploadGame"]`
-) as HTMLInputElement
+	`[data-id="uploadGame"]`,
+) as HTMLInputElement;
 
-const game = new AtomicGame()
+const game = new AtomicGame();
 
 buttonUploadGame.addEventListener("input", () => {
-  const reader = new FileReader()
+	const reader = new FileReader();
 
-  const files = buttonUploadGame.files as FileList
+	const files = buttonUploadGame.files as FileList;
 
-  if (files.length) {
-    reader.readAsText(files[0])
+	if (files.length) {
+		reader.readAsText(files[0]);
 
-    reader.onload = async function () {
-      await game.load(reader.result as string)
+		reader.onload = async () => {
+			await game.load(reader.result as string);
 
-      game.start()
+			game.start();
 
-      buttonUploadGame.remove()
+			buttonUploadGame.remove();
 
-      reader.abort()
-    }
+			reader.abort();
+		};
 
-    reader.onerror = function () {
-      console.log(reader.error)
-    }
-  }
-})
+		reader.onerror = () => {
+			console.log(reader.error);
+		};
+	}
+});

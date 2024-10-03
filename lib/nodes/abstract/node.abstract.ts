@@ -1,23 +1,45 @@
-import { MethodGetApp, MethodStaticSetApp } from "../../symbols"
-import { AtomicEngine } from "@/atomic-engine"
-import { AtomicGame } from "@/atomic-game"
+import type { TAnything } from "@/types";
+import type { AtomicEngine } from "@/atomic-engine";
+import type { AtomicGame } from "@/atomic-game";
 
-export abstract class AbstractNode {
-  [key: string]: any
+import { GetApp, SetApp } from "@/symbols";
+import { $ConstructorNodes, $ConstructorScript } from "../symbols";
 
-  protected static $app: AtomicEngine | AtomicGame
+import ConstructorNodes from "../global/constructors/constructor-nodes";
+import ConstructorScript from "../global/constructors/constructor-script";
 
-  static import(data: string, format: "JSON" | "YAML" = "JSON"): any {
-    data
-    format
-    throw new Error("Method not implemented! Use derived class")
-  }
+export default abstract class AbstractNode {
+	[key: string]: TAnything;
 
-  [MethodGetApp]() {
-    return AbstractNode.$app
-  }
+	static [$ConstructorNodes] = new ConstructorNodes();
+	[$ConstructorScript] = new ConstructorScript();
 
-  static [MethodStaticSetApp](app: AtomicEngine | AtomicGame): void {
-    AbstractNode.$app = app
-  }
+	protected static $app: AtomicEngine | AtomicGame;
+
+	[GetApp]() {
+		return AbstractNode.$app;
+	}
+
+	static [SetApp](app: AtomicEngine | AtomicGame): void {
+		AbstractNode.$app = app;
+	}
+
+	protected utils = {
+		omitKeys(object: TAnything, keysOmit: string[], keysAdd: string[] = []) {
+			const duplicate: Record<string, TAnything> = {};
+
+			for (const key in object) {
+				if (keysOmit.indexOf(key) === -1) {
+					duplicate[key] = object[key];
+				}
+			}
+
+			if (keysAdd.length > 0)
+				for (const key of keysAdd) {
+					duplicate[key] = 0;
+				}
+
+			return duplicate;
+		},
+	};
 }

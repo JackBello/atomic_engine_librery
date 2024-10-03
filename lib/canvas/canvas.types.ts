@@ -1,6 +1,6 @@
-export type TCanvasType = "editor" | "game"
+export type TCanvasType = "editor" | "game";
 
 export interface ISizeCanvas {
-  width: number
-  height: number
+	width: number;
+	height: number;
 }

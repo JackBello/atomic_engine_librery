@@ -1,69 +1,98 @@
-import { AtomicGame } from "@/atomic-game"
-import { AtomicEngine } from "../../atomic-engine"
-import { MethodDispatchEvent, MethodReloadEvents } from "../../symbols"
+import type { AtomicEngine } from "@/atomic-engine";
+import type { AtomicGame } from "@/atomic-game";
 
-export class EventController {
-  private $app: AtomicEngine | AtomicGame
+import { $Canvas, DispatchEvent } from "@/symbols";
 
-  constructor(app: AtomicEngine | AtomicGame) {
-    this.$app = app
+export default class EventController {
+	private $app: AtomicEngine | AtomicGame;
 
-    this.init()
-  }
+	constructor(app: AtomicEngine | AtomicGame) {
+		this.$app = app;
 
-  protected init() {
-    if (this.$app.canvas && this.$app.canvas.event !== undefined) {
-      this.$app.canvas.event.addEventListener("mousedown", (event) => {
-        event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/mouse:down", this.$app, event)
-      })
+		this.init();
+	}
 
-      window.addEventListener("mouseup", (event) => {
-        event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/mouse:up", this.$app, event)
-      })
+	protected mousedown = (event: MouseEvent) => {
+		const target = (event.target as HTMLElement).dataset.typeCanvas;
 
-      window.addEventListener("mousemove", (event) => {
-        event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/mouse:move", this.$app, event)
-      })
+		if (target) {
+			event.preventDefault();
 
-      this.$app.canvas.event.addEventListener("wheel", (event) => {
-        event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/mouse:wheel", this.$app, event)
-      })
+			this.$app[DispatchEvent]("canvas/mouse:down", event, this.$app);
+		}
+	};
 
-      window.addEventListener("keydown", (event) => {
-        if (this.$app.mode === "game") {
-          event.preventDefault()
+	protected mouseup = (event: MouseEvent) => {
+		const target = (event.target as HTMLElement).dataset.typeCanvas;
 
-          if (event.key === "F11") {
-            this.$app.canvas.main.requestFullscreen()
-            ;(this.$app as AtomicGame).resize()
-          }
-        }
-        this.$app[MethodDispatchEvent]("canvas/key:down", this.$app, event)
-      })
+		if (target) {
+			event.preventDefault();
 
-      window.addEventListener("keyup", (event) => {
-        if (this.$app.mode === "game") event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/key:up", this.$app, event)
-      })
+			this.$app[DispatchEvent]("canvas/mouse:up", event, this.$app);
+		}
+	};
 
-      window.addEventListener("keypress", (event) => {
-        if (this.$app.mode === "game") event.preventDefault()
-        this.$app[MethodDispatchEvent]("canvas/key:press", this.$app, event)
-      })
+	protected mousemove = (event: MouseEvent) => {
+		this.$app[DispatchEvent]("canvas/mouse:move", event, this.$app);
+	};
 
-      if (this.$app.mode === "game" && this.$app instanceof AtomicGame) {
-        window.addEventListener("resize", () => {
-          ;(this.$app as AtomicGame).resize()
-        })
-      }
-    }
-  }
+	protected wheel = (event: WheelEvent) => {
+		event.preventDefault();
 
-  [MethodReloadEvents]() {
-    this.init()
-  }
+		this.$app[DispatchEvent]("canvas/mouse:wheel", event, this.$app);
+
+		if (this.$app[$Canvas] && this.$app[$Canvas].event !== undefined)
+			this.$app[$Canvas].event.removeEventListener("wheel", this.wheel);
+	};
+
+	protected keydown = (event: KeyboardEvent) => {
+		if (this.$app.mode === "game") {
+			event.preventDefault();
+
+			if (event.key === "F11") {
+				this.$app[$Canvas].main.requestFullscreen();
+
+				this.$app.resize();
+			}
+		}
+
+		this.$app[DispatchEvent]("canvas/key:down", event, this.$app);
+	};
+
+	protected keyup = (event: KeyboardEvent) => {
+		if (this.$app.mode === "game") event.preventDefault();
+
+		this.$app[DispatchEvent]("canvas/key:up", event, this.$app);
+	};
+
+	protected keypress = (event: KeyboardEvent) => {
+		if (this.$app.mode === "game") event.preventDefault();
+
+		this.$app[DispatchEvent]("canvas/key:press", event, this.$app);
+	};
+
+	protected resize = () => {
+		this.$app.resize();
+	};
+
+	protected init() {
+		if (this.$app[$Canvas] && this.$app[$Canvas].event !== undefined) {
+			window.addEventListener("mousedown", this.mousedown);
+
+			window.addEventListener("mouseup", this.mouseup);
+
+			window.addEventListener("mousemove", this.mousemove);
+
+			this.$app[$Canvas].event.addEventListener("wheel", this.wheel);
+
+			window.addEventListener("keydown", this.keydown);
+
+			window.addEventListener("keyup", this.keyup);
+
+			window.addEventListener("keypress", this.keypress);
+
+			if (this.$app.mode === "game")
+				window.addEventListener("resize", this.resize);
+		}
+	}
 }

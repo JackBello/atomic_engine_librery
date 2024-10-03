@@ -1,162 +1,141 @@
-import * as YAML from "yaml"
-import JSON5 from "json5"
-import { GlobalNode } from "./global-node"
-import { TCanvasNodes, TCanvasNodeOptions } from "../types"
-import { PropType } from "../symbols"
-import {
-  INodeRootWorker,
-  INodeWorker,
-  TExportNode,
-  TTypeNodes
-} from "./node.types"
-import { omitKeys } from "@/app/utils/json"
-import { constructorNode } from "./constructor-node"
-import { MethodExport, MethodExportWorker, MethodGetApp } from "@/symbols"
-import { TEventNode, TEventScene } from "../event.type"
-import { TFunction } from "@/types"
+import type { TCanvasNodes, TCanvasNodeOptions } from "../types";
+import type { INodeWorker, TExportNode, TTypeNodes } from "./node.types";
+import type { TEventNode, TEventScene } from "../event.type";
+import type { AllTypesSimple, TAnything, TFunction } from "@/types";
+
+import { MethodClone, MethodImport, MethodMake, PropType } from "../symbols";
+import { _Drawer, ExportWorker, GetApp, SetGlobal } from "@/symbols";
+
+import { GlobalNode } from "./global-node";
 
 export class Scene extends GlobalNode {
-  [PropType]: TCanvasNodes = "global/scene"
+	[PropType]: TCanvasNodes = "global/scene";
 
-  readonly NODE_NAME: TTypeNodes = "Scene"
+	readonly NODE_NAME: TTypeNodes = "Scene";
 
-  constructor(
-    slug: string,
-    options?: Partial<TCanvasNodeOptions["global/scene"]>
-  ) {
-    super(slug, options)
-  }
+	constructor(
+		slug: string,
+		options?: Partial<TCanvasNodeOptions["global/scene"]>,
+	) {
+		super(slug, options);
 
-  clone(): Scene {
-    return constructorNode(this[MethodExport](true))
-  }
+		this._root = this;
+	}
 
-  emit(event: TEventNode | TEventScene, callback: TFunction): void {
-    return this._events.addEventListener(event, callback)
-  }
+	clone(): Scene {
+		return this[MethodClone]();
+	}
 
-  reset(property?: keyof TCanvasNodeOptions["global/scene"]): void {
-    if (property) {
-      this._options[property] = this._initial[property]
+	emit(event: TEventNode | TEventScene, callback: TFunction): void {
+		this._events.addEventListener(event, callback);
+	}
 
-      if (!this._omit.includes(property)) {
-        const relative: any = {}
+	reset(property?: keyof TCanvasNodeOptions["global/scene"]): void {
+		if (property) {
+			this._options[property] = this._initial[property];
 
-        relative[property] = this._initial[property]
+			if (!this._omit.includes(property)) {
+				const relative: Record<string, AllTypesSimple> = {};
 
-        this[MethodGetApp]().drawer.nodes.updateNode(
-          relative,
-          this.path,
-          "path",
-          "index"
-        )
-      }
-    } else {
-      this._options = { ...this._initial }
+				relative[property] = this._initial[property];
 
-      this[MethodGetApp]().drawer.nodes.updateNode(
-        omitKeys(this._initial, this._omit),
-        this.path,
-        "path",
-        "index"
-      )
-    }
+				this[GetApp]()[_Drawer].nodes.updateNode(
+					this.id,
+					relative,
+					this.path,
+					"path",
+					"index",
+				);
+			}
+		} else {
+			this._options = { ...this._initial };
 
-    this[MethodGetApp]().drawer.render.reDraw()
+			this[GetApp]()[_Drawer].nodes.updateNode(
+				this.id,
+				this.utils.omitKeys(this._initial, this._omit),
+				this.path,
+				"path",
+				"index",
+			);
+		}
 
-    this[MethodGetApp]().changeGlobal("re-draw", true)
-  }
+		this[GetApp]()[_Drawer].render.reDraw();
 
-  toObject(): TCanvasNodeOptions["global/scene"] {
-    return this._options
-  }
+		this[GetApp]()[SetGlobal]("re-draw", true);
+	}
 
-  set(property: keyof TCanvasNodeOptions["global/scene"], value: any): void
-  set(properties: Partial<TCanvasNodeOptions["global/scene"]>): void
-  set(property?: unknown, value?: unknown, properties?: unknown): void {
-    if (property && typeof property === "string" && value) {
-      this._options[property as keyof TCanvasNodeOptions["global/scene"]] =
-        value as any
+	toObject(): TCanvasNodeOptions["global/scene"] {
+		return { ...this._options };
+	}
 
-      if (!this._omit.includes(property)) {
-        const relative: any = {}
+	set(
+		property: keyof TCanvasNodeOptions["global/scene"],
+		value: AllTypesSimple,
+	): void;
+	set(properties: Partial<TCanvasNodeOptions["global/scene"]>): void;
+	set(properties?: unknown, value?: unknown): void {
+		if (properties && typeof properties === "string" && value) {
+			this._options[properties as keyof TCanvasNodeOptions["global/scene"]] =
+				value as never;
 
-        relative[property] = value
+			if (!this._omit.includes(properties)) {
+				const relative: Record<string, AllTypesSimple> = {};
 
-        this[MethodGetApp]().drawer.nodes.updateNode(
-          relative,
-          this.path,
-          "path",
-          "index"
-        )
-      }
-    } else if (typeof properties !== "string") {
-      for (const [key, value] of Object.entries(this.properties)) {
-        this._options[key as keyof TCanvasNodeOptions["global/scene"]] =
-          value as any
-      }
+				relative[properties] = value;
 
-      this[MethodGetApp]().drawer.nodes.updateNode(
-        omitKeys(properties, this._omit),
-        this.path,
-        "path",
-        "index"
-      )
-    }
+				this[GetApp]()[_Drawer].nodes.updateNode(
+					this.id,
+					relative,
+					this.path,
+					"path",
+					"index",
+				);
+			}
+		} else if (typeof properties !== "string" && properties) {
+			for (const [key, value] of Object.entries(properties)) {
+				this._options[key as keyof TCanvasNodeOptions["global/scene"]] =
+					value as never;
+			}
 
-    this[MethodGetApp]().drawer.render.reDraw()
+			this[GetApp]()[_Drawer].nodes.updateNode(
+				this.id,
+				this.utils.omitKeys(properties, this._omit),
+				this.path,
+				"path",
+				"index",
+			);
+		}
 
-    this[MethodGetApp]().changeGlobal("re-draw", true)
-  }
+		this[GetApp]()[_Drawer].render.reDraw();
 
-  static import(data: string, format: "JSON" | "YAML" = "JSON") {
-    const structure: TExportNode<TCanvasNodeOptions["global/scene"]> =
-      format === "YAML" ? YAML.parse(data) : JSON5.parse(data)
+		this[GetApp]()[SetGlobal]("re-draw", true);
+	}
 
-    return constructorNode(structure) as Scene
-  }
+	static import(data: string, format: "JSON" | "YAML" = "JSON"): Scene {
+		return GlobalNode[MethodImport](data, format);
+	}
 
-  [MethodExportWorker](childNode: boolean = true): INodeRootWorker {
-    const nodes: INodeWorker[] = []
+	static make(structure: TExportNode<TAnything>) {
+		return GlobalNode[MethodMake](structure) as Scene;
+	}
 
-    if (childNode && this.$nodes.size)
-      for (const node of this.$nodes.all) {
-        nodes.push(node[MethodExportWorker](true) as INodeWorker)
-      }
+	[ExportWorker](childNode = true): INodeWorker {
+		const nodes: INodeWorker[] = [];
 
-    return {
-      __type__: this[PropType],
-      __path__: this.path,
-      location: {
-        id: this.id,
-        index: this.index,
-        slug: this.slug
-      },
-      nodes: nodes
-    }
-  }
+		if (childNode && this.$nodes.size)
+			for (const node of this.$nodes.all) {
+				nodes.push(node[ExportWorker](true) as INodeWorker);
+			}
 
-  [MethodExport](
-    childNode: boolean = true
-  ): TExportNode<TCanvasNodeOptions["global/scene"]> {
-    const nodes: TExportNode<any>[] = []
-
-    if (childNode && this.$nodes.size)
-      for (const node of this.$nodes.all) {
-        nodes.push(node[MethodExport](childNode))
-      }
-
-    return {
-      id: this.id,
-      slug: this.slug,
-      attributes: this.$attributes.toEntries(),
-      metaKeys: this.$metaKeys.toEntries(),
-      type: this.NODE_NAME,
-      script: this.script,
-      path: this.path,
-      index: this.index,
-      nodes,
-      options: this.toObject()
-    }
-  }
+		return {
+			__type__: this[PropType],
+			__path__: this.path,
+			location: {
+				id: this.id,
+				index: this.index,
+				slug: this.slug,
+			},
+			nodes: nodes,
+		};
+	}
 }

@@ -1,131 +1,149 @@
-import { AtomicEngine } from "../../atomic-engine"
-import { AbstractCanvas } from "../../canvas/abstract/canvas.abstract"
-import { CanvasEditor } from "../../canvas/canvas-editor"
-import { CanvasGame } from "../../canvas/canvas-game"
-import { TCanvasType } from "../../canvas/canvas.types"
-import { AtomicGame } from "@/atomic-game"
+import type { AbstractCanvas } from "@/canvas/abstract/canvas.abstract";
+import type { TCanvasType } from "@/canvas/canvas.types";
+import { AtomicEngine } from "@/atomic-engine";
+import { AtomicGame } from "@/atomic-game";
 
-export class CanvasService {
-  private $app: AtomicEngine | AtomicGame
+import { GetOptions } from "@/symbols";
 
-  protected _canvas: Map<TCanvasType, AbstractCanvas> = new Map()
-  protected _main?: HTMLElement
-  protected _event?: HTMLDivElement
+import { CanvasEditor } from "@/canvas/canvas-editor";
+import { CanvasGame } from "@/canvas/canvas-game";
 
-  get event(): HTMLDivElement {
-    return this._event as HTMLDivElement
-  }
+export default class CanvasService {
+	private $app: AtomicEngine | AtomicGame;
 
-  get main(): HTMLElement {
-    return this._main as HTMLElement
-  }
+	protected _canvas: Map<TCanvasType, AbstractCanvas> = new Map();
+	protected _main?: HTMLElement;
+	protected _event?: HTMLDivElement;
 
-  get instance(): HTMLCanvasElement {
-    let canvas: HTMLCanvasElement = document.createElement("canvas")
+	get event(): HTMLDivElement {
+		return this._event as HTMLDivElement;
+	}
 
-    if (this.$app.mode === "game")
-      canvas = (this._canvas.get("game") as AbstractCanvas).canvas
-    if (this.$app.mode === "editor")
-      canvas = (this._canvas.get("editor") as AbstractCanvas).canvas
+	get main(): HTMLElement {
+		return this._main as HTMLElement;
+	}
 
-    return canvas
-  }
+	get instance(): HTMLCanvasElement {
+		let canvas: HTMLCanvasElement = document.createElement("canvas");
 
-  constructor(app: AtomicEngine | AtomicGame) {
-    this.$app = app
+		if (this.$app.mode === "game")
+			canvas = (this._canvas.get("game") as AbstractCanvas).canvas;
+		if (this.$app.mode === "editor")
+			canvas = (this._canvas.get("editor") as AbstractCanvas).canvas;
 
-    const { width, height } = this.processSize()
+		return canvas;
+	}
 
-    if (this.$app.mode === "editor") {
-      this._canvas.set(
-        "editor",
-        new CanvasEditor({
-          width,
-          height
-        })
-      )
-    }
+	constructor(app: AtomicEngine | AtomicGame) {
+		this.$app = app;
 
-    if (this.$app.mode === "game") {
-      this._canvas.set(
-        "game",
-        new CanvasGame({
-          width,
-          height
-        })
-      )
-    }
+		const { width, height } = this.processSize();
 
-    this.initLayerEvent(width, height)
-    this.initLayerCanvas(this.$app.options.selector, width, height)
-  }
+		if (this.$app.mode === "editor") {
+			this._canvas.set(
+				"editor",
+				new CanvasEditor({
+					width,
+					height,
+				}),
+			);
+		}
 
-  protected processSize() {
-    if (this.$app.mode === "editor")
-      return {
-        width: (this.$app as AtomicEngine).options.width,
-        height: (this.$app as AtomicEngine).options.height
-      }
+		if (this.$app.mode === "game") {
+			this._canvas.set(
+				"game",
+				new CanvasGame({
+					width,
+					height,
+				}),
+			);
+		}
 
-    return {
-      width: (this.$app as AtomicGame).options.viewport.width,
-      height: (this.$app as AtomicGame).options.viewport.height
-    }
-  }
+		this.initLayerEvent(width, height);
+		this.initLayerCanvas(this.$app[GetOptions]().selector, width, height);
+	}
 
-  protected initLayerCanvas(selector: string, width: number, height: number) {
-    if (this._main) return
+	protected processSize() {
+		let size = {
+			width: 0,
+			height: 0,
+		};
 
-    this._main = document.createElement("section")
-    this._main.style.userSelect = "none"
-    this._main.style.position = "relative"
-    this._main.setAttribute("data-canvas-container", this.$app.mode)
-    this._main.style.width = width + "px"
-    this._main.style.height = height + "px"
-    this._main.style.background = this.$app.options.background
+		if (this.$app instanceof AtomicGame)
+			size = {
+				width: this.$app[GetOptions]().viewport.width,
+				height: this.$app[GetOptions]().viewport.height,
+			};
+		else if (this.$app instanceof AtomicEngine)
+			size = {
+				width: this.$app[GetOptions]().width,
+				height: this.$app[GetOptions]().height,
+			};
 
-    if (this.$app.mode === "editor") {
-      const editor = this._canvas.get("editor") as AbstractCanvas
-      this._main.appendChild(editor.canvas)
-    }
-    if (this.$app.mode === "game") {
-      const game = this._canvas.get("game") as AbstractCanvas
-      this._main.appendChild(game.canvas)
-    }
+		return size;
+	}
 
-    this._main.appendChild(this.event)
+	protected initLayerCanvas(
+		selector: string | undefined,
+		width: number,
+		height: number,
+	) {
+		if (this._main) return;
 
-    document.querySelector(selector)?.appendChild(this._main)
-  }
+		this._main = document.createElement("section");
+		this._main.style.userSelect = "none";
+		this._main.style.position = "relative";
+		this._main.setAttribute("data-canvas-container", this.$app.mode);
+		this._main.style.width = `${width}px`;
+		this._main.style.height = `${height}px`;
+		this._main.style.background = this.$app[GetOptions]().background;
 
-  protected initLayerEvent(width: number, height: number) {
-    if (this._event) return
+		if (this.$app.mode === "editor")
+			this._main.appendChild(
+				(this._canvas.get("editor") as AbstractCanvas).canvas,
+			);
 
-    this._event = document.createElement("div")
-    this._event.style.width = width + "px"
-    this._event.style.height = height + "px"
-    this._event.style.position = "absolute"
-    this._event.style.left = "0px"
-    this._event.style.top = "0px"
-    this._event.style.cursor = "default"
-    this._event.style.userSelect = "none"
-    this._event.style.touchAction = "none"
-    this._event.setAttribute("data-type-canvas", "events")
-  }
+		if (this.$app.mode === "game")
+			this._main.appendChild(
+				(this._canvas.get("game") as AbstractCanvas).canvas,
+			);
 
-  setSize(width: number, height: number, ignoreInstance: boolean = false) {
-    if (!this._main) return
-    if (!this._event) return
+		this._main.appendChild(this.event);
 
-    if (!ignoreInstance) {
-      this.instance.width = width
-      this.instance.height = height
-    }
+		if (selector) document.querySelector(selector)?.appendChild(this._main);
+		else {
+			document.body.appendChild(this._main);
+		}
+	}
 
-    this._event.style.width = width + "px"
-    this._event.style.height = height + "px"
+	protected initLayerEvent(width: number, height: number) {
+		if (this._event) return;
 
-    this._main.style.width = width + "px"
-    this._main.style.height = height + "px"
-  }
+		this._event = document.createElement("div");
+		this._event.style.width = `${width}px`;
+		this._event.style.height = `${height}px`;
+		this._event.style.position = "absolute";
+		this._event.style.left = "0px";
+		this._event.style.top = "0px";
+		this._event.style.cursor = "default";
+		this._event.style.userSelect = "none";
+		this._event.style.touchAction = "none";
+		this._event.setAttribute("data-type-canvas", "events");
+	}
+
+	setSize(width: number, height: number, ignoreInstance = false) {
+		if (!this._main) return;
+		if (!this._event) return;
+
+		if (!ignoreInstance) {
+			this.instance.width = width;
+			this.instance.height = height;
+		}
+
+		this._event.style.width = `${width}px`;
+		this._event.style.height = `${height}px`;
+
+		this._main.style.width = `${width}px`;
+		this._main.style.height = `${height}px`;
+	}
 }

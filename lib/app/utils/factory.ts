@@ -1,60 +1,60 @@
-import { TClass } from "../../types"
+import type { TAnything, TClass } from "../../types";
 
 export default class Factory {
-  [key: string]: any
+	[key: string]: TAnything;
 
-  private object: any
-  protected format: any = {}
+	private object: TAnything;
+	protected format: TAnything = {};
 
-  constructor(object: any) {
-    this.object = object
+	constructor(object: TAnything) {
+		this.object = object;
 
-    this.formatResource()
-  }
+		this.formatResource();
+	}
 
-  private formatResource() {
-    this.mapGetters()
-    this.deleteGetters()
-    this.applyFormat()
-  }
+	private formatResource() {
+		this.mapGetters();
+		this.deleteGetters();
+		this.applyFormat();
+	}
 
-  private mapGetters() {
-    for (const key in this.object) {
-      this[key] = this.object[key]
-    }
-  }
+	private mapGetters() {
+		for (const key in this.object) {
+			this[key] = this.object[key];
+		}
+	}
 
-  private deleteGetters() {
-    const formatKeys = Object.keys(this.format)
-    const resourceKeys = Object.keys(this.object)
+	private deleteGetters() {
+		const formatKeys = Object.keys(this.format);
+		const resourceKeys = Object.keys(this.object);
 
-    resourceKeys.forEach((key) => {
-      if (formatKeys.includes(key)) return
-      delete this[key]
-    })
+		for (const key of resourceKeys) {
+			if (formatKeys.includes(key)) return;
+			delete this[key];
+		}
 
-    delete this.object
-  }
+		this.object = undefined;
+	}
 
-  private applyFormat() {
-    const formatKeys = Object.keys(this.format)
+	private applyFormat() {
+		const formatKeys = Object.keys(this.format);
 
-    formatKeys.forEach((key) => {
-      this[key] = this.format[key]
-    })
-  }
+		for (const key of formatKeys) {
+			this[key] = this.format[key];
+		}
+	}
 
-  static collection(array: Array<any>, constructor: TClass<Factory>) {
-    if (!Array.isArray(array)) {
-      const typeOf = typeof array
+	static collection(array: Array<TAnything>, abstract: TClass<Factory>) {
+		if (!Array.isArray(array)) {
+			const typeOf = typeof array;
 
-      throw new Error(`Given data must be an Iterable: ${typeOf} given`)
-    }
+			throw new Error(`Given data must be an Iterable: ${typeOf} given`);
+		}
 
-    return array.map((item) => new constructor(item))
-  }
+		return array.map((item) => new abstract(item));
+	}
 
-  static create(object: any, constructor: TClass<Factory>) {
-    return new constructor(object)
-  }
+	static create(object: TAnything, abstract: TClass<Factory>) {
+		return new abstract(object);
+	}
 }

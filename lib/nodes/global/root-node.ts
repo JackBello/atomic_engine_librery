@@ -1,1292 +1,1349 @@
-import { MethodGetApp } from "@/symbols"
-import { AbstractNode } from "../abstract/node.abstract"
-import { INodeRootWorker, INodeWorker, TMode } from "./node.types"
-import { GlobalNode } from ".."
+import type { TMode } from "./node.types";
+import type { GlobalNode } from "./global-node";
 
-export class RootNode extends AbstractNode {
-  private root: [GlobalNode] = [this[MethodGetApp]().scenes.currentScene as any]
+import AbstractNode from "../abstract/node.abstract";
 
-  private _nodes_(path: string) {
-    return new Function("nodes", `return nodes${path}`)
-  }
+import {
+	MethodSetIndex,
+	MethodSetParent,
+	MethodSetRoot,
+	PropNodes,
+} from "../symbols";
+import { $Scenes, _Drawer, GetApp } from "@/symbols";
 
-  private _updateNodes_(nodes: INodeWorker[], parent?: INodeWorker) {
-    for (let index = 0; index < nodes.length; index++) {
-      const node = nodes[index]
+export default class RootNode extends AbstractNode {
+	private _nodes_(path: string) {
+		return new Function("nodes", `return nodes${path}`);
+	}
 
-      node.location.index = index
-      node.__path__ = parent ? `${parent.__path__}/${index}` : `${index}`
+	private _updateNodes_(nodes: GlobalNode[]) {
+		for (let index = 0; index < nodes.length; index++) {
+			const node = nodes[index];
 
-      if (node.nodes.length) {
-        this._updateNodes_(node.nodes, node)
-      }
-    }
-  }
+			node[MethodSetIndex](index);
 
-  traverse(callback: (node: INodeRootWorker | INodeWorker) => void) {}
+			if (node.$nodes.size > 0) {
+				this._updateNodes_(node.$nodes.all);
+			}
+		}
+	}
 
-  replaceNode(
-    from: string | number,
-    value: INodeWorker,
-    mode: TMode = "index"
-  ) {
-    const $node = this.getNode(from, mode)
+	private _traverse_(callback: (node: GlobalNode) => void, node: GlobalNode) {
+		callback(node);
 
-    if ($node === undefined) return false
+		for (const childNode of node.$nodes.all) {
+			this._traverse_(callback, childNode);
+		}
+	}
 
-    if (
-      mode === "index" &&
-      (Number(from) < 0 || Number(from) >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+	traverse(callback: (node: GlobalNode) => void) {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-    const $parent = this.getParentNode(from, mode)
+		this._traverse_(callback, root[0]);
+	}
 
-    if ($parent === undefined) return false
+	replaceNode(from: string | number, value: GlobalNode, mode: TMode = "index") {
+		const $node = this.getNode(from, mode);
 
-    $parent.nodes[$node.location.index] = value
+		if ($node === undefined) return false;
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		if (
+			mode === "index" &&
+			(Number(from) < 0 || Number(from) >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    return true
-  }
+		const $parent = this.getParentNode(from, mode);
 
-  replaceNodeByPath(from: string, value: INodeWorker, mode: TMode = "index") {
-    const $node = this.getNodeByPath(from, mode)
+		if ($parent === undefined) return false;
 
-    if ($node === undefined) return false
+		value[MethodSetParent]($node.parent);
+		value[MethodSetIndex]($node.index);
+		value[MethodSetRoot]($node.ROOT);
 
-    const $parent = this.getParentNodeByPath(from, mode)
+		$parent.$nodes[PropNodes][$node.index] = value;
 
-    if ($parent === undefined) return false
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    $parent.nodes[$node.location.index] = value
+		return true;
+	}
 
-    this._updateNodes_($parent.nodes, $parent as any)
+	replaceNodeByPath(from: string, value: GlobalNode, mode: TMode = "index") {
+		const $node = this.getNodeByPath(from, mode);
 
-    return true
-  }
+		if ($node === undefined) return false;
 
-  moveNodeByPath(
-    from: { search: string; mode: TMode },
-    to: { search: string; mode: TMode },
-    insert: "after" | "before" = "before"
-  ) {
-    const $nodeFrom = this.getNodeByPath(from.search, from.mode)
-    const $nodeTo = this.getNodeByPath(to.search, to.mode)
+		const $parent = this.getParentNodeByPath(from, mode);
 
-    if ($nodeFrom === undefined) return false
-    if ($nodeTo === undefined) return false
+		if ($parent === undefined) return false;
 
-    const $parentFrom = this.getParentNodeByPath(from.search, from.mode)
-    const $parentTo = this.getParentNodeByPath(to.search, to.mode)
+		value[MethodSetParent]($node.parent);
+		value[MethodSetIndex]($node.index);
+		value[MethodSetRoot]($node.ROOT);
 
-    if ($parentFrom === undefined) return false
-    if ($parentTo === undefined) return false
+		$parent.$nodes[PropNodes][$node.index] = value;
 
-    insert === "before"
-      ? $parentTo.nodes.splice($nodeTo.location.index + 1, 0, {
-          ...($nodeFrom as any)
-        })
-      : $parentTo.nodes.splice($nodeTo.location.index, 0, {
-          ...($nodeFrom as any)
-        })
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    $parentFrom.nodes.splice($nodeFrom.location.index, 1)
+		return true;
+	}
 
-    this._updateNodes_($parentFrom.nodes, $parentFrom as any)
-    this._updateNodes_($parentTo.nodes, $parentTo as any)
+	moveNodeByPath(
+		from: { search: string; mode: TMode },
+		to: { search: string; mode: TMode },
+		insert: "after" | "before" = "before",
+	) {
+		const $nodeFrom = this.getNodeByPath(from.search, from.mode);
+		const $nodeTo = this.getNodeByPath(to.search, to.mode);
 
-    return true
-  }
+		if ($nodeFrom === undefined) return false;
+		if ($nodeTo === undefined) return false;
 
-  moveNode(
-    from: { search: string | number; mode: TMode },
-    to: { search: string | number; mode: TMode },
-    insert: "after" | "before" = "before"
-  ) {
-    const $nodeFrom = this.getNode(from.search, from.mode)
-    const $nodeTo = this.getNode(to.search, to.mode)
+		const $parentFrom = this.getParentNodeByPath(from.search, from.mode);
+		const $parentTo = this.getParentNodeByPath(to.search, to.mode);
 
-    if ($nodeFrom === undefined) return false
-    if ($nodeTo === undefined) return false
+		if ($parentFrom === undefined) return false;
+		if ($parentTo === undefined) return false;
 
-    const $parentFrom = this.getParentNode(from.search, from.mode)
-    const $parentTo = this.getParentNode(to.search, to.mode)
+		insert === "before"
+			? $parentTo.$nodes[PropNodes].splice($nodeTo.index + 1, 0, {
+					...$nodeFrom,
+				} as GlobalNode)
+			: $parentTo.$nodes[PropNodes].splice($nodeTo.index, 0, {
+					...$nodeFrom,
+				} as GlobalNode);
 
-    if ($parentFrom === undefined) return false
-    if ($parentTo === undefined) return false
+		$parentFrom.$nodes[PropNodes].splice($nodeFrom.index, 1);
 
-    insert === "before"
-      ? $parentTo.nodes.splice($nodeTo.location.index + 1, 0, {
-          ...($nodeFrom as any)
-        })
-      : $parentTo.nodes.splice($nodeTo.location.index, 0, {
-          ...($nodeFrom as any)
-        })
+		this._updateNodes_($parentFrom.$nodes[PropNodes]);
+		this._updateNodes_($parentTo.$nodes[PropNodes]);
 
-    $parentFrom.nodes.splice($nodeFrom.location.index, 1)
+		return true;
+	}
 
-    this._updateNodes_($parentFrom.nodes, $parentFrom as any)
-    this._updateNodes_($parentTo.nodes, $parentTo as any)
+	moveNode(
+		from: { search: string | number; mode: TMode },
+		to: { search: string | number; mode: TMode },
+		insert: "after" | "before" = "before",
+	) {
+		const $nodeFrom = this.getNode(from.search, from.mode);
+		const $nodeTo = this.getNode(to.search, to.mode);
 
-    return true
-  }
+		if ($nodeFrom === undefined) return false;
+		if ($nodeTo === undefined) return false;
 
-  clearNodesByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.clearNodesByPathId(path)
+		const $parentFrom = this.getParentNode(from.search, from.mode);
+		const $parentTo = this.getParentNode(to.search, to.mode);
 
-    if (mode === "slug") return this.clearNodesByPathSlug(path)
+		if ($parentFrom === undefined) return false;
+		if ($parentTo === undefined) return false;
 
-    return this.clearNodesByPathIndex(path)
-  }
+		insert === "before"
+			? $parentTo.$nodes[PropNodes].splice($nodeTo.index + 1, 0, {
+					...$nodeFrom,
+				} as GlobalNode)
+			: $parentTo.$nodes[PropNodes].splice($nodeTo.index, 0, {
+					...$nodeFrom,
+				} as GlobalNode);
 
-  protected clearNodesByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		$parentFrom.$nodes[PropNodes].splice($nodeFrom.index, 1);
 
-    if ($node === undefined) return false
+		this._updateNodes_($parentFrom.$nodes[PropNodes]);
+		this._updateNodes_($parentTo.$nodes[PropNodes]);
 
-    if ($node.nodes.length === 0) return false
+		return true;
+	}
 
-    $node.nodes = []
+	clearNodesByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.clearNodesByPathId(path);
 
-    return true
-  }
+		if (mode === "slug") return this.clearNodesByPathSlug(path);
 
-  protected clearNodesByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+		return this.clearNodesByPathIndex(path);
+	}
 
-    if ($node === undefined) return false
+	protected clearNodesByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-    if ($node.nodes.length === 0) return false
+		if ($node === undefined) return false;
 
-    $node.nodes = []
+		if ($node.$nodes.size === 0) return false;
 
-    return true
-  }
+		$node.$nodes[PropNodes] = [];
 
-  protected clearNodesByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+		return true;
+	}
 
-    if ($node === undefined) return false
+	protected clearNodesByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-    if ($node.nodes.length === 0) return false
+		if ($node === undefined) return false;
 
-    $node.nodes = []
+		if ($node.$nodes.size === 0) return false;
 
-    return true
-  }
+		$node.$nodes[PropNodes] = [];
 
-  clearNodes(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.clearNodesById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.clearNodesBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.clearNodesByIndex(location)
-    return false
-  }
+		return true;
+	}
 
-  protected clearNodesById(location: string) {
-    const $node = this.getNodeById(location)
+	protected clearNodesByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-    if ($node === undefined) return false
+		if ($node === undefined) return false;
 
-    if ($node.nodes.length === 0) return false
+		if ($node.$nodes.size === 0) return false;
 
-    $node.nodes = []
+		$node.$nodes[PropNodes] = [];
 
-    return true
-  }
+		return true;
+	}
 
-  protected clearNodesBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+	clearNodes(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.clearNodesById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.clearNodesBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.clearNodesByIndex(location);
+		return false;
+	}
 
-    if ($node === undefined) return false
+	protected clearNodesById(location: string) {
+		const $node = this.getNodeById(location);
 
-    if ($node.nodes.length === 0) return false
+		if ($node === undefined) return false;
 
-    $node.nodes = []
+		if ($node.$nodes.size === 0) return false;
 
-    return true
-  }
+		$node.$nodes[PropNodes] = [];
 
-  protected clearNodesByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		return true;
+	}
 
-    if ($node === undefined) return false
+	protected clearNodesBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-    if ($node.nodes.length === 0) return false
+		if ($node === undefined) return false;
 
-    $node.nodes = []
+		if ($node.$nodes.size === 0) return false;
 
-    return true
-  }
+		$node.$nodes[PropNodes] = [];
 
-  getNodesByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getNodesByPathId(path)
+		return true;
+	}
 
-    if (mode === "slug") return this.getNodesByPathSlug(path)
+	protected clearNodesByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-    return this.getNodesByPathIndex(path)
-  }
+		if ($node === undefined) return false;
 
-  protected getNodesByPathId(path: string) {
-    return this.getNodeByPathId(path)?.nodes
-  }
+		if ($node.$nodes.size === 0) return false;
 
-  protected getNodesByPathSlug(path: string) {
-    return this.getNodeByPathSlug(path)?.nodes
-  }
+		$node.$nodes[PropNodes] = [];
 
-  protected getNodesByPathIndex(path: string) {
-    return this.getNodeByPathIndex(path)?.nodes
-  }
+		return true;
+	}
 
-  getNodes(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getNodesById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getNodesBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getNodesByIndex(location)
-  }
+	getNodesByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.getNodesByPathId(path);
 
-  protected getNodesById(location: string) {
-    return this.getNodeById(location)?.nodes
-  }
+		if (mode === "slug") return this.getNodesByPathSlug(path);
 
-  protected getNodesBySlug(location: string) {
-    return this.getNodeBySlug(location)?.nodes
-  }
+		return this.getNodesByPathIndex(path);
+	}
 
-  protected getNodesByIndex(location: number) {
-    return this.getNodeByIndex(location)?.nodes
-  }
+	protected getNodesByPathId(path: string) {
+		return this.getNodeByPathId(path)?.$nodes.all;
+	}
 
-  deleteNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.deleteNodeByPathId(path)
+	protected getNodesByPathSlug(path: string) {
+		return this.getNodeByPathSlug(path)?.$nodes.all;
+	}
 
-    if (mode === "slug") return this.deleteNodeByPathSlug(path)
+	protected getNodesByPathIndex(path: string) {
+		return this.getNodeByPathIndex(path)?.$nodes.all;
+	}
 
-    return this.deleteNodeByPathIndex(path)
-  }
+	getNodes(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.getNodesById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getNodesBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getNodesByIndex(location);
+	}
 
-  protected deleteNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+	protected getNodesById(location: string) {
+		return this.getNodeById(location)?.$nodes.all;
+	}
 
-    if ($node === undefined) return false
+	protected getNodesBySlug(location: string) {
+		return this.getNodeBySlug(location)?.$nodes.all;
+	}
 
-    const $parent = this.getParentNodeByPathId(path)
+	protected getNodesByIndex(location: number) {
+		return this.getNodeByIndex(location)?.$nodes.all;
+	}
 
-    if ($parent === undefined) return false
+	deleteNodeByPath(path: string, mode: TMode = "index") {
+		this[GetApp]()[_Drawer].nodes.deleteNode(path, "path", mode);
 
-    $parent.nodes.splice($node.location.index, 1)
+		if (mode === "id") return this.deleteNodeByPathId(path);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		if (mode === "slug") return this.deleteNodeByPathSlug(path);
 
-    return true
-  }
+		return this.deleteNodeByPathIndex(path);
+	}
 
-  protected deleteNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+	protected deleteNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-    if ($node === undefined) return false
+		if ($node === undefined) return false;
 
-    const $parent = this.getParentNodeByPathSlug(path)
+		const $parent = this.getParentNodeByPathId(path);
 
-    if ($parent === undefined) return false
+		if ($parent === undefined) return false;
 
-    $parent.nodes.splice($node.location.index, 1)
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    return true
-  }
+		return true;
+	}
 
-  protected deleteNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+	protected deleteNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-    if ($node === undefined) return false
+		if ($node === undefined) return false;
 
-    const $parent = this.getParentNodeByPathIndex(path)
+		const $parent = this.getParentNodeByPathSlug(path);
 
-    if ($parent === undefined) return false
+		if ($parent === undefined) return false;
 
-    $parent.nodes.splice($node.location.index, 1)
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    return true
-  }
+		return true;
+	}
 
-  deleteNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.deleteNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.deleteNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.deleteNodeByIndex(location)
-    return false
-  }
+	protected deleteNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-  protected deleteNodeById(location: string) {
-    const $node = this.getNodeById(location)
+		if ($node === undefined) return false;
 
-    if ($node === undefined) return false
+		const $parent = this.getParentNodeByPathIndex(path);
 
-    const $parent = this.getParentNodeById(location)
+		if ($parent === undefined) return false;
 
-    if ($parent === undefined) return false
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    $parent.nodes.splice($node.location.index, 1)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		return true;
+	}
 
-    return true
-  }
+	deleteNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.deleteNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.deleteNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.deleteNodeByIndex(location);
+		return false;
+	}
 
-  protected deleteNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+	protected deleteNodeById(location: string) {
+		const $node = this.getNodeById(location);
 
-    if ($node === undefined) return false
+		if ($node === undefined) return false;
 
-    const $parent = this.getParentNodeBySlug(location)
+		const $parent = this.getParentNodeById(location);
 
-    if ($parent === undefined) return false
+		if ($parent === undefined) return false;
 
-    $parent.nodes.splice($node.location.index, 1)
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    return true
-  }
+		return true;
+	}
 
-  protected deleteNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+	protected deleteNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-    if ($node === undefined) return false
+		if ($node === undefined) return false;
 
-    const $parent = this.getParentNodeByIndex(location)
+		const $parent = this.getParentNodeBySlug(location);
 
-    if ($parent === undefined) return false
+		if ($parent === undefined) return false;
 
-    $parent.nodes.splice($node.location.index, 1)
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    this._updateNodes_($parent.nodes, $parent as any)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    return true
-  }
+		return true;
+	}
 
-  addNodeByPath(
-    path: string,
-    value: INodeWorker,
-    mode: TMode = "index",
-    insert: "after" | "before" = "before"
-  ) {
-    if (mode === "id") return this.addNodeByPathId(path, value, insert)
+	protected deleteNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-    if (mode === "slug") return this.addNodeByPathSlug(path, value, insert)
+		if ($node === undefined) return false;
 
-    return this.addNodeByPathIndex(path, value, insert)
-  }
+		const $parent = this.getParentNodeByIndex(location);
 
-  protected addNodeByPathId(
-    path: string,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeByPathId(path)
+		if ($parent === undefined) return false;
 
-    if ($node === undefined) return false
+		$parent.$nodes[PropNodes].splice($node.index, 1);
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+		this._updateNodes_($parent.$nodes[PropNodes]);
 
-    return true
-  }
+		return true;
+	}
 
-  protected addNodeByPathSlug(
-    path: string,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeByPathSlug(path)
+	addNodeByPath(
+		path: string,
+		value: GlobalNode,
+		mode: TMode = "index",
+		insert: "after" | "before" = "before",
+	) {
+		if (mode === "id") return this.addNodeByPathId(path, value, insert);
 
-    if ($node === undefined) return false
+		if (mode === "slug") return this.addNodeByPathSlug(path, value, insert);
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+		return this.addNodeByPathIndex(path, value, insert);
+	}
 
-    return true
-  }
+	protected addNodeByPathId(
+		path: string,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeByPathId(path);
 
-  protected addNodeByPathIndex(
-    path: string,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeByPathIndex(path)
+		if ($node === undefined) return false;
 
-    if ($node === undefined) return false
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+		return true;
+	}
 
-    return true
-  }
+	protected addNodeByPathSlug(
+		path: string,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeByPathSlug(path);
 
-  addNode(
-    location: string,
-    value: INodeWorker,
-    mode: TMode,
-    insert: "after" | "before" = "before"
-  ) {
-    if (typeof location === "string" && mode === "id")
-      return this.addNodeById(location, value, insert)
-    else if (typeof location === "string" && mode === "slug")
-      return this.addNodeBySlug(location, value, insert)
-    else if (typeof location === "number" && mode === "index")
-      return this.addNodeByIndex(location, value, insert)
-    return false
-  }
+		if ($node === undefined) return false;
 
-  protected addNodeById(
-    location: string,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeById(location)
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    if ($node === undefined) return false
+		return true;
+	}
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+	protected addNodeByPathIndex(
+		path: string,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeByPathIndex(path);
 
-    return true
-  }
+		if ($node === undefined) return false;
 
-  protected addNodeBySlug(
-    location: string,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeBySlug(location)
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    if ($node === undefined) return false
+		return true;
+	}
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+	addNode(
+		location: string,
+		value: GlobalNode,
+		mode: TMode,
+		insert: "after" | "before" = "before",
+	) {
+		if (typeof location === "string" && mode === "id")
+			return this.addNodeById(location, value, insert);
+		if (typeof location === "string" && mode === "slug")
+			return this.addNodeBySlug(location, value, insert);
+		if (typeof location === "number" && mode === "index")
+			return this.addNodeByIndex(location, value, insert);
+		return false;
+	}
 
-    return true
-  }
+	protected addNodeById(
+		location: string,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeById(location);
 
-  protected addNodeByIndex(
-    location: number,
-    value: INodeWorker,
-    insert: "after" | "before"
-  ) {
-    const $node = this.getNodeByIndex(location)
+		if ($node === undefined) return false;
 
-    if ($node === undefined) return false
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    insert === "after" ? $node.nodes.unshift(value) : $node.nodes.push(value)
+		return true;
+	}
 
-    return true
-  }
+	protected addNodeBySlug(
+		location: string,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeBySlug(location);
 
-  searchNodeByPath(
-    from: string,
-    search: {
-      value: string
-      mode: TMode
-    },
-    mode: TMode = "index"
-  ) {
-    if (mode === "id") return this.searchNodeByPathId(from, search)
+		if ($node === undefined) return false;
 
-    if (mode === "slug") return this.searchNodeByPathSlug(from, search)
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    return this.searchNodeByPathIndex(from, search)
-  }
+		return true;
+	}
 
-  protected searchNodeByPathId(
-    from: string,
-    search: {
-      value: string
-      mode: TMode
-    }
-  ) {
-    const $node = this.getNodeByPathId(from)
+	protected addNodeByIndex(
+		location: number,
+		value: GlobalNode,
+		insert: "after" | "before",
+	) {
+		const $node = this.getNodeByIndex(location);
 
-    if ($node === undefined) return undefined
+		if ($node === undefined) return false;
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+		insert === "after"
+			? $node.$nodes[PropNodes].unshift(value)
+			: $node.$nodes[PropNodes].push(value);
 
-    const nodes: INodeWorker[] = [$node as any]
+		return true;
+	}
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+	searchNodeByPath(
+		from: string,
+		search: {
+			value: string;
+			mode: TMode;
+		},
+		mode: TMode = "index",
+	) {
+		if (mode === "id") return this.searchNodeByPathId(from, search);
 
-      if (!node) return undefined
+		if (mode === "slug") return this.searchNodeByPathSlug(from, search);
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+		return this.searchNodeByPathIndex(from, search);
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeByPathId(
+		from: string,
+		search: {
+			value: string;
+			mode: TMode;
+		},
+	) {
+		const $node = this.getNodeByPathId(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  protected searchNodeByPathSlug(
-    from: string,
-    search: {
-      value: string
-      mode: TMode
-    }
-  ) {
-    const $node = this.getNodeByPathSlug(from)
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    if ($node === undefined) return undefined
+		const nodes: GlobalNode[] = [$node];
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-    const nodes: INodeWorker[] = [$node as any]
+			if (!node) return undefined;
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-      if (!node) return undefined
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+		return undefined;
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeByPathSlug(
+		from: string,
+		search: {
+			value: string;
+			mode: TMode;
+		},
+	) {
+		const $node = this.getNodeByPathSlug(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  protected searchNodeByPathIndex(
-    from: string,
-    search: {
-      value: string | number
-      mode: TMode
-    }
-  ) {
-    const $node = this.getNodeByPathIndex(from)
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    if ($node === undefined) return undefined
+		const nodes: GlobalNode[] = [$node];
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-    const nodes: INodeWorker[] = [$node as any]
+			if (!node) return undefined;
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-      if (!node) return undefined
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+		return undefined;
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeByPathIndex(
+		from: string,
+		search: {
+			value: string | number;
+			mode: TMode;
+		},
+	) {
+		const $node = this.getNodeByPathIndex(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  searchNode(
-    from: string | number,
-    search: { value: string | number; mode: TMode },
-    mode: TMode = "index"
-  ) {
-    if (typeof from === "string" && mode === "id")
-      return this.searchNodeById(from, search)
-    else if (typeof from === "string" && mode === "slug")
-      return this.searchNodeBySlug(from, search)
-    else if (typeof from === "number" && mode === "index")
-      return this.searchNodeByIndex(from, search)
-  }
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-  protected searchNodeById(
-    from: string,
-    search: { value: string | number; mode: TMode }
-  ) {
-    const $node = this.getNodeById(from)
+		const nodes: GlobalNode[] = [$node];
 
-    if ($node === undefined) return undefined
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+			if (!node) return undefined;
 
-    const nodes: INodeWorker[] = [$node as any]
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-      if (!node) return undefined
+		return undefined;
+	}
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+	searchNode(
+		from: string | number,
+		search: { value: string | number; mode: TMode },
+		mode: TMode = "index",
+	) {
+		if (typeof from === "string" && mode === "id")
+			return this.searchNodeById(from, search);
+		if (typeof from === "string" && mode === "slug")
+			return this.searchNodeBySlug(from, search);
+		if (typeof from === "number" && mode === "index")
+			return this.searchNodeByIndex(from, search);
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeById(
+		from: string,
+		search: { value: string | number; mode: TMode },
+	) {
+		const $node = this.getNodeById(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  protected searchNodeBySlug(
-    from: string,
-    search: { value: string | number; mode: TMode }
-  ) {
-    const $node = this.getNodeBySlug(from)
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    if ($node === undefined) return undefined
+		const nodes: GlobalNode[] = [$node];
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-    const nodes: INodeWorker[] = [$node as any]
+			if (!node) return undefined;
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-      if (!node) return undefined
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+		return undefined;
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeBySlug(
+		from: string,
+		search: { value: string | number; mode: TMode },
+	) {
+		const $node = this.getNodeBySlug(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  protected searchNodeByIndex(
-    from: number,
-    search: { value: string | number; mode: TMode }
-  ) {
-    const $node = this.getNodeByIndex(from)
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    if ($node === undefined) return undefined
+		const nodes: GlobalNode[] = [$node];
 
-    if (
-      search.mode === "index" &&
-      typeof search.value === "number" &&
-      (search.value < 0 || search.value >= $node.nodes.length)
-    )
-      throw new Error("Indexes out ranges")
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-    const nodes: INodeWorker[] = [$node as any]
+			if (!node) return undefined;
 
-    while (nodes.length > 0) {
-      let node = nodes.shift()
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-      if (!node) return undefined
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-      if (search.mode === "id" && node.location.id === search.value) {
-        return node
-      } else if (
-        search.mode === "slug" &&
-        node.location.slug === search.value
-      ) {
-        return node
-      } else if (
-        search.mode === "index" &&
-        typeof search.value === "number" &&
-        node.location.index === search.value
-      ) {
-        return node
-      }
+		return undefined;
+	}
 
-      nodes.push(...Array.from(node.nodes))
-    }
+	protected searchNodeByIndex(
+		from: number,
+		search: { value: string | number; mode: TMode },
+	) {
+		const $node = this.getNodeByIndex(from);
 
-    return undefined
-  }
+		if ($node === undefined) return undefined;
 
-  getNodeByPath(
-    path: string,
-    mode: TMode = "index"
-  ): INodeWorker | INodeRootWorker | undefined {
-    if (mode === "id") return this.getNodeByPathId(path)
+		if (
+			search.mode === "index" &&
+			typeof search.value === "number" &&
+			(search.value < 0 || search.value >= $node.$nodes.all.length)
+		)
+			throw new Error("Indexes out ranges");
 
-    if (mode === "slug") return this.getNodeByPathSlug(path)
+		const nodes: GlobalNode[] = [$node];
 
-    return this.getNodeByPathIndex(path)
-  }
+		while (nodes.length > 0) {
+			const node = nodes.shift();
 
-  protected getNodeByPathId(
-    path: string
-  ): INodeWorker | INodeRootWorker | undefined {
-    const parts = path.split("/")
+			if (!node) return undefined;
 
-    let $node = undefined
+			if (search.mode === "id" && node.id === search.value) {
+				return node;
+			}
+			if (search.mode === "slug" && node.slug === search.value) {
+				return node;
+			}
+			if (
+				search.mode === "index" &&
+				typeof search.value === "number" &&
+				node.index === search.value
+			) {
+				return node;
+			}
 
-    for (const part of parts) {
-      if ($node) {
-        $node = $node.nodes.find((node) => node.location.id === part)
-      } else {
-        $node = this._root_.find((node) => node.location.id === part)
-      }
-    }
+			nodes.push(...Array.from(node.$nodes.all));
+		}
 
-    return $node
-  }
+		return undefined;
+	}
 
-  protected getNodeByPathSlug(
-    path: string
-  ): INodeWorker | INodeRootWorker | undefined {
-    const parts = path.split("/")
+	getNodeByPath(path: string, mode: TMode = "index"): GlobalNode | undefined {
+		if (mode === "id") return this.getNodeByPathId(path);
 
-    let $node = undefined
+		if (mode === "slug") return this.getNodeByPathSlug(path);
 
-    for (const part of parts) {
-      if ($node) {
-        $node = $node.nodes.find((node) => node.location.slug === part)
-      } else {
-        $node = this._root_.find((node) => node.location.slug === part)
-      }
-    }
+		return this.getNodeByPathIndex(path);
+	}
 
-    return $node
-  }
+	protected getNodeByPathId(path: string): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-  protected getNodeByPathIndex(
-    path: string
-  ): INodeWorker | INodeRootWorker | undefined {
-    path = "[" + path.replace(/\//g, "].nodes[") + "]"
+		if (!root[0]) return undefined;
 
-    return this._nodes_(path)(this._root_)
-  }
+		const parts = path.split("/");
 
-  getNode(
-    location: string | number,
-    mode: TMode = "index"
-  ): INodeWorker | INodeRootWorker | undefined {
-    if (typeof location === "string" && mode === "id")
-      return this.getNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getNodeByIndex(location)
-  }
+		let $node = undefined;
 
-  protected getNodeById(
-    location: string
-  ): INodeWorker | INodeRootWorker | undefined {
-    return this._root_.find((node) => node.location.id === location)
-  }
+		for (const part of parts) {
+			if ($node) {
+				$node = $node.$nodes.all.find((node) => node.id === part);
+			} else {
+				$node = root.find((node) => node.id === part);
+			}
+		}
 
-  protected getNodeBySlug(
-    location: string
-  ): INodeWorker | INodeRootWorker | undefined {
-    return this._root_.find((node) => node.location.slug === location)
-  }
+		return $node;
+	}
 
-  protected getNodeByIndex(
-    location: number
-  ): INodeWorker | INodeRootWorker | undefined {
-    let left = 0
-    let right = this._root_.length - 1
+	protected getNodeByPathSlug(path: string): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-    while (left <= right) {
-      const mid = Math.floor((left + right) / 2)
+		if (!root[0]) return undefined;
 
-      let midValue = this._root_[mid].location.index
+		const parts = path.split("/");
 
-      if (midValue === location) {
-        return this._root_[mid]
-      } else if (midValue < location) {
-        left = mid + 1
-      } else {
-        right = mid - 1
-      }
-    }
+		let $node = undefined;
 
-    return undefined
-  }
+		for (const part of parts) {
+			if ($node) {
+				$node = $node.$nodes.all.find((node) => node.slug === part);
+			} else {
+				$node = root.find((node) => node.slug === part);
+			}
+		}
 
-  hasNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.hasNodeByPathId(path)
+		return $node;
+	}
 
-    if (mode === "slug") return this.hasNodeByPathSlug(path)
+	protected getNodeByPathIndex(path: string): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-    return this.hasNodeByPathIndex(path)
-  }
+		if (!root[0]) return undefined;
 
-  protected hasNodeByPathId(path: string) {
-    return this.getNodeByPathId(path) !== undefined
-  }
+		return this._nodes_(`[${path.replace(/\//g, "].$nodes.all[")}]`)(root);
+	}
 
-  protected hasNodeByPathSlug(path: string) {
-    return this.getNodeByPathSlug(path) !== undefined
-  }
+	getNode(
+		location: string | number,
+		mode: TMode = "index",
+	): GlobalNode | undefined {
+		if (typeof location === "string" && mode === "id")
+			return this.getNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getNodeByIndex(location);
+	}
 
-  protected hasNodeByPathIndex(path: string) {
-    return this.getNodeByPathIndex(path) !== undefined
-  }
+	protected getNodeById(location: string): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-  hasNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.hasNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.hasNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.hasNodeByIndex(location)
-    return false
-  }
+		if (!root[0]) return undefined;
 
-  protected hasNodeById(location: string) {
-    return this.getNodeById(location) !== undefined
-  }
+		return root.find((node) => node.id === location);
+	}
 
-  protected hasNodeBySlug(location: string) {
-    return this.getNodeBySlug(location) !== undefined
-  }
+	protected getNodeBySlug(location: string): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-  protected hasNodeByIndex(location: number) {
-    return this.getNodeByIndex(location) !== undefined
-  }
+		if (!root[0]) return undefined;
 
-  getParentNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getParentNodeByPathId(path)
+		return root.find((node) => node.slug === location);
+	}
 
-    if (mode === "slug") return this.getParentNodeByPathSlug(path)
+	protected getNodeByIndex(location: number): GlobalNode | undefined {
+		const root: [GlobalNode] = [
+			this[GetApp]()[$Scenes].currentScene as GlobalNode,
+		];
 
-    return this.getParentNodeByPathIndex(path)
-  }
+		if (!root[0]) return undefined;
 
-  protected getParentNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		let left = 0;
+		let right = root.length - 1;
 
-    if ($node === undefined) return undefined
+		while (left <= right) {
+			const mid = Math.floor((left + right) / 2);
 
-    if (!("parent" in $node)) return undefined
+			const midValue = root[mid].index;
 
-    return $node.parent
-  }
+			if (midValue === location) {
+				return root[mid];
+			}
+			if (midValue < location) {
+				left = mid + 1;
+			} else {
+				right = mid - 1;
+			}
+		}
 
-  protected getParentNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+		return undefined;
+	}
 
-    if ($node === undefined) return undefined
+	hasNodeByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.hasNodeByPathId(path);
 
-    if (!("parent" in $node)) return undefined
+		if (mode === "slug") return this.hasNodeByPathSlug(path);
 
-    return $node.parent
-  }
+		return this.hasNodeByPathIndex(path);
+	}
 
-  protected getParentNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+	protected hasNodeByPathId(path: string) {
+		return this.getNodeByPathId(path) !== undefined;
+	}
 
-    if ($node === undefined) return undefined
+	protected hasNodeByPathSlug(path: string) {
+		return this.getNodeByPathSlug(path) !== undefined;
+	}
 
-    if (!("parent" in $node)) return undefined
+	protected hasNodeByPathIndex(path: string) {
+		return this.getNodeByPathIndex(path) !== undefined;
+	}
 
-    return $node.parent
-  }
+	hasNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.hasNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.hasNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.hasNodeByIndex(location);
+		return false;
+	}
 
-  getParentNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getParentNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getParentNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getParentNodeByIndex(location)
-  }
+	protected hasNodeById(location: string) {
+		return this.getNodeById(location) !== undefined;
+	}
 
-  protected getParentNodeById(location: string) {
-    const $node = this.getNodeById(location)
+	protected hasNodeBySlug(location: string) {
+		return this.getNodeBySlug(location) !== undefined;
+	}
 
-    if ($node === undefined) return undefined
+	protected hasNodeByIndex(location: number) {
+		return this.getNodeByIndex(location) !== undefined;
+	}
 
-    if (!("parent" in $node)) return undefined
+	getParentNodeByPath(
+		path: string,
+		mode: TMode = "index",
+	): GlobalNode | undefined {
+		if (mode === "id") return this.getParentNodeByPathId(path);
 
-    return $node.parent
-  }
+		if (mode === "slug") return this.getParentNodeByPathSlug(path);
 
-  protected getParentNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+		return this.getParentNodeByPathIndex(path);
+	}
 
-    if ($node === undefined) return undefined
+	protected getParentNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent
-  }
+		if ($node.parent === undefined) return undefined;
 
-  protected getParentNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		return $node.parent;
+	}
 
-    if ($node === undefined) return undefined
+	protected getParentNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent
-  }
+		if ($node.parent === undefined) return undefined;
 
-  getPreviousSiblingNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getPreviousSiblingNodeByPathId(path)
+		return $node.parent;
+	}
 
-    if (mode === "slug") return this.getPreviousSiblingNodeByPathSlug(path)
+	protected getParentNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-    return this.getPreviousSiblingNodeByPathIndex(path)
-  }
+		if ($node === undefined) return undefined;
 
-  protected getPreviousSiblingNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		if ($node.parent === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		return $node.parent;
+	}
 
-    if (!("parent" in $node)) return undefined
+	getParentNode(
+		location: string | number,
+		mode: TMode = "index",
+	): GlobalNode | undefined {
+		if (typeof location === "string" && mode === "id")
+			return this.getParentNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getParentNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getParentNodeByIndex(location);
+	}
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+	protected getParentNodeById(location: string) {
+		const $node = this.getNodeById(location);
 
-  protected getPreviousSiblingNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+		if ($node === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		if ($node.parent === undefined) return undefined;
 
-    if (!("parent" in $node)) return undefined
+		return $node.parent;
+	}
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+	protected getParentNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-  protected getPreviousSiblingNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+		if ($node === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		if ($node.parent === undefined) return undefined;
 
-    if (!("parent" in $node)) return undefined
+		return $node.parent;
+	}
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+	protected getParentNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-  getPreviousSiblingNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getPreviousSiblingNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getPreviousSiblingNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getPreviousSiblingNodeByIndex(location)
-  }
+		if ($node === undefined) return undefined;
 
-  protected getPreviousSiblingNodeById(location: string) {
-    const $node = this.getNodeById(location)
+		if ($node.parent === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		return $node.parent;
+	}
 
-    if (!("parent" in $node)) return undefined
+	getPreviousSiblingNodeByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.getPreviousSiblingNodeByPathId(path);
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+		if (mode === "slug") return this.getPreviousSiblingNodeByPathSlug(path);
 
-  protected getPreviousSiblingNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+		return this.getPreviousSiblingNodeByPathIndex(path);
+	}
 
-    if ($node === undefined) return undefined
+	protected getPreviousSiblingNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+		if ($node.parent === undefined) return undefined;
 
-  protected getPreviousSiblingNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    if ($node === undefined) return undefined
+	protected getPreviousSiblingNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent?.nodes[$node.location.index - 1]
-  }
+		if ($node.parent === undefined) return undefined;
 
-  getNextSiblingNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getNextSiblingNodeByPathId(path)
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    if (mode === "slug") return this.getNextSiblingNodeByPathSlug(path)
+	protected getPreviousSiblingNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-    return this.getNextSiblingNodeByPathIndex(path)
-  }
+		if ($node === undefined) return undefined;
 
-  protected getNextSiblingNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		if ($node.parent === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    if (!("parent" in $node)) return undefined
+	getPreviousSiblingNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.getPreviousSiblingNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getPreviousSiblingNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getPreviousSiblingNodeByIndex(location);
+	}
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+	protected getPreviousSiblingNodeById(location: string) {
+		const $node = this.getNodeById(location);
 
-  protected getNextSiblingNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+		if ($node === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		if ($node.parent === undefined) return undefined;
 
-    if (!("parent" in $node)) return undefined
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+	protected getPreviousSiblingNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-  protected getNextSiblingNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+		if ($node === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		if ($node.parent === undefined) return undefined;
 
-    if (!("parent" in $node)) return undefined
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+	protected getPreviousSiblingNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-  getNextSiblingNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getNextSiblingNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getNextSiblingNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getNextSiblingNodeByIndex(location)
-  }
+		if ($node === undefined) return undefined;
 
-  protected getNextSiblingNodeById(location: string) {
-    const $node = this.getNodeById(location)
+		if ($node.parent === undefined) return undefined;
 
-    if ($node === undefined) return undefined
+		return $node.parent?.$nodes.all[$node.index - 1];
+	}
 
-    if (!("parent" in $node)) return undefined
+	getNextSiblingNodeByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.getNextSiblingNodeByPathId(path);
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+		if (mode === "slug") return this.getNextSiblingNodeByPathSlug(path);
 
-  protected getNextSiblingNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+		return this.getNextSiblingNodeByPathIndex(path);
+	}
 
-    if ($node === undefined) return undefined
+	protected getNextSiblingNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+		if ($node.parent === undefined) return undefined;
 
-  protected getNextSiblingNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    if ($node === undefined) return undefined
+	protected getNextSiblingNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-    if (!("parent" in $node)) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.parent?.nodes[$node.location.index + 1]
-  }
+		if ($node.parent === undefined) return undefined;
 
-  getFirstChildNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getFirstChildNodeByPathId(path)
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    if (mode === "slug") return this.getFirstChildNodeByPathSlug(path)
+	protected getNextSiblingNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-    return this.getFirstChildNodeByPathIndex(path)
-  }
+		if ($node === undefined) return undefined;
 
-  protected getFirstChildNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		if ($node.parent === undefined) return undefined;
 
-    if (!$node) return undefined
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    return $node.nodes[0]
-  }
+	getNextSiblingNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.getNextSiblingNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getNextSiblingNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getNextSiblingNodeByIndex(location);
+	}
 
-  protected getFirstChildNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+	protected getNextSiblingNodeById(location: string) {
+		const $node = this.getNodeById(location);
 
-    if (!$node) return undefined
+		if ($node === undefined) return undefined;
 
-    return $node.nodes[0]
-  }
+		if ($node.parent === undefined) return undefined;
 
-  protected getFirstChildNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    if (!$node) return undefined
+	protected getNextSiblingNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-    return $node.nodes[0]
-  }
+		if ($node === undefined) return undefined;
 
-  getFirstChildNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getFirstChildNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getFirstChildNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getFirstChildNodeByIndex(location)
-  }
+		if ($node.parent === undefined) return undefined;
 
-  protected getFirstChildNodeById(location: string) {
-    const $node = this.getNodeById(location)
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    if (!$node) return undefined
+	protected getNextSiblingNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-    return $node.nodes[0]
-  }
+		if ($node === undefined) return undefined;
 
-  protected getFirstChildNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+		if ($node.parent === undefined) return undefined;
 
-    if (!$node) return undefined
+		return $node.parent?.$nodes.all[$node.index + 1];
+	}
 
-    return $node.nodes[0]
-  }
+	getFirstChildNodeByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.getFirstChildNodeByPathId(path);
 
-  protected getFirstChildNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		if (mode === "slug") return this.getFirstChildNodeByPathSlug(path);
 
-    if (!$node) return undefined
+		return this.getFirstChildNodeByPathIndex(path);
+	}
 
-    return $node.nodes[0]
-  }
+	protected getFirstChildNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
 
-  getLastChildNodeByPath(path: string, mode: TMode = "index") {
-    if (mode === "id") return this.getLastChildNodeByPathId(path)
+		if (!$node) return undefined;
 
-    if (mode === "slug") return this.getLastChildNodeByPathSlug(path)
+		return $node.$nodes.all[0];
+	}
 
-    return this.getLastChildNodeByPathIndex(path)
-  }
+	protected getFirstChildNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
 
-  protected getLastChildNodeByPathId(path: string) {
-    const $node = this.getNodeByPathId(path)
+		if (!$node) return undefined;
 
-    if (!$node) return undefined
+		return $node.$nodes.all[0];
+	}
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+	protected getFirstChildNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
 
-  protected getLastChildNodeByPathSlug(path: string) {
-    const $node = this.getNodeByPathSlug(path)
+		if (!$node) return undefined;
 
-    if (!$node) return undefined
+		return $node.$nodes.all[0];
+	}
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+	getFirstChildNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.getFirstChildNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getFirstChildNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getFirstChildNodeByIndex(location);
+	}
 
-  protected getLastChildNodeByPathIndex(path: string) {
-    const $node = this.getNodeByPathIndex(path)
+	protected getFirstChildNodeById(location: string) {
+		const $node = this.getNodeById(location);
 
-    if (!$node) return undefined
+		if (!$node) return undefined;
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+		return $node.$nodes.all[0];
+	}
 
-  getLastChildNode(location: string | number, mode: TMode = "index") {
-    if (typeof location === "string" && mode === "id")
-      return this.getLastChildNodeById(location)
-    else if (typeof location === "string" && mode === "slug")
-      return this.getLastChildNodeBySlug(location)
-    else if (typeof location === "number" && mode === "index")
-      return this.getLastChildNodeByIndex(location)
-  }
+	protected getFirstChildNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
 
-  protected getLastChildNodeById(location: string) {
-    const $node = this.getNodeById(location)
+		if (!$node) return undefined;
 
-    if (!$node) return undefined
+		return $node.$nodes.all[0];
+	}
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+	protected getFirstChildNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
 
-  protected getLastChildNodeBySlug(location: string) {
-    const $node = this.getNodeBySlug(location)
+		if (!$node) return undefined;
 
-    if (!$node) return undefined
+		return $node.$nodes.all[0];
+	}
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+	getLastChildNodeByPath(path: string, mode: TMode = "index") {
+		if (mode === "id") return this.getLastChildNodeByPathId(path);
 
-  protected getLastChildNodeByIndex(location: number) {
-    const $node = this.getNodeByIndex(location)
+		if (mode === "slug") return this.getLastChildNodeByPathSlug(path);
 
-    if (!$node) return undefined
+		return this.getLastChildNodeByPathIndex(path);
+	}
 
-    return $node.nodes[$node.nodes.length - 1]
-  }
+	protected getLastChildNodeByPathId(path: string) {
+		const $node = this.getNodeByPathId(path);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
+
+	protected getLastChildNodeByPathSlug(path: string) {
+		const $node = this.getNodeByPathSlug(path);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
+
+	protected getLastChildNodeByPathIndex(path: string) {
+		const $node = this.getNodeByPathIndex(path);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
+
+	getLastChildNode(location: string | number, mode: TMode = "index") {
+		if (typeof location === "string" && mode === "id")
+			return this.getLastChildNodeById(location);
+		if (typeof location === "string" && mode === "slug")
+			return this.getLastChildNodeBySlug(location);
+		if (typeof location === "number" && mode === "index")
+			return this.getLastChildNodeByIndex(location);
+	}
+
+	protected getLastChildNodeById(location: string) {
+		const $node = this.getNodeById(location);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
+
+	protected getLastChildNodeBySlug(location: string) {
+		const $node = this.getNodeBySlug(location);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
+
+	protected getLastChildNodeByIndex(location: number) {
+		const $node = this.getNodeByIndex(location);
+
+		if (!$node) return undefined;
+
+		return $node.$nodes.all[$node.$nodes.size - 1];
+	}
 }

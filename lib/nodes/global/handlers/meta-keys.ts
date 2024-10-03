@@ -1,64 +1,65 @@
-import { MethodSetMetaKeys, PropMetaKeys } from "@/nodes/symbols"
-import { IHandleMetaKey, TMetaKey, TMetaKeyTuple } from "../node.types"
-import { MethodGetApp } from "@/symbols"
-import { GlobalNode } from "@/nodes"
-import { AtomicGame } from "@/atomic-game"
-import { AtomicEngine } from "@/atomic-engine"
+import type { IHandleMetaKey, TMetaKey, TMetaKeyTuple } from "../node.types";
+import type { GlobalNode } from "@/nodes";
+import type { AtomicGame } from "@/atomic-game";
+import type { AtomicEngine } from "@/atomic-engine";
+
+import { _Drawer, GetApp, SetGlobal } from "@/symbols";
+import { MethodSetMetaKeys, PropMetaKeys } from "@/nodes/symbols";
 
 export class HandlerMetaKey implements IHandleMetaKey {
-  private $node: GlobalNode
-  private $app: AtomicEngine | AtomicGame;
+	private $node: GlobalNode;
+	private $app: AtomicEngine | AtomicGame;
 
-  [PropMetaKeys]: Map<string, TMetaKey>
+	[PropMetaKeys]: Map<string, TMetaKey>;
 
-  constructor($node: GlobalNode) {
-    this.$node = $node
-    this.$app = this.$node[MethodGetApp]()
+	constructor($node: GlobalNode) {
+		this.$node = $node;
+		this.$app = this.$node[GetApp]();
 
-    this[PropMetaKeys] = new Map()
-  }
+		this[PropMetaKeys] = new Map();
+	}
 
-  toEntries(): TMetaKeyTuple[] {
-    return [...this[PropMetaKeys].entries()]
-  }
+	toEntries(): TMetaKeyTuple[] {
+		return [...this[PropMetaKeys].entries()];
+	}
 
-  getAll(): TMetaKey[] {
-    return [...this[PropMetaKeys].values()]
-  }
+	getAll(): TMetaKey[] {
+		return [...this[PropMetaKeys].values()];
+	}
 
-  get(name: string): TMetaKey | undefined {
-    return this[PropMetaKeys].get(name)
-  }
+	get(name: string): TMetaKey | undefined {
+		return this[PropMetaKeys].get(name);
+	}
 
-  add(name: string, options: TMetaKey): void {
-    this[PropMetaKeys].set(name, options)
+	add(name: string, options: TMetaKey): void {
+		this[PropMetaKeys].set(name, options);
 
-    this.$app.drawer.render.reDraw()
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.changeGlobal("re-draw", true)
-  }
+		this.$app[SetGlobal]("re-draw", true);
+	}
 
-  has(name: string): boolean {
-    return this[PropMetaKeys].has(name)
-  }
+	has(name: string): boolean {
+		return this[PropMetaKeys].has(name);
+	}
 
-  delete(name: string): boolean {
-    this.$app.changeGlobal("re-draw", true)
+	delete(name: string): boolean {
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.drawer.render.reDraw()
+		this.$app[SetGlobal]("re-draw", true);
 
-    return this[PropMetaKeys].delete(name)
-  }
+		return this[PropMetaKeys].delete(name);
+	}
 
-  clear(): void {
-    this[PropMetaKeys].clear()
+	clear(): void {
+		this[PropMetaKeys].clear();
 
-    this.$app.drawer.render.reDraw()
+		this.$app[_Drawer].render.reDraw();
 
-    this.$app.changeGlobal("re-draw", true)
-  }
+		this.$app[SetGlobal]("re-draw", true);
+	}
 
-  [MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void {
-    this[PropMetaKeys] = new Map(metaKeys)
-  }
+	[MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void {
+		this[PropMetaKeys] = new Map(metaKeys);
+	}
 }

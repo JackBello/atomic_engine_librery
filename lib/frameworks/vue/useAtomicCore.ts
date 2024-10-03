@@ -1,17 +1,17 @@
-import { ref, onMounted, onBeforeUnmount } from "vue"
-import { AtomicEngine } from "../../index"
-import { IOptionsAtomicEngine } from "../../types"
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { AtomicEngine } from "../../index";
+import type { IOptionsAtomicEngine } from "../../types";
 
 export const useAtomicCore = (options?: Partial<IOptionsAtomicEngine>) => {
-  const app = ref<AtomicEngine | null>()
+	const app = ref<AtomicEngine | null>();
 
-  onMounted(() => {
-    app.value = new AtomicEngine(options)
-  })
+	onMounted(() => {
+		app.value = new AtomicEngine(options);
+	});
 
-  onBeforeUnmount(() => {
-    app.value = null
-  })
+	onBeforeUnmount(() => {
+		app.value = null;
+	});
 
-  return app
-}
+	return app;
+};
