@@ -1,9 +1,9 @@
+import type { TAnything } from "@/types";
 import { formatterColor } from "./colors";
 
 export const serializeOptions = (
 	context: WebGL2RenderingContext,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	options: any,
+	options: TAnything,
 ) => {
 	const canvasWidth = context.canvas.width;
 	const canvasHeight = context.canvas.height;

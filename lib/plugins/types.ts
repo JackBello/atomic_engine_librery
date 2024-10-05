@@ -1,6 +1,7 @@
-import type { AllTypesSimple, TClass, TFunction } from "@/types";
+import type { AllTypesSimple, TAnything, TClass, TFunction } from "@/types";
 import type { AtomicEngine } from "../atomic-engine";
-import type { AtomicGame, GlobalNode } from "..";
+import type { AtomicGame } from "..";
+import type { GlobalNode } from "@/nodes";
 import { HiddenPlugin } from "@/symbols";
 
 export type TPluginReturn = {
@@ -21,11 +22,9 @@ export type TPluginReturn = {
 		) => void;
 	};
 	functions?: Record<string, TFunction>;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	config?: Record<string, any>;
+	config?: Record<string, TAnything>;
 	nodes?: Record<string, TClass<GlobalNode>>;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	[HiddenPlugin]: Record<string, any>;
+	[HiddenPlugin]: Record<string, TAnything>;
 };
 
 export type TPlugin = {

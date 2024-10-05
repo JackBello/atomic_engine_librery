@@ -3,7 +3,7 @@ import type {
 	TCanvasActionsContext2D,
 	TCanvasNode2D,
 } from "@/nodes/types";
-import type { TFunction } from "../../../types";
+import type { TAnything, TFunction } from "../../../types";
 import {
 	clear_canvas_2D,
 	restore_canvas_2D,
@@ -25,8 +25,7 @@ export const handleContext2D = (
 		  >
 		| TCanvasActionsContext2D
 		| TCanvasActions,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	options: any,
+	options: TAnything,
 	context: CanvasRenderingContext2D,
 ) => {
 	const actions: Record<

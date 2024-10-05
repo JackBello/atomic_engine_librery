@@ -1,4 +1,4 @@
-import type { TMode } from "@/types";
+import type { TAnything, TMode } from "@/types";
 import { handleContext2D } from "./handle";
 import { AbstractRender } from "../../abstract/render.abstract";
 import type { INodeWorker } from "@/nodes/global/node.types";
@@ -8,10 +8,8 @@ import { RenderNode } from "../../global/render-node";
 export class Render2D extends AbstractRender {
 	protected node!: INodeWorker;
 	protected mode: TMode;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	protected afterDraw: any[] = [];
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	protected beforeDraw: any[] = [];
+	protected afterDraw: TAnything[] = [];
+	protected beforeDraw: TAnything[] = [];
 	protected scaleViewport = 1;
 	protected gameSize: ISize2D = {
 		height: 0,
@@ -22,14 +20,12 @@ export class Render2D extends AbstractRender {
 		width: 0,
 	};
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	configs: Record<string, any>;
+	configs: Record<string, TAnything>;
 	context: CanvasRenderingContext2D;
 
 	constructor(
 		context: CanvasRenderingContext2D,
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		configs: Record<string, any>,
+		configs: Record<string, TAnything>,
 		mode: TMode,
 	) {
 		super();
@@ -51,13 +47,11 @@ export class Render2D extends AbstractRender {
 		this.editorSize = size;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	setAfterDraw(draw: any[]) {
+	setAfterDraw(draw: TAnything[]) {
 		this.afterDraw = draw;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	setBeforeDraw(draw: any[]) {
+	setBeforeDraw(draw: TAnything[]) {
 		this.beforeDraw = draw;
 	}
 
@@ -157,8 +151,7 @@ export class Render2D extends AbstractRender {
 					node.options.calculate.scale.y,
 				);
 
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				handleContext2D(node.__type__ as any, node.options, this.context);
+				handleContext2D(node.__type__ as TAnything, node.options, this.context);
 
 				if (node.nodes.length > 0) {
 					for (const child of node.nodes) {
@@ -234,8 +227,7 @@ export class Render2D extends AbstractRender {
 					node.options.calculate.scale.y * this.scaleViewport,
 				);
 
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				handleContext2D(node.__type__ as any, node.options, this.context);
+				handleContext2D(node.__type__ as TAnything, node.options, this.context);
 
 				if (node.nodes.length > 0) {
 					for (const child of node.nodes) {

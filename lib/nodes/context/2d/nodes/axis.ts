@@ -1,7 +1,8 @@
+import type { TAnything } from "@/types";
+
 export const _makeAxisCoords2D = (
 	context: CanvasRenderingContext2D,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	options: any,
+	options: TAnything,
 ) => {
 	context.beginPath();
 	context.lineWidth = 2;

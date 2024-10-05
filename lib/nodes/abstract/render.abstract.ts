@@ -1,22 +1,18 @@
-import type { TMode } from "@/types";
+import type { TAnything, TMode } from "@/types";
 import type { INodeWorker } from "../global/node.types";
 import type { ISize2D } from "../class/nodes-2D.types";
 
 export abstract class AbstractRender {
 	protected abstract node: INodeWorker;
 	protected abstract mode: TMode;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	protected abstract afterDraw: any[];
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	protected abstract beforeDraw: any[];
+	protected abstract afterDraw: TAnything[];
+	protected abstract beforeDraw: TAnything[];
 	protected abstract scaleViewport: number;
 	protected abstract gameSize: ISize2D;
 	protected abstract editorSize: ISize2D;
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abstract configs: Record<string, any>;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abstract context: any;
+	abstract configs: Record<string, TAnything>;
+	abstract context: TAnything;
 
 	abstract setScaleViewport(scale: number): void;
 
@@ -24,11 +20,9 @@ export abstract class AbstractRender {
 
 	abstract setEditorSize(size: ISize2D): void;
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abstract setAfterDraw(draw: any): void;
+	abstract setAfterDraw(draw: TAnything): void;
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	abstract setBeforeDraw(draw: any): void;
+	abstract setBeforeDraw(draw: TAnything): void;
 
 	abstract loadNode(node: INodeWorker): void;
 

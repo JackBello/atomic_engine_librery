@@ -1,5 +1,9 @@
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-const _makeGrid = (context: CanvasRenderingContext2D, options: any) => {
+import type { TAnything } from "@/types";
+
+export const _makeGrid = (
+	context: CanvasRenderingContext2D,
+	options: TAnything,
+) => {
 	const screenWidth = context.canvas.width;
 	const screenHeight = context.canvas.height;
 
