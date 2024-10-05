@@ -1,6 +1,6 @@
 import type { GlobalNode } from "@/nodes";
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { GameCore } from "../game";
+import type { EngineCore } from "../engine";
 
 import { $Scenes, DispatchScript } from "@/symbols";
 import { PropType } from "@/nodes/symbols";
@@ -8,11 +8,11 @@ import { PropType } from "@/nodes/symbols";
 import EventObserver from "@/app/utils/observer";
 
 export default class ScriptController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _events: EventObserver = new EventObserver();
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 

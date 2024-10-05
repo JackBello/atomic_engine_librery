@@ -1,2 +1,2 @@
-export * from "./atomic-engine";
-export * from "./atomic-game";
+export * from "./app/engine";
+export * from "./app/game";

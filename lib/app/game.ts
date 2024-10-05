@@ -3,12 +3,12 @@ import JSON5 from "json5";
 
 import type {
 	AllTypesSimple,
-	IOptionsAtomicGame,
+	IOptionsGameCore,
 	TAnything,
 	TFunction,
 	TMode,
-} from "./types";
-import type { TEventCanvas } from "./event.type";
+} from "../types";
+import type { TEventCanvas } from "../event.type";
 
 import {
 	DispatchEvent,
@@ -24,24 +24,24 @@ import {
 	SetGlobal,
 	GetOptions,
 	SetOptions,
-} from "./symbols";
-import { AddNodesToConstructorNode } from "./nodes/symbols";
+} from "../symbols";
+import { AddNodesToConstructorNode } from "../nodes/symbols";
 
-import EventObserver from "./app/utils/observer";
+import EventObserver from "./utils/observer";
 
-import AnimationService from "./app/services/animation.service";
-import CanvasService from "./app/services/canvas.service";
-import ScenesService from "./app/services/scenes.service";
+import AnimationService from "./services/animation.service";
+import CanvasService from "./services/canvas.service";
+import ScenesService from "./services/scenes.service";
 
-import CollisionController from "./app/controllers/collision.controller";
-import ScriptController from "./app/controllers/script.controller";
-import EventController from "./app/controllers/event.controller";
-import DrawerController from "./app/controllers/drawer.controller";
+import CollisionController from "./controllers/collision.controller";
+import ScriptController from "./controllers/script.controller";
+import EventController from "./controllers/event.controller";
+import DrawerController from "./controllers/drawer.controller";
 
-import ConstructorNodes from "./nodes/global/constructors/constructor-nodes";
+import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
-import AbstractNode from "./nodes/abstract/node.abstract";
-import RootNode from "./nodes/global/root-node";
+import AbstractNode from "../nodes/abstract/node.abstract";
+import RootNode from "../nodes/global/root-node";
 
 import {
 	GlobalNode,
@@ -56,14 +56,14 @@ import {
 	Text2D,
 } from "@/nodes";
 
-import { DEFAULT_CONFIG_ATOMIC_GAME } from "./configs/engine/game";
+import { DEFAULT_CONFIG_ATOMIC_GAME } from "../configs/engine/game";
 
-export class AtomicGame {
+export class GameCore {
 	[key: string]: TAnything;
 
 	readonly VERSION = "1.0.0";
 
-	protected _options!: IOptionsAtomicGame;
+	protected _options!: IOptionsGameCore;
 	protected _global: Map<string, AllTypesSimple> = new Map();
 	protected _events: EventObserver = new EventObserver();
 
@@ -213,7 +213,7 @@ export class AtomicGame {
 		this._global.set(name, value);
 	}
 
-	[SetOptions](options?: Partial<IOptionsAtomicGame>) {
+	[SetOptions](options?: Partial<IOptionsGameCore>) {
 		this._options = { ...DEFAULT_CONFIG_ATOMIC_GAME, ...options };
 
 		this.init();

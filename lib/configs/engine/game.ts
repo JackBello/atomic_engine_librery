@@ -1,6 +1,6 @@
-import type { IOptionsAtomicGame } from "../../types";
+import type { IOptionsGameCore } from "../../types";
 
-export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsAtomicGame = {
+export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsGameCore = {
 	context: "2d",
 	dimension: "2D",
 	fps: {

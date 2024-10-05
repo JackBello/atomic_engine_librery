@@ -1,8 +1,8 @@
 import {
-	AtomicEngine,
+	EngineCore,
 	Scene,
 	Rectangle2D,
-	AtomicGame,
+	GameCore,
 	LineFlowEffect2D,
 	CollisionShape2D,
 	Text2D,
@@ -54,7 +54,7 @@ const saveFileTest = document.querySelector(
 	`[data-id="saveFileTest"]`,
 ) as HTMLInputElement;
 
-const app = new AtomicEngine({
+const app = new EngineCore({
 	background: "#eeeeee",
 	context: "2d",
 	dimension: "2D",
@@ -367,7 +367,7 @@ buttonUploadGame.addEventListener("input", () => {
 		reader.readAsText(files[0]);
 
 		reader.onload = async () => {
-			const game = new AtomicGame();
+			const game = new GameCore();
 			await game.load(reader.result as string);
 			game.start();
 

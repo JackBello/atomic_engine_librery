@@ -1,12 +1,12 @@
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { EngineCore } from "../engine";
+import type { GameCore } from "../game";
 
 import { $Canvas, DispatchEvent } from "@/symbols";
 
 export default class EventController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 
 		this.init();

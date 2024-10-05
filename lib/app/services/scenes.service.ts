@@ -1,8 +1,8 @@
 import * as YAML from "yaml";
 import JSON5 from "json5";
 
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { EngineCore } from "../engine";
+import type { GameCore } from "../game";
 import type { TAnything, TFunction } from "@/types";
 import type { IControlEditor, TExportNode } from "@/nodes/global/node.types";
 import type { TEventScenes } from "./event.type";
@@ -22,13 +22,13 @@ import { Scene } from "@/nodes";
 import EventObserver from "../utils/observer";
 
 export default class ScenesService {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _scenes = new Map<string, Scene>();
 	protected _scene?: Scene;
 	protected _events: EventObserver = new EventObserver();
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 

@@ -1,6 +1,6 @@
 import type { TAnything } from "@/types";
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 
 import { GetApp, SetApp } from "@/symbols";
 import { $ConstructorNodes, $ConstructorScript } from "../symbols";
@@ -14,13 +14,13 @@ export default abstract class AbstractNode {
 	static [$ConstructorNodes] = new ConstructorNodes();
 	[$ConstructorScript] = new ConstructorScript();
 
-	protected static $app: AtomicEngine | AtomicGame;
+	protected static $app: EngineCore | GameCore;
 
 	[GetApp]() {
 		return AbstractNode.$app;
 	}
 
-	static [SetApp](app: AtomicEngine | AtomicGame): void {
+	static [SetApp](app: EngineCore | GameCore): void {
 		AbstractNode.$app = app;
 	}
 

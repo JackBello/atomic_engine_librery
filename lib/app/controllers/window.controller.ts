@@ -1,13 +1,13 @@
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { EngineCore } from "../engine";
+import type { GameCore } from "../game";
 import type { IOptionsGame } from "@/types";
 
 export default class WindowController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _window!: Window | null;
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 

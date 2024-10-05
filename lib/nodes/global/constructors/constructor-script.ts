@@ -4,14 +4,14 @@ import type { TAnything, TFunction } from "@/types";
 import { GetNodeToConstructorNode } from "@/nodes/symbols";
 import { GetOptions, SetGlobal } from "@/symbols";
 
-import { AtomicEngine } from "@/atomic-engine";
-import { AtomicGame } from "@/atomic-game";
+import { EngineCore } from "@/app/engine";
+import { GameCore } from "@/app/game";
 
 import ConstructorNodes from "./constructor-nodes";
 
 export default class ConstructorScript {
 	private $node!: GlobalNode;
-	private $app!: AtomicEngine | AtomicGame;
+	private $app!: EngineCore | GameCore;
 
 	protected CLASS = {
 		getMethodsFromClass: (instance: GlobalNode, filters: string[] = []) => {
@@ -121,9 +121,9 @@ export default class ConstructorScript {
 			height: 0,
 		};
 
-		if (this.$app instanceof AtomicEngine) {
+		if (this.$app instanceof EngineCore) {
 			viewport = this.$app[GetOptions]().game.viewport;
-		} else if (this.$app instanceof AtomicGame) {
+		} else if (this.$app instanceof GameCore) {
 			viewport = this.$app[GetOptions]().viewport;
 		}
 
@@ -230,7 +230,7 @@ export default class ConstructorScript {
 		return result;
 	}
 
-	public async executeScript(node: GlobalNode, app: AtomicEngine | AtomicGame) {
+	public async executeScript(node: GlobalNode, app: EngineCore | GameCore) {
 		this.$app = app;
 		this.$node = node;
 

@@ -1,7 +1,7 @@
 import type { AbstractCanvas } from "@/canvas/abstract/canvas.abstract";
 import type { TCanvasType } from "@/canvas/canvas.types";
-import { AtomicEngine } from "@/atomic-engine";
-import { AtomicGame } from "@/atomic-game";
+import { EngineCore } from "../engine";
+import { GameCore } from "../game";
 
 import { GetOptions } from "@/symbols";
 
@@ -9,7 +9,7 @@ import { CanvasEditor } from "@/canvas/canvas-editor";
 import { CanvasGame } from "@/canvas/canvas-game";
 
 export default class CanvasService {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _canvas: Map<TCanvasType, AbstractCanvas> = new Map();
 	protected _main?: HTMLElement;
@@ -34,7 +34,7 @@ export default class CanvasService {
 		return canvas;
 	}
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 
 		const { width, height } = this.processSize();
@@ -69,12 +69,12 @@ export default class CanvasService {
 			height: 0,
 		};
 
-		if (this.$app instanceof AtomicGame)
+		if (this.$app instanceof GameCore)
 			size = {
 				width: this.$app[GetOptions]().viewport.width,
 				height: this.$app[GetOptions]().viewport.height,
 			};
-		else if (this.$app instanceof AtomicEngine)
+		else if (this.$app instanceof EngineCore)
 			size = {
 				width: this.$app[GetOptions]().width,
 				height: this.$app[GetOptions]().height,

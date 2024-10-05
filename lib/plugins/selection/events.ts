@@ -1,8 +1,8 @@
-import type { AtomicEngine } from "@/atomic-engine";
+import type { EngineCore } from "@/app/engine";
 import { moveNodeByKeyboard, moveNodeByMouse } from "./functions";
 import { $Canvas, _Drawer, _ROOT_, HiddenPlugin } from "@/symbols";
 
-export const handleMouseDown = async (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseDown = async (event: MouseEvent, app: EngineCore) => {
 	const panAndZoomConfig = app.plugin("pan-and-zoom")?.config;
 
 	if (!panAndZoomConfig) return;
@@ -52,7 +52,7 @@ export const handleMouseDown = async (event: MouseEvent, app: AtomicEngine) => {
 	}
 };
 
-export const handleMouseUp = (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
 	const panAndZoomConfig = app.plugin("pan-and-zoom")?.config;
 
 	if (!panAndZoomConfig) return;
@@ -75,7 +75,7 @@ export const handleMouseUp = (event: MouseEvent, app: AtomicEngine) => {
 	_.isDragging = false;
 };
 
-export const handleMouseMove = async (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseMove = async (event: MouseEvent, app: EngineCore) => {
 	const panAndZoomConfig = app.plugin("pan-and-zoom")?.config;
 
 	if (!panAndZoomConfig) return;
@@ -119,7 +119,7 @@ export const handleMouseMove = async (event: MouseEvent, app: AtomicEngine) => {
 		(mouseCoords.y - panAndZoomConfig.pan.y) / panAndZoomConfig.zoom;
 };
 
-export const handleKeyDown = (event: KeyboardEvent, app: AtomicEngine) => {
+export const handleKeyDown = (event: KeyboardEvent, app: EngineCore) => {
 	const panAndZoomConfig = app.plugin("pan-and-zoom")?.config;
 
 	if (!panAndZoomConfig) return;

@@ -1,4 +1,4 @@
-import { AtomicEngine } from "../lib/";
+import { EngineCore } from "../lib/";
 import pluginSelection from "@/plugins/selection/plugin";
 import pluginPanAndZoom from "@/plugins/pan-and-zoom/plugin";
 import { Scene, Rectangle2D } from "../lib/nodes";
@@ -15,7 +15,7 @@ const buttonStopPreview = document.querySelector(
 	`[data-id="button-stop-preview"]`,
 ) as HTMLInputElement;
 
-const app = new AtomicEngine({
+const app = new EngineCore({
 	background: "#eeeeee",
 	context: "2d",
 	dimension: "2D",

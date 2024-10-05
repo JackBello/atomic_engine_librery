@@ -3,8 +3,8 @@ import type {
 	TComponent,
 	TComponentTuple,
 } from "../node.types";
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 import type { GlobalNode } from "@/nodes";
 
 import { MethodSetComponents, PropComponents } from "@/nodes/symbols";
@@ -12,7 +12,7 @@ import { GetApp } from "@/symbols";
 
 export class HandlerComponent implements IHandleComponent {
 	private $node: GlobalNode;
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	[PropComponents]: Map<string, TComponent>;
 

@@ -1,5 +1,5 @@
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { EngineCore } from "../engine";
+import type { GameCore } from "../game";
 import type { GlobalNode } from "@/nodes";
 
 import { CollisionShape2D } from "@/nodes";
@@ -8,7 +8,7 @@ import { PropCollider } from "@/nodes/symbols";
 import { $Scenes } from "@/symbols";
 
 export default class CollisionController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected shapesCollisions: Record<
 		string,
@@ -70,7 +70,7 @@ export default class CollisionController {
 		},
 	};
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 

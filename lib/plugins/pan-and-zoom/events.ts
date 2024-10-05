@@ -1,7 +1,7 @@
-import type { AtomicEngine } from "@/atomic-engine";
+import type { EngineCore } from "@/app/engine";
 import { $Canvas, HiddenPlugin, SetGlobal } from "@/symbols";
 
-export const handleMouseDown = (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.config;
 
 	if (!config) return;
@@ -21,7 +21,7 @@ export const handleMouseDown = (event: MouseEvent, app: AtomicEngine) => {
 	_.startCoords.y = event.clientY;
 };
 
-export const handleMouseUp = (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.config;
 	const _ = app.plugin("pan-and-zoom")?.[HiddenPlugin];
 
@@ -38,7 +38,7 @@ export const handleMouseUp = (event: MouseEvent, app: AtomicEngine) => {
 	_.isPanning = false;
 };
 
-export const handleMouseMove = (event: MouseEvent, app: AtomicEngine) => {
+export const handleMouseMove = (event: MouseEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.config;
 	const _ = app.plugin("pan-and-zoom")?.[HiddenPlugin];
 
@@ -67,7 +67,7 @@ export const handleMouseMove = (event: MouseEvent, app: AtomicEngine) => {
 	_.startCoords.y = event.clientY;
 };
 
-export const handleMouseWheel = (event: WheelEvent, app: AtomicEngine) => {
+export const handleMouseWheel = (event: WheelEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.config;
 	const _ = app.plugin("pan-and-zoom")?.[HiddenPlugin];
 

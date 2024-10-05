@@ -1,7 +1,7 @@
 import type { IHandleNode, INodeWorker, TMode } from "../node.types";
 import type { GlobalNode } from "@/nodes";
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 
 import { _Drawer, ExportWorker, GetApp, SetGlobal } from "@/symbols";
 import {
@@ -14,7 +14,7 @@ import {
 
 export class HandlerNode implements IHandleNode {
 	private $node: GlobalNode;
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	[PropNodes]: GlobalNode[];
 

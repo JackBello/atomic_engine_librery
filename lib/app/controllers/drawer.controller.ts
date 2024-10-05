@@ -3,8 +3,8 @@ import type {
 	TCursorOptions,
 	TMode,
 } from "@/nodes/global/node.types";
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { EngineCore } from "../engine";
+import type { GameCore } from "../game";
 
 import { $Canvas, GetOptions } from "@/symbols";
 
@@ -16,14 +16,14 @@ import NodesCanvasWorker from "@/workers/nodes-canvas.worker?worker&inline";
 import type { TAnything } from "@/types";
 
 export default class DrawerController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _workerEditor: Worker;
 	protected _workerRender: Worker;
 	protected _workerNodes: Worker;
 	protected _events: EventObserver = new EventObserver();
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 
 		this._workerEditor = new EditorCanvasWorker();

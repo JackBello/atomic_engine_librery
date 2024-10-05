@@ -1,10 +1,10 @@
-import { AtomicGame } from "../lib";
+import { GameCore } from "../lib";
 
 const buttonUploadGame = document.querySelector(
 	`[data-id="uploadGame"]`,
 ) as HTMLInputElement;
 
-const game = new AtomicGame();
+const game = new GameCore();
 
 buttonUploadGame.addEventListener("input", () => {
 	const reader = new FileReader();

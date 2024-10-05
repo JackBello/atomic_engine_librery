@@ -1,12 +1,12 @@
 import type {
 	AllTypesSimple,
-	IOptionsAtomicEngine,
+	IOptionsEngineCore,
 	TAnything,
 	TFunction,
 	TMode,
-} from "./types";
-import type { TPlugin, TPluginReturn } from "./plugins/types";
-import type { TEventCanvas } from "./event.type";
+} from "../types";
+import type { TPlugin, TPluginReturn } from "../plugins/types";
+import type { TEventCanvas } from "../event.type";
 
 import {
 	$Canvas,
@@ -25,26 +25,26 @@ import {
 	_ROOT_,
 	SetGlobal,
 	GetOptions,
-} from "./symbols";
-import { AddNodesToConstructorNode } from "./nodes/symbols";
+} from "../symbols";
+import { AddNodesToConstructorNode } from "../nodes/symbols";
 
-import EventObserver from "./app/utils/observer";
+import EventObserver from "./utils/observer";
 
-import AnimationService from "./app/services/animation.service";
-import CanvasService from "./app/services/canvas.service";
-import ScenesService from "./app/services/scenes.service";
+import AnimationService from "./services/animation.service";
+import CanvasService from "./services/canvas.service";
+import ScenesService from "./services/scenes.service";
 
-import DistributionController from "./app/controllers/distribution.controller";
-import CollisionController from "./app/controllers/collision.controller";
-import EventController from "./app/controllers/event.controller";
-import WindowController from "./app/controllers/window.controller";
-import ScriptController from "./app/controllers/script.controller";
-import DrawerController from "./app/controllers/drawer.controller";
+import DistributionController from "./controllers/distribution.controller";
+import CollisionController from "./controllers/collision.controller";
+import EventController from "./controllers/event.controller";
+import WindowController from "./controllers/window.controller";
+import ScriptController from "./controllers/script.controller";
+import DrawerController from "./controllers/drawer.controller";
 
-import ConstructorNodes from "./nodes/global/constructors/constructor-nodes";
+import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
-import AbstractNode from "./nodes/abstract/node.abstract";
-import RootNode from "./nodes/global/root-node";
+import AbstractNode from "../nodes/abstract/node.abstract";
+import RootNode from "../nodes/global/root-node";
 
 import {
 	GlobalNode,
@@ -59,14 +59,14 @@ import {
 	Text2D,
 } from "@/nodes";
 
-import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "./configs/engine/editor";
+import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
 
-export class AtomicEngine {
+export class EngineCore {
 	[key: string]: TAnything;
 
 	readonly VERSION = "1.0.0";
 
-	protected _options: IOptionsAtomicEngine;
+	protected _options: IOptionsEngineCore;
 	protected _plugins: Map<string, Omit<TPluginReturn, "inject">> = new Map();
 	protected _providers: Map<string, AllTypesSimple> = new Map();
 	protected _configs: Map<string, AllTypesSimple> = new Map();
@@ -149,7 +149,7 @@ export class AtomicEngine {
 		};
 	}
 
-	constructor(options?: Partial<IOptionsAtomicEngine>) {
+	constructor(options?: Partial<IOptionsEngineCore>) {
 		this._options = { ...DEFAULT_CONFIG_ATOMIC_ENGINE, ...options };
 
 		this.init();
@@ -275,7 +275,7 @@ export class AtomicEngine {
 		this._global.set(name, value);
 	}
 
-	[SetOptions](options?: Partial<IOptionsAtomicEngine>) {
+	[SetOptions](options?: Partial<IOptionsEngineCore>) {
 		this._options = { ...DEFAULT_CONFIG_ATOMIC_ENGINE, ...options };
 	}
 

@@ -1,7 +1,7 @@
 import type { IHandleFunction, TFunctionTuple } from "../node.types";
 import type { GlobalNode } from "@/nodes";
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 import type { TFunction } from "@/types";
 
 import { MethodSetFunctions, PropFunctions } from "@/nodes/symbols";
@@ -9,7 +9,7 @@ import { _Drawer, GetApp, SetGlobal } from "@/symbols";
 
 export class HandlerFunction implements IHandleFunction {
 	private $node: GlobalNode;
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	[PropFunctions]: Map<string, TFunction>;
 

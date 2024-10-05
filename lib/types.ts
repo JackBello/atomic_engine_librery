@@ -56,7 +56,7 @@ export interface IOptionsGame {
 	viewport: ISize2D;
 	scene?: string;
 }
-export interface IOptionsAtomicEngine extends ISize2D {
+export interface IOptionsEngineCore extends ISize2D {
 	background: string;
 	context: TContextName;
 	selector?: string;
@@ -65,7 +65,7 @@ export interface IOptionsAtomicEngine extends ISize2D {
 	fps: IOptionsFramePerSecond;
 }
 
-export interface IOptionsAtomicGame extends IOptionsGame {
+export interface IOptionsGameCore extends IOptionsGame {
 	context: TContextName;
 	selector: string;
 	fps: IOptionsFramePerSecond;

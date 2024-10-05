@@ -1,6 +1,6 @@
-import type { IOptionsAtomicEngine } from "../../types";
+import type { IOptionsEngineCore } from "../../types";
 
-export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsAtomicEngine = {
+export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	background: "#eeeeee",
 	context: "2d",
 	dimension: "2D",

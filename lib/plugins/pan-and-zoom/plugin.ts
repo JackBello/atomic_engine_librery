@@ -1,5 +1,5 @@
 import { HiddenPlugin } from "@/symbols";
-import type { AtomicEngine } from "../..";
+import type { EngineCore } from "../..";
 import type { TPlugin } from "../types";
 
 export default {
@@ -33,7 +33,7 @@ export default {
 				zoom: 1,
 			},
 			functions: {
-				zoom(app: AtomicEngine, scale: number) {
+				zoom(app: EngineCore, scale: number) {
 					const config = app.plugin("pan-and-zoom")?.config;
 					const _ = app.plugin("pan-and-zoom")?.[HiddenPlugin];
 
@@ -45,7 +45,7 @@ export default {
 
 					_.zoom.scale = scale;
 				},
-				pan(app: AtomicEngine, x: number, y: number) {
+				pan(app: EngineCore, x: number, y: number) {
 					const config = app.plugin("pan-and-zoom")?.config;
 					const _ = app.plugin("pan-and-zoom")?.[HiddenPlugin];
 
@@ -63,7 +63,7 @@ export default {
 						y,
 					};
 				},
-				toggleMode(app: AtomicEngine) {
+				toggleMode(app: EngineCore) {
 					const config = app.plugin("pan-and-zoom")?.config;
 
 					if (!config) return;

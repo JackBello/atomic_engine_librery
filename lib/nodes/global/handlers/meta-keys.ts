@@ -1,14 +1,14 @@
 import type { IHandleMetaKey, TMetaKey, TMetaKeyTuple } from "../node.types";
 import type { GlobalNode } from "@/nodes";
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 
 import { _Drawer, GetApp, SetGlobal } from "@/symbols";
 import { MethodSetMetaKeys, PropMetaKeys } from "@/nodes/symbols";
 
 export class HandlerMetaKey implements IHandleMetaKey {
 	private $node: GlobalNode;
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	[PropMetaKeys]: Map<string, TMetaKey>;
 

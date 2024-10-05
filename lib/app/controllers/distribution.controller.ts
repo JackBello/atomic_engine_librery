@@ -1,17 +1,17 @@
 import * as YAML from "yaml";
 import JSON5 from "json5";
 
-import type { AtomicEngine } from "@/atomic-engine";
-import type { IOptionsAtomicGame } from "@/types";
+import type { EngineCore } from "../engine";
+import type { IOptionsGameCore } from "@/types";
 
 import { $Scenes, ExportData, GetOptions, SetOptions } from "@/symbols";
 
 import { Scene } from "@/nodes";
 
 export default class DistributionController {
-	private $app: AtomicEngine;
+	private $app: EngineCore;
 
-	constructor(app: AtomicEngine) {
+	constructor(app: EngineCore) {
 		this.$app = app;
 	}
 
@@ -66,7 +66,7 @@ export default class DistributionController {
 					resizable: options.game.resizable,
 					title: options.game.title,
 					scene: options.game.scene,
-				} as IOptionsAtomicGame,
+				} as IOptionsGameCore,
 				scenes,
 				version: this.$app.VERSION,
 			};

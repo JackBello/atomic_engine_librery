@@ -4,15 +4,15 @@ import type {
 	TAttributeTuple,
 } from "../node.types";
 import type { GlobalNode } from "@/nodes";
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
 
 import { MethodSetAttributes, PropAttributes } from "@/nodes/symbols";
 import { _Drawer, GetApp, SetGlobal } from "@/symbols";
 
 export class HandlerAttribute implements IHandleAttribute {
 	private $node: GlobalNode;
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	[PropAttributes]: Map<string, TAttribute>;
 

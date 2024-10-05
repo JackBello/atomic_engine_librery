@@ -1,7 +1,7 @@
 import type { TAnything, TFunction } from "@/types";
 import type { TEventAnimation } from "./event.type";
-import type { AtomicGame } from "@/atomic-game";
-import type { AtomicEngine } from "@/atomic-engine";
+import type { GameCore } from "../game";
+import type { EngineCore } from "../engine";
 
 import {
 	DispatchEvent,
@@ -14,7 +14,7 @@ import {
 import EventObserver from "../utils/observer";
 
 export default class AnimationService {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	protected _loop!: number;
 	protected _events: EventObserver = new EventObserver();
@@ -42,7 +42,7 @@ export default class AnimationService {
 		return this._status.pause;
 	}
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 

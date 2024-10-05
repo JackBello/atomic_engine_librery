@@ -1,5 +1,5 @@
-import type { AtomicEngine } from "@/atomic-engine";
-import type { AtomicGame } from "@/atomic-game";
+import type { GameCore } from "../game";
+import type { EngineCore } from "../engine";
 
 type TInputMouse =
 	| "mouse/left:press"
@@ -14,7 +14,7 @@ type TInputKeyboard = "";
 type TInput = TInputKeyboard & TInputMouse;
 
 export class InputController {
-	private $app: AtomicEngine | AtomicGame;
+	private $app: EngineCore | GameCore;
 
 	private _mouse = {
 		left: {
@@ -36,7 +36,7 @@ export class InputController {
 
 	private _actions = new Map();
 
-	constructor(app: AtomicEngine | AtomicGame) {
+	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 	}
 
