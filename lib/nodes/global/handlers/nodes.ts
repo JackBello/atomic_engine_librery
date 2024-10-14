@@ -3,7 +3,7 @@ import type { GlobalNode } from "@/nodes";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, ExportWorker, GetApp } from "@/symbols";
 import {
 	MethodSetIndex,
 	MethodSetNodes,
@@ -85,8 +85,6 @@ export class HandlerNode implements IHandleNode {
 		}
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	has(index: number): boolean {
@@ -106,8 +104,6 @@ export class HandlerNode implements IHandleNode {
 
 		this.$app[_Drawer].render.reDraw();
 
-		this.$app[SetGlobal]("re-draw", true);
-
 		return true;
 	}
 
@@ -117,8 +113,6 @@ export class HandlerNode implements IHandleNode {
 		this.$app[_Drawer].nodes.clearNodes(this.$node.path, "path", "index");
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 
 		return true;
 	}
@@ -143,8 +137,6 @@ export class HandlerNode implements IHandleNode {
 		this._updateNodes_(this[PropNodes]);
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 
 		return true;
 	}
@@ -195,8 +187,6 @@ export class HandlerNode implements IHandleNode {
 		this._updateNodes_(this[PropNodes]);
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 
 		return true;
 	}

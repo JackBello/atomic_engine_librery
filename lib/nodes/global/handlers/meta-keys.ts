@@ -3,7 +3,7 @@ import type { GlobalNode } from "@/nodes";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
-import { _Drawer, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, GetApp } from "@/symbols";
 import { MethodSetMetaKeys, PropMetaKeys } from "@/nodes/symbols";
 
 export class HandlerMetaKey implements IHandleMetaKey {
@@ -35,8 +35,6 @@ export class HandlerMetaKey implements IHandleMetaKey {
 		this[PropMetaKeys].set(name, options);
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	has(name: string): boolean {
@@ -46,8 +44,6 @@ export class HandlerMetaKey implements IHandleMetaKey {
 	delete(name: string): boolean {
 		this.$app[_Drawer].render.reDraw();
 
-		this.$app[SetGlobal]("re-draw", true);
-
 		return this[PropMetaKeys].delete(name);
 	}
 
@@ -55,8 +51,6 @@ export class HandlerMetaKey implements IHandleMetaKey {
 		this[PropMetaKeys].clear();
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	[MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void {

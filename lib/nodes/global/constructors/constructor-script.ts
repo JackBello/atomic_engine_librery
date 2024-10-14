@@ -1,17 +1,138 @@
 import type { GlobalNode } from "../global-node";
 import type { TAnything, TFunction } from "@/types";
 
-import { GetNodeToConstructorNode } from "@/nodes/symbols";
-import { GetOptions, SetGlobal } from "@/symbols";
+import { GetNodesToConstructorNode, GetNodeToConstructorNode } from "@/nodes/symbols";
+import { $Scenes, _Input, GetOptions, SetGlobal } from "@/symbols";
 
 import { EngineCore } from "@/app/engine";
 import { GameCore } from "@/app/game";
 
 import ConstructorNodes from "./constructor-nodes";
+import type { Scene } from "../scene";
 
 export default class ConstructorScript {
 	private $node!: GlobalNode;
 	private $app!: EngineCore | GameCore;
+
+	protected _restring = `const window = undefined;
+    const document = undefined;
+    const alert = undefined;
+    const confirm = undefined;
+    const prompt = undefined;
+    const setTimeout = undefined;
+    const setInterval = undefined;
+    const fetch = undefined;
+    const XMLHttpRequest = undefined;
+    const localStorage = undefined;
+    const sessionStorage = undefined;
+    const indexedDB = undefined;
+    const WebSocket = undefined;
+    const EventSource = undefined;
+    const Worker = undefined;
+    const SharedWorker = undefined;
+    const Notification = undefined;
+    const requestAnimationFrame = undefined;
+    const cancelAnimationFrame = undefined;
+    const history = undefined;
+    const location = undefined;
+    const navigator = undefined;
+    const screen = undefined;
+    const performance = undefined;
+    const geolocation = undefined;
+    const FileReader = undefined;
+    const MutationObserver = undefined;
+    const ResizeObserver = undefined;
+    const IntersectionObserver = undefined;
+    const Crypto = undefined;
+    const AudioContext = undefined;
+    const CanvasRenderingContext2D = undefined;
+    const OffscreenCanvas = undefined;
+    const SpeechRecognition = undefined;
+    const MediaRecorder = undefined;
+    const MediaStream = undefined;
+    const URL = undefined;
+    const Blob = undefined;
+    const Image = undefined;
+    const ImageBitmap = undefined;
+    const DeviceOrientationEvent = undefined;
+    const DeviceMotionEvent = undefined;
+    const MediaQueryList = undefined;
+    const MediaQueryListEvent = undefined;
+    const customElements = undefined;
+    const ShadowRoot = undefined;
+    const HTMLTemplateElement = undefined;
+    const HTMLSlotElement = undefined;
+    const CSS = undefined;
+    const CSSStyleSheet = undefined;
+    const Audio = undefined;
+    const Video = undefined;
+    const HTMLAudioElement = undefined;
+    const HTMLVideoElement = undefined;
+    const HTMLCanvasElement = undefined;
+    const WebGLRenderingContext = undefined;
+    const WebGL2RenderingContext = undefined;
+    const Cache = undefined;
+    const CacheStorage = undefined;
+    const clipboard = undefined;
+    const SpeechSynthesis = undefined;
+    const SpeechSynthesisUtterance = undefined;
+    const BatteryManager = undefined;
+    const NetworkInformation = undefined;
+    const NotificationEvent = undefined;
+    const DataTransfer = undefined;
+    const DataTransferItem = undefined;
+    const DataTransferItemList = undefined;
+    const FormData = undefined;
+    const Headers = undefined;
+    const Request = undefined;
+    const Response = undefined;
+    const AbortController = undefined;
+    const AbortSignal = undefined;
+    const Bluetooth = undefined;
+    const PaymentRequest = undefined;
+    const PaymentResponse = undefined;
+    const PaymentAddress = undefined;
+    const URLSearchParams = undefined;
+    const DOMParser = undefined;
+    const XMLSerializer = undefined;
+    const TextDecoder = undefined;
+    const TextEncoder = undefined;
+    const BroadcastChannel = undefined;
+    const MessageChannel = undefined;
+    const MessagePort = undefined;
+    const MessageEvent = undefined;
+    const NotificationPermission = undefined;
+    const PerformanceObserver = undefined;
+    const PerformanceEntry = undefined;
+    const PerformanceNavigation = undefined;
+    const PerformanceResourceTiming = undefined;
+    const PerformanceTiming = undefined;
+    const ServiceWorker = undefined;
+    const ServiceWorkerContainer = undefined;
+    const ServiceWorkerRegistration = undefined;
+    const PushManager = undefined;
+    const PushSubscription = undefined;
+    const File = undefined;
+    const FileList = undefined;
+    const DataView = undefined;
+    const ArrayBuffer = undefined;
+    const Int8Array = undefined;
+    const Uint8Array = undefined;
+    const Uint8ClampedArray = undefined;
+    const Int16Array = undefined;
+    const Uint16Array = undefined;
+    const Int32Array = undefined;
+    const Uint32Array = undefined;
+    const Float32Array = undefined;
+    const Float64Array = undefined;
+    const BigInt64Array = undefined;
+    const BigUint64Array = undefined;
+    const WebAssembly = undefined;
+    const importScripts = undefined;
+    const JSON = undefined;
+    const atob = undefined;
+    const btoa = undefined;
+    const console = undefined;`;
 
 	protected CLASS = {
 		getMethodsFromClass: (instance: GlobalNode, filters: string[] = []) => {
@@ -46,6 +167,8 @@ export default class ConstructorScript {
 				"_index",
 				"_slug",
 				"_id",
+				"_add",
+				"utils",
 				"NODE_NAME",
 				"$attributes",
 				"$components",
@@ -71,6 +194,9 @@ export default class ConstructorScript {
 				}
 			else
 				for (const prop of props) {
+					if (typeof instance[prop] === "function")
+						result[prop] = instance[prop].bind(this.$node);
+
 					result[prop] = instance[prop];
 				}
 
@@ -115,42 +241,98 @@ export default class ConstructorScript {
 		},
 	};
 
-	protected getViewport() {
-		let viewport = {
-			width: 0,
-			height: 0,
+	protected getHelpers() {
+		const $Timer = {
+			timeout: (time: number, callback: TFunction) => 
+				setTimeout(callback, time)
+			,
+			interval: (time: number, callback: TFunction) => 
+				setInterval(callback, time)
+			,
+			clear: (reference: number, type: "interval" | "timeout") => type === "interval" ? clearInterval(reference) : clearTimeout(reference)
 		};
 
-		if (this.$app instanceof EngineCore) {
-			viewport = this.$app[GetOptions]().game.viewport;
-		} else if (this.$app instanceof GameCore) {
-			viewport = this.$app[GetOptions]().viewport;
+		const $Node = {
+			collider: () => {
+				const collision = this.$node.$nodes.all.find(
+					(node) => node.NODE_NAME === "CollisionShape2D",
+				);
+
+				return collision?.getCollider();
+			},
+			destroy: () => {
+				this.$app.ROOT.deleteNodeByPath(this.$node.path, "index");
+
+				const _destroy = this.$node.$functions.get("_destroy");
+
+				if (_destroy) _destroy();
+			},
+		};
+
+		const $Game = {
+			finish: () => {
+				this.$app[SetGlobal]("status", "pause");
+			},
+			reset: () => {
+				this.$app[SetGlobal]("reset", true);
+				this.$app[$Scenes].reset(this.$app[$Scenes].currentScene as Scene);
+				this.$app[SetGlobal]("status", "play");
+			},
+			reload: () => {
+
+			},
+			pause: () => {
+				this.$app[SetGlobal]("status", "pause");
+			},
+		};
+
+		const $Logger = {
+			message: (...data: TAnything[]) => {
+				console.log(...data);
+			},
+			error: (...data: TAnything[]) => {
+				console.error(...data);
+			},
+			warning: (...data: TAnything[]) => {
+				console.warn(...data);
+			},
+			info: (...data: TAnything[]) => {
+				console.info(...data);
+			},
+		};
+
+		const $Window = {
+			viewport: () => {
+				let viewport = {
+					width: 0,
+					height: 0,
+				};
+		
+				if (this.$app instanceof EngineCore) {
+					viewport = this.$app[GetOptions]().game.viewport;
+				} else if (this.$app instanceof GameCore) {
+					viewport = this.$app[GetOptions]().viewport;
+				}
+		
+				return viewport;
+			}
 		}
 
-		return viewport;
-	}
+		const $Input = this.$app[_Input];
 
-	protected getHelpers() {
-		const $collider = () => {
-			const collision = this.$node.$nodes.all.find(
-				(node) => node.NODE_NAME === "CollisionShape2D",
-			);
+		const $Nodes = ConstructorNodes[GetNodesToConstructorNode]()
 
-			return collision?.getCollider();
-		};
-
-		const $destroyNode = () => {
-			this.$app.root.deleteNodeByPath(this.$node.path, "index");
-		};
-
-		const $finish = () => {
-			this.$app[SetGlobal]("status", "pause");
-		};
+		const $Scene = this.$app.scenes.currentScene;
 
 		return {
-			$finish,
-			$collider,
-			$destroyNode,
+			$Input,
+			$Logger,
+			$Game,
+			$Timer,
+			$Window,
+			$Nodes,
+			$Node,
+			$Scene
 		};
 	}
 
@@ -172,7 +354,7 @@ export default class ConstructorScript {
 		let result = "";
 
 		if (this.$node.scriptMode === "function") {
-			result = `with(helpers) {\n\nwith (node) {\n\n${code
+			result = `${this._restring} with(helpers) {\n\nwith (node) {\n\n${code
 				.trim()
 				.replace(/@expose /g, "")}; ${this.REGEXP.getExpressionIntoCode(
 				code.trim(),
@@ -180,14 +362,14 @@ export default class ConstructorScript {
 		}
 
 		if (this.$node.scriptMode === "class") {
-			result = `${code.trim()}
-        return new ${this.REGEXP.getNameFromClassIntoCode(code)}()`;
+			result = `${this._restring}\n with(helpers) { ${code.trim()}
+        return new ${this.REGEXP.getNameFromClassIntoCode(code)}() }`;
 		}
 
 		return result;
 	}
 
-	protected async getExec(code: string, addons: Record<string, TAnything>) {
+	protected async getExec(code: string, helpers: Record<string, any>) {
 		const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
 
 		let execute: TFunction<TAnything>;
@@ -200,23 +382,22 @@ export default class ConstructorScript {
 		};
 
 		if (this.$node.scriptMode === "function") {
-			execute = new AsyncFunction("node, helpers, viewport", code);
+			execute = new AsyncFunction("helpers", code);
 
-			result = await execute(this.$node, addons.helpers, addons.viewport);
+			result = await execute(helpers);
 		} else {
 			const extendsClass = ConstructorNodes[GetNodeToConstructorNode](
 				this.$node.NODE_NAME,
 			);
 
 			const execute = new AsyncFunction(
-				`node, helpers, viewport, ${this.$node.NODE_NAME}`,
+				`node, helpers, ${this.$node.NODE_NAME}`,
 				code,
 			);
 
 			result = await execute(
 				this.$node,
-				addons.helpers,
-				addons.viewport,
+				helpers,
 				extendsClass,
 			);
 
@@ -234,13 +415,9 @@ export default class ConstructorScript {
 		this.$app = app;
 		this.$node = node;
 
-		const viewport = this.getViewport();
 		const helpers = this.getHelpers();
 		const code = await this.getCode();
 
-		return await this.getExec(code, {
-			viewport,
-			helpers,
-		});
+		return await this.getExec(code, helpers);
 	}
 }

@@ -2,10 +2,10 @@ import type { IHandleFunction, TFunctionTuple } from "../node.types";
 import type { GlobalNode } from "@/nodes";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
-import type { TFunction } from "@/types";
+import type { TAnything, TFunction } from "@/types";
 
 import { MethodSetFunctions, PropFunctions } from "@/nodes/symbols";
-import { _Drawer, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, GetApp } from "@/symbols";
 
 export class HandlerFunction implements IHandleFunction {
 	private $node: GlobalNode;
@@ -36,8 +36,6 @@ export class HandlerFunction implements IHandleFunction {
 		this[PropFunctions].set(name, func);
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	has(name: string): boolean {
@@ -47,13 +45,10 @@ export class HandlerFunction implements IHandleFunction {
 	delete(name: string): boolean {
 		this.$app[_Drawer].render.reDraw();
 
-		this.$app[SetGlobal]("re-draw", true);
-
 		return this[PropFunctions].delete(name);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	execute(name: string, ...args: any[]): void {
+	execute(name: string, ...args: TAnything[]): void {
 		const func = this.get(name);
 
 		if (!func) return;
@@ -65,8 +60,6 @@ export class HandlerFunction implements IHandleFunction {
 		this[PropFunctions].clear();
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	[MethodSetFunctions](functions: TFunctionTuple[]): void {

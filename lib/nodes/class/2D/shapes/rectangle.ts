@@ -12,7 +12,7 @@ import {
 	MethodMake,
 	PropType,
 } from "../../../symbols";
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "../../../../symbols";
+import { _Drawer, ExportWorker, GetApp } from "../../../../symbols";
 
 import { GlobalNode } from "@/nodes";
 import { Node2D } from "../node";
@@ -61,8 +61,6 @@ export class Rectangle2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set radius(value:
@@ -87,8 +85,6 @@ export class Rectangle2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set border(value: boolean) {
@@ -105,8 +101,6 @@ export class Rectangle2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderColor(value: string) {
@@ -123,8 +117,6 @@ export class Rectangle2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderWidth(value: number) {
@@ -141,8 +133,6 @@ export class Rectangle2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -195,8 +185,6 @@ export class Rectangle2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/rectangle"] {
@@ -248,8 +236,6 @@ export class Rectangle2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

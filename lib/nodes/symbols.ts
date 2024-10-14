@@ -26,3 +26,4 @@ export const MethodSetNodes = Symbol("MethodSetNodes");
 export const AddNodeToConstructorNode = Symbol("AddNodeToConstructorNode");
 export const AddNodesToConstructorNode = Symbol("AddNodesToConstructorNode");
 export const GetNodeToConstructorNode = Symbol("GetNodeToConstructorNode");
+export const GetNodesToConstructorNode = Symbol("GetNodesToConstructorNode")

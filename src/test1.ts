@@ -58,9 +58,6 @@ const app = new EngineCore({
 	background: "#eeeeee",
 	context: "2d",
 	dimension: "2D",
-	export: {
-		format: "JSON",
-	},
 	fps: {
 		delay: 1000,
 		velocity: 60,

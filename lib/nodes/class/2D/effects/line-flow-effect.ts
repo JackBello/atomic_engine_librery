@@ -61,8 +61,6 @@ export class LineFlowEffect2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set lineWidth(value: number) {
@@ -79,8 +77,6 @@ export class LineFlowEffect2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set spacing(value: number) {
@@ -97,8 +93,6 @@ export class LineFlowEffect2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set color(value: string) {
@@ -115,8 +109,6 @@ export class LineFlowEffect2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set radius(value: number) {
@@ -133,8 +125,6 @@ export class LineFlowEffect2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -187,8 +177,6 @@ export class LineFlowEffect2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/line-flow-effect"] {
@@ -241,8 +229,6 @@ export class LineFlowEffect2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

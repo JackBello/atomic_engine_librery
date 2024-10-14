@@ -24,6 +24,7 @@ import {
 	SetGlobal,
 	GetOptions,
 	SetOptions,
+	_Input,
 } from "../symbols";
 import { AddNodesToConstructorNode } from "../nodes/symbols";
 
@@ -35,6 +36,7 @@ import ScenesService from "./services/scenes.service";
 
 import CollisionController from "./controllers/collision.controller";
 import ScriptController from "./controllers/script.controller";
+import InputController from "./controllers/input.controller";
 import EventController from "./controllers/event.controller";
 import DrawerController from "./controllers/drawer.controller";
 
@@ -76,6 +78,7 @@ export class GameCore {
 	[$Scenes]!: ScenesService;
 
 	[_Drawer]!: DrawerController;
+	[_Input]!: InputController;
 	[_Events]!: EventController;
 	[_Script]!: ScriptController;
 	[_Collision]!: CollisionController;
@@ -98,8 +101,8 @@ export class GameCore {
 
 	get size() {
 		return {
-			width: this.options.width,
-			height: this.options.height,
+			width: this._options.viewport.width,
+			height: this._options.viewport.height,
 		};
 	}
 
@@ -161,8 +164,8 @@ export class GameCore {
 
 		this._global.set("mode", "game"); // "edition" = 0 | "game" = 1 | "preview" = 2
 		this._global.set("status", "play"); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
-		this._global.set("re-draw", true);
 		this._global.set("scale-viewport", 1);
+		this._global.set("dispatch-event", false);
 
 		AbstractNode[SetApp](this);
 		ConstructorNodes[AddNodesToConstructorNode]({
@@ -185,6 +188,7 @@ export class GameCore {
 		this[$Scenes] = new ScenesService(this);
 
 		this[_Drawer] = new DrawerController(this);
+		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
 		this[_Script] = new ScriptController(this);
 		this[_Collision] = new CollisionController(this);

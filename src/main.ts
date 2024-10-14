@@ -42,6 +42,10 @@ const app = new EngineCore({
 
 app.use(pluginPanAndZoom).use(pluginSelection);
 
+app.input.defineAction("move_left", ["arrowLeft", "keyA"]);
+
+app.input.defineAction("move_right", ["arrowRight", "keyD"]);
+
 const lv1 = new Scene("lv-1");
 
 const rect1 = new Rectangle2D("player", {
@@ -55,56 +59,90 @@ const rect1 = new Rectangle2D("player", {
 	scaleY: 0.5,
 });
 
+rect1.scriptMode = "class";
+
+rect1.center()
+
 rect1.script = `
-$attributes.add("vx", {
-  value: 0.8
-})
-$attributes.add("vy", {
-  value: 0.5
-})
-$attributes.add("vs", {
-  value: 0.001
-})
+class MyNode extends Rectangle2D {
+  speed = 100
+  destroyTime = 10000
+  destroyInterval = 10
+  refTimeout = 0
+  refInterval = 0
+  textTime = undefined
 
-@expose function save() {
-  console.log("save")
-}
-
-function _ready() {
-  console.log("ready block")
-}
-
-function _process() {
-  const collider = $collider()
-
-  if (collider && collider.slug === "enemy") {
-    $destroyNode()
+  custom = () => {
+    $Logger.message(this)
   }
 
-  x += $attributes.get("vx").value;
-  y += $attributes.get("vy").value;
+  _ready() {
+	this.$attributes.add("vx", {
+		value: 0.8
+	})
 
-  scaleX += $attributes.get("vs").value;
-  scaleY += $attributes.get("vs").value;
+	this.$attributes.add("vy", {
+		value: 0.5
+	})
 
-  if ((scaleX < 0.5 || scaleX > 1.5) && (scaleY < 0.5 || scaleY > 1.5)) $attributes.get("vs").value *= -1
+	this.$attributes.add("vs", {
+		value: 0.001
+	})
 
-  if ((x - (width * scaleX / 2)) < 0 || x + (width * scaleX / 2) > viewport.width) {
-    $attributes.get("vx").value *= -1;
-    background = "#" + Math.floor(Math.random() * 16777215).toString(16)
+    $Logger.message("ready rect 3")
+	$Logger.message(this)
+
+	this.textTime = new $Nodes.Text2D("destroy time", {
+		color: "black",
+		fontSize: "20px",
+		text: this.destroyInterval + "seg",
+		x: 50,
+		y: 20,
+		width: 50,
+		height: 50
+	})
+
+	$Scene.$nodes.add(this.textTime);
+
+	this.refInterval = $Timer.interval(1000, () => {
+		this.destroyInterval--;
+		this.textTime.text = this.destroyInterval + "seg";
+	})
+	this.refTimeout = $Timer.timeout(this.destroyTime, () => {
+		$Node.destroy()
+		$Logger.info("node is destroyed")
+	})
   }
-  if ((y - (height * scaleY / 2)) < 0 || y + (height * scaleY / 2) > viewport.height) {
-    $attributes.get("vy").value *= -1;
-    background = "#" + Math.floor(Math.random() * 16777215).toString(16)
+
+  _process(delta) {
+  	const collider = $Node.collider()
+
+  	if (collider && collider.slug === "enemy") {
+    	Node.destroy()
+	}
+
+	if ($Input.isActionPressed("move_right"))
+    	this.x += this.speed * delta
+	if ($Input.isActionPressed("move_left"))
+    	this.x -= this.speed * delta
   }
-}
 
-function _destroyed() {
-  console.log("game over")
+  _input(event) {
+	$Logger.message(event.hasMousePressed("left"))
+  }
 
-  $finish();
-}
-`;
+  _destroy() {
+	$Timer.clear(this.refInterval, "interval");
+	$Timer.clear(this.refTimeout, "timeout");
+	$Logger.info("game over")
+
+	this.textTime.text = "Game Over!"
+	this.textTime.fontSize = "50px"
+	this.textTime.x = 100
+	this.textTime.y = 100
+	this.textTime.center()
+  }
+}`;
 
 lv1.$nodes.add(rect1);
 

@@ -277,9 +277,15 @@ const selectNode = (
 };
 
 self.onmessage = (event) => {
-	if (event.data.action === "set:root") {
-		root = event.data.root;
-	} else if (event.data.action === "select:node") {
+	if (event.data.action === "status")
+		self.postMessage({
+			type: "status",
+			data: "ready",
+		});
+
+	if (event.data.action === "set:root") root = event.data.root;
+
+	if (event.data.action === "select:node") {
 		if (root.length === 0) return;
 
 		const nodes = root[0].nodes;
@@ -307,7 +313,9 @@ self.onmessage = (event) => {
 			type: "select:node",
 			result,
 		});
-	} else if (event.data.action === "cursor:node") {
+	}
+
+	if (event.data.action === "cursor:node") {
 		if (root.length === 0) return;
 
 		const nodes = root[0].nodes;

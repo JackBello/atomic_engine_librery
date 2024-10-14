@@ -4,7 +4,7 @@ import type { TEventNode, TEventScene } from "../event.type";
 import type { AllTypesSimple, TAnything, TFunction } from "@/types";
 
 import { MethodClone, MethodImport, MethodMake, PropType } from "../symbols";
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, ExportWorker, GetApp } from "@/symbols";
 
 import { GlobalNode } from "./global-node";
 
@@ -60,8 +60,6 @@ export class Scene extends GlobalNode {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["global/scene"] {
@@ -107,8 +105,6 @@ export class Scene extends GlobalNode {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON"): Scene {

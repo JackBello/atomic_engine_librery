@@ -2,7 +2,7 @@ import type { GlobalNode } from "@/nodes";
 import type { GameCore } from "../game";
 import type { EngineCore } from "../engine";
 
-import { $Scenes, DispatchScript } from "@/symbols";
+import { $Scenes, _Input, DispatchScript } from "@/symbols";
 import { PropType } from "@/nodes/symbols";
 
 import EventObserver from "@/app/utils/observer";
@@ -21,16 +21,16 @@ export default class ScriptController {
 			await this.executeFunctionReady(this.$app[$Scenes].currentScene);
 	}
 
-	async process(animation: { timestamp: number; deltaTime: number }) {
+	async process(delta: number) {
 		if (this.$app[$Scenes].currentScene && this.$app.mode === "game")
 			await this.executeFunctionScriptGame(
 				this.$app[$Scenes].currentScene,
-				animation,
+				delta,
 			);
 		if (this.$app[$Scenes].currentScene && this.$app.mode === "editor")
 			await this.executeFunctionScriptEditor(
 				this.$app[$Scenes].currentScene,
-				animation,
+				delta,
 			);
 	}
 
@@ -53,34 +53,32 @@ export default class ScriptController {
 			}
 	}
 
-	protected async executeFunctionScriptEditor(
-		node: GlobalNode,
-		animation: { timestamp: number; deltaTime: number },
-	) {
+	protected async executeFunctionScriptEditor(node: GlobalNode, delta: number) {
 		const app = this.$app;
 		const mode = app.global("mode") === "preview";
 
 		const _draw = node.$functions.get("_draw");
 		const _process = node.$functions.get("_process");
+		const _input = node.$functions.get("_input");
 
-		if (node?.visible && mode && _process) await _process(animation);
+		if (mode && this.$app.global("dispatch-event") && _input)
+			_input(this.$app[_Input]);
+
+		if (node?.visible && mode && _process) await _process(delta);
 
 		if (node?.[PropType].startsWith("2D") && mode && _draw) await _draw();
 
 		if (node.$nodes.size > 0)
 			for (const child of node.$nodes.all) {
-				await this.executeFunctionScriptEditor(child, animation);
+				await this.executeFunctionScriptEditor(child, delta);
 			}
 	}
 
-	protected async executeFunctionScriptGame(
-		node: GlobalNode,
-		animation: { timestamp: number; deltaTime: number },
-	) {
+	protected async executeFunctionScriptGame(node: GlobalNode, delta: number) {
 		const _draw = node.$functions.get("_draw");
 		const _process = node.$functions.get("_process");
 
-		if (node?.visible && _process) await _process(animation);
+		if (node?.visible && _process) await _process(delta);
 
 		if (node?.[PropType].startsWith("2D") && _draw) {
 			await _draw();
@@ -88,7 +86,7 @@ export default class ScriptController {
 
 		if (node.$nodes.size > 0)
 			for (const child of node.$nodes.all) {
-				await this.executeFunctionScriptGame(child, animation);
+				await this.executeFunctionScriptGame(child, delta);
 			}
 	}
 

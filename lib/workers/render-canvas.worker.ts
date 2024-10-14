@@ -134,36 +134,43 @@ const handleRender = (root: INodeWorker[]) => {
 		const imageBitMap = rendered.canvas.transferToImageBitmap();
 
 		self.postMessage({ imageBitMap }, [imageBitMap] as object);
+
+		reDraw = false;
 	}
 };
 
 self.onmessage = (event) => {
-	if (event.data.action === "load:rendered") {
-		loadRendered(event.data.options);
-	} else if (event.data.action === "resize:drawer") {
-		resizeDrawer(event.data.options);
-	} else if (event.data.action === "set:after-draw") {
-		afterDraw = event.data.list;
-	} else if (event.data.action === "set:before-draw") {
-		beforeDraw = event.data.list;
-	} else if (event.data.action === "set:size-editor") {
-		sizeEditor = event.data.size;
-	} else if (event.data.action === "set:viewport-game") {
+	if (event.data.action === "status")
+		self.postMessage({
+			type: "status",
+			data: "ready",
+		});
+
+	if (event.data.action === "load:rendered") loadRendered(event.data.options);
+
+	if (event.data.action === "resize:drawer") resizeDrawer(event.data.options);
+
+	if (event.data.action === "set:after-draw") afterDraw = event.data.list;
+
+	if (event.data.action === "set:before-draw") beforeDraw = event.data.list;
+
+	if (event.data.action === "set:size-editor") sizeEditor = event.data.size;
+
+	if (event.data.action === "set:viewport-game")
 		viewportGame = event.data.viewport;
-	} else if (event.data.action === "set:scale-viewport") {
+
+	if (event.data.action === "set:scale-viewport")
 		scaleViewport = event.data.scaleViewport;
-	} else if (event.data.action === "set:animation") {
+
+	if (event.data.action === "set:animation")
 		animationController = event.data.animation;
-	} else if (event.data.action === "set:frame") {
+
+	if (event.data.action === "set:frame")
 		frameController.control = event.data.control;
-	} else if (event.data.action === "set:configs") {
-		configs = event.data.configs;
-	} else if (event.data.action === "re-draw") {
-		reDraw = true;
-	} else if (event.data.action === "render") {
-		if (reDraw) {
-			handleRender(event.data.root);
-			reDraw = false;
-		}
-	}
+
+	if (event.data.action === "set:configs") configs = event.data.configs;
+
+	if (event.data.action === "re-draw") reDraw = true;
+
+	if (event.data.action === "render" && reDraw) handleRender(event.data.root);
 };

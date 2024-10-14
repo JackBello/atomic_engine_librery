@@ -25,6 +25,7 @@ import {
 	_ROOT_,
 	SetGlobal,
 	GetOptions,
+	_Input,
 } from "../symbols";
 import { AddNodesToConstructorNode } from "../nodes/symbols";
 
@@ -60,6 +61,7 @@ import {
 } from "@/nodes";
 
 import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
+import InputController from "./controllers/input.controller";
 
 export class EngineCore {
 	[key: string]: TAnything;
@@ -83,6 +85,7 @@ export class EngineCore {
 	[$Scenes]!: ScenesService;
 
 	[_Drawer]!: DrawerController;
+	[_Input]!: InputController;
 	[_Events]!: EventController;
 	[_Window]!: WindowController;
 	[_Script]!: ScriptController;
@@ -142,10 +145,14 @@ export class EngineCore {
 		return this[$Scenes];
 	}
 
+	get input() {
+		return this[_Input]
+	}
+
 	get size() {
 		return {
-			width: this.options.width,
-			height: this.options.height,
+			width: this._options.width,
+			height: this._options.height,
 		};
 	}
 
@@ -159,9 +166,9 @@ export class EngineCore {
 		this._global.set("mode", "edition"); // "edition" = 0 | "game" = 1 | "preview" = 2
 		this._global.set("status", null); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
 		this._global.set("fps", null);
-		this._global.set("re-draw", true);
 		this._global.set("scale-viewport", 1);
 		this._global.set("reset", true);
+		this._global.set("dispatch-event", false);
 
 		AbstractNode[SetApp](this);
 		ConstructorNodes[AddNodesToConstructorNode]({
@@ -184,6 +191,7 @@ export class EngineCore {
 		this[$Scenes] = new ScenesService(this);
 
 		this[_Drawer] = new DrawerController(this);
+		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
 		this[_Window] = new WindowController(this);
 		this[_Script] = new ScriptController(this);
@@ -204,10 +212,6 @@ export class EngineCore {
 		this[_Drawer].render.setSize(width, height);
 		this[_Drawer].render.setSizeEditor(width, height);
 
-		return this;
-	}
-
-	setImport() {
 		return this;
 	}
 

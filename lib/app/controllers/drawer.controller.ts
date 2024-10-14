@@ -61,6 +61,38 @@ export default class DrawerController {
 		};
 	}
 
+	async isReady() {
+		const isReadyNodes = (): Promise<boolean> => {
+			this._workerNodes.postMessage({
+				action: "status",
+			});
+
+			return new Promise((resolve) => {
+				this._workerNodes.onmessage = (event) => {
+					if (event.data.type === "status") {
+						resolve(true);
+					}
+				};
+			});
+		};
+
+		const isReadyEditor = (): Promise<boolean> => {
+			this._workerEditor.postMessage({
+				action: "status",
+			});
+
+			return new Promise((resolve) => {
+				this._workerEditor.onmessage = (event) => {
+					if (event.data.type === "status")
+						resolve(true);
+				};
+			});
+		};
+
+		await isReadyNodes()
+		await isReadyEditor()
+	}
+
 	readonly render = {
 		setSize: (width: number, height: number) => {
 			this._workerRender.postMessage({

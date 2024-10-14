@@ -62,8 +62,6 @@ export class CollisionShape2D extends Collision2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set color(value: string) {
@@ -80,8 +78,6 @@ export class CollisionShape2D extends Collision2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -140,8 +136,6 @@ export class CollisionShape2D extends Collision2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/handler/collision-shape"] {
@@ -197,8 +191,6 @@ export class CollisionShape2D extends Collision2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

@@ -1,5 +1,5 @@
 import type { EngineCore } from "@/app/engine";
-import { $Canvas, HiddenPlugin, SetGlobal } from "@/symbols";
+import { $Canvas, HiddenPlugin } from "@/symbols";
 
 export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.config;
@@ -50,8 +50,6 @@ export const handleMouseMove = (event: MouseEvent, app: EngineCore) => {
 
 	if (!_.isPanning) return;
 
-	app[SetGlobal]("re-draw", true);
-
 	app[$Canvas].event.style.cursor = "grabbing";
 
 	const dx = event.clientX - config._.startCoords.x;
@@ -76,8 +74,6 @@ export const handleMouseWheel = (event: WheelEvent, app: EngineCore) => {
 	if (!_) return;
 
 	if (config.mode === "node") return;
-
-	app[SetGlobal]("re-draw", true);
 
 	const delta = event.deltaY > 0 ? -1 : 1;
 

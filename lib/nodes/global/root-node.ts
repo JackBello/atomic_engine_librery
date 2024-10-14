@@ -9,7 +9,7 @@ import {
 	MethodSetRoot,
 	PropNodes,
 } from "../symbols";
-import { $Scenes, _Drawer, GetApp } from "@/symbols";
+import { $Scenes, _Drawer, GetApp, SetGlobal } from "@/symbols";
 
 export default class RootNode extends AbstractNode {
 	private _nodes_(path: string) {
@@ -289,6 +289,8 @@ export default class RootNode extends AbstractNode {
 
 	deleteNodeByPath(path: string, mode: TMode = "index") {
 		this[GetApp]()[_Drawer].nodes.deleteNode(path, "path", mode);
+
+		this[GetApp]()[_Drawer].render.reDraw();
 
 		if (mode === "id") return this.deleteNodeByPathId(path);
 

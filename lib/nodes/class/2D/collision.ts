@@ -7,7 +7,7 @@ import type {
 	TTypeNodes,
 } from "@/nodes/global/node.types";
 
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, ExportWorker, GetApp } from "@/symbols";
 import {
 	MethodClone,
 	MethodImport,
@@ -101,8 +101,6 @@ export class Collision2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/handler/collision"] {
@@ -155,8 +153,6 @@ export class Collision2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

@@ -49,7 +49,7 @@ export default class AnimationService {
 	protected async loop(timestamp: number) {
 		if (!this._lastTime) this._lastTime = timestamp;
 
-		this._deltaTime = timestamp - this._lastTime;
+		this._deltaTime = (timestamp - this._lastTime) / 1000;
 
 		const isPreview = this.$app.global("mode") === "preview";
 		const isPlayingGame =
@@ -58,17 +58,15 @@ export default class AnimationService {
 		if (isPlayingGame || isPreview) {
 			this.$app[_Collision].process();
 
-			await this.$app[_Script].process({
-				timestamp,
-				deltaTime: this._deltaTime,
-			});
+			await this.$app[_Script].process(this._deltaTime);
 		}
 
-		if (isPlayingGame || this.$app.mode === "editor") {
+		if (isPlayingGame || this.$app.mode === "editor")
 			await this.$app[_Drawer].process();
 
-			this.$app[SetGlobal]("re-draw", false);
-		}
+		this.$app[SetGlobal]("dispatch-event", false);
+
+		this._lastTime = timestamp;
 
 		this._loop = window.requestAnimationFrame(this.loop.bind(this));
 	}

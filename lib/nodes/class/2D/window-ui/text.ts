@@ -13,7 +13,7 @@ import {
 	MethodMake,
 	PropType,
 } from "../../../symbols";
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "../../../../symbols";
+import { _Drawer, ExportWorker, GetApp } from "../../../../symbols";
 
 import { Node2D } from "../node";
 import { GlobalNode } from "@/nodes";
@@ -96,6 +96,16 @@ export class Text2D extends Node2D {
 		return this._options.color;
 	}
 
+	get font() {
+		return `${this._options.fontStretch ? `${this._options.fontStretch} ` : ""}${
+		this._options.fontVariant ? `${this._options.fontVariant} ` : ""
+	}${this._options.fontStyle ? `${this._options.fontStyle} ` : ""}${
+		this._options.fontWeight ? `${this._options.fontWeight} ` : ""
+	}${this._options.fontSize ? `${this._options.fontSize} ` : ""}${
+		this._options.lineHeight ? `${this._options.lineHeight} ` : ""
+	}${this._options.fontFamily ? this._options.fontFamily : ""}`;
+	}
+
 	set border(value: boolean) {
 		this._options.border = value;
 
@@ -110,8 +120,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderColor(value: string) {
@@ -128,8 +136,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderWidth(value: number) {
@@ -146,17 +152,19 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set text(value: string) {
 		this._options.text = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				text: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -164,8 +172,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontSize(value:
@@ -179,10 +185,14 @@ export class Text2D extends Node2D {
 		| `${string}%`) {
 		this._options.fontSize = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontSize: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -190,17 +200,19 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontFamily(value: string) {
 		this._options.fontFamily = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontFamily: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -208,8 +220,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontStretch(value:
@@ -226,10 +236,14 @@ export class Text2D extends Node2D {
 		| TTypeGlobalFont) {
 		this._options.fontStretch = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontStretch: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -237,8 +251,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontStyle(value:
@@ -249,10 +261,14 @@ export class Text2D extends Node2D {
 		| `oblique ${string}deg`) {
 		this._options.fontStyle = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontStyle: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -260,8 +276,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontWeight(value:
@@ -273,10 +287,14 @@ export class Text2D extends Node2D {
 		| "bolder") {
 		this._options.fontWeight = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontWeight: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -284,17 +302,19 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set fontVariant(value: string) {
 		this._options.fontVariant = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				fontVariant: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -302,8 +322,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set lineHeight(value:
@@ -319,10 +337,14 @@ export class Text2D extends Node2D {
 		| TTypeGlobalFont) {
 		this._options.lineHeight = value;
 
+		this.applySizeText()
+
 		this[GetApp]()[_Drawer].nodes.updateNode(
 			this.id,
 			{
 				lineHeight: value,
+				width: this._options.width,
+				height: this._options.height
 			},
 			this.path,
 			"path",
@@ -330,8 +352,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set textAlign(value: "center" | "left" | "right" | "start" | "end") {
@@ -348,8 +368,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set textBaseline(value:
@@ -372,8 +390,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set textDirection(value: "inherit" | "ltr" | "rtl") {
@@ -390,8 +406,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set wordSpacing(value:
@@ -416,8 +430,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set letterSpacing(value:
@@ -442,8 +454,6 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set color(value: string) {
@@ -460,15 +470,38 @@ export class Text2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
-	constructor(slug: string, options?: Partial<TCanvasNodeOptions["2D/text"]>) {
+	set width(value: number) {
+		throw new Error(`You cannot set a width '${value}' in the Text2D node`)
+	}
+
+	set height(value: number) {
+		throw new Error(`You cannot set a height '${value}' in the Text2D node`)
+	}
+
+	constructor(slug: string, options?: Partial<Omit<TCanvasNodeOptions["2D/text"], "width" | "height">>) {
 		super(slug, { ...DEFAULT_CONFIG_TEXT_2D, ...options });
 
 		this._initial = { ...DEFAULT_CONFIG_TEXT_2D, ...options };
 		this._options = this._initial;
+
+		this.applySizeText(true)
+	}
+
+	protected applySizeText(changeInit = false) {
+		const metrics  = this[GetApp]().canvas.infoText(this._options.text, this.font);
+
+		const width = Math.floor(Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight));
+		const height = Math.floor(Math.abs(metrics.actualBoundingBoxAscent) + Math.abs(metrics.actualBoundingBoxDescent));
+
+		if (changeInit) {
+			this._initial.width = width
+			this._initial.height = height
+		}
+
+		this._options.width = width
+		this._options.height = height
 	}
 
 	clone() {
@@ -485,6 +518,8 @@ export class Text2D extends Node2D {
 				relative[property] = this._initial[property];
 				relative.calculate = this.processCalculate();
 
+				this.applySizeText()
+
 				this[GetApp]()[_Drawer].nodes.updateNode(
 					this.id,
 					relative,
@@ -500,6 +535,8 @@ export class Text2D extends Node2D {
 				"calculate",
 			]);
 			options.calculate = this.processCalculate();
+
+			this.applySizeText()
 
 			this[GetApp]()[_Drawer].nodes.updateNode(
 				this.id,
@@ -531,6 +568,8 @@ export class Text2D extends Node2D {
 				relative[properties] = value;
 				relative.calculate = this.processCalculate();
 
+				this.applySizeText()
+
 				this[GetApp]()[_Drawer].nodes.updateNode(
 					this.id,
 					relative,
@@ -550,6 +589,8 @@ export class Text2D extends Node2D {
 			]);
 			options.calculate = this.processCalculate();
 
+			this.applySizeText()
+
 			this[GetApp]()[_Drawer].nodes.updateNode(
 				this.id,
 				options,
@@ -560,8 +601,6 @@ export class Text2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

@@ -97,8 +97,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set endY(value: number) {
@@ -115,8 +113,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set startX(value: number) {
@@ -133,8 +129,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set startY(value: number) {
@@ -151,8 +145,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set shape(value: "rectangle" | "circle" | "triangle" | "polygon") {
@@ -169,8 +161,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set background(value: string) {
@@ -187,8 +177,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set radius(value:
@@ -213,8 +201,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set border(value: boolean) {
@@ -231,8 +217,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderColor(value: string) {
@@ -249,8 +233,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderWidth(value: number) {
@@ -267,8 +249,6 @@ export class Selection2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -341,8 +321,6 @@ export class Selection2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/selection"] {
@@ -394,8 +372,6 @@ export class Selection2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

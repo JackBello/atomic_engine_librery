@@ -34,7 +34,6 @@ import {
 	ExportData,
 	ExportWorker,
 	GetApp,
-	SetGlobal,
 } from "@/symbols";
 
 import EventObserver from "@/app/utils/observer";
@@ -177,8 +176,6 @@ export class GlobalNode
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -246,8 +243,6 @@ export class GlobalNode
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["global/node"] {
@@ -293,8 +288,6 @@ export class GlobalNode
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	export(format: "JSON" | "YAML" = "JSON"): string {

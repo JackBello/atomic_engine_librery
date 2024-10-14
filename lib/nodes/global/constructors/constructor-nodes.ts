@@ -12,6 +12,7 @@ import {
 	AddNodeToConstructorNode,
 	AddNodesToConstructorNode,
 	GetNodeToConstructorNode,
+	GetNodesToConstructorNode,
 } from "../../symbols";
 
 export default class ConstructorNodes {
@@ -36,6 +37,10 @@ export default class ConstructorNodes {
 
 	static [GetNodeToConstructorNode](name: string) {
 		return ConstructorNodes.nodesTypes.get(name);
+	}
+
+	static [GetNodesToConstructorNode]() {
+		return Object.fromEntries(ConstructorNodes.nodesTypes.entries()); 
 	}
 
 	public makeNode(node: TExportNode<TAnything>): GlobalNode {

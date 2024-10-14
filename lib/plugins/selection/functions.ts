@@ -30,8 +30,8 @@ export const moveNodeByKeyboard = (
 	pan: { x: number; y: number },
 	zoom: number,
 ) => {
-	if (direction === "ArrowUp") node.y -= 1 + pan.y / zoom;
-	if (direction === "ArrowDown") node.y += 1 - pan.y / zoom;
-	if (direction === "ArrowLeft") node.x -= 1 + pan.x / zoom;
-	if (direction === "ArrowRight") node.x += 1 - pan.x / zoom;
+	if (direction === "ArrowUp") node.y -= 2 + pan.y / zoom;
+	if (direction === "ArrowDown") node.y += 2 - pan.y / zoom;
+	if (direction === "ArrowLeft") node.x -= 2 + pan.x / zoom;
+	if (direction === "ArrowRight") node.x += 2 - pan.x / zoom;
 };

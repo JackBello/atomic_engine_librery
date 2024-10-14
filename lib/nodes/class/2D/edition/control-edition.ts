@@ -12,7 +12,7 @@ import {
 	MethodMake,
 	PropType,
 } from "../../../symbols";
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "../../../../symbols";
+import { _Drawer, ExportWorker, GetApp } from "../../../../symbols";
 
 import { Node2D } from "../node";
 import { GlobalNode } from "@/nodes";
@@ -88,8 +88,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set cornerSize(value: number) {
@@ -106,8 +104,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set cornerColor(value: string) {
@@ -124,8 +120,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set cornerBorder(value: boolean) {
@@ -142,8 +136,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set cornerColorBorder(value: string) {
@@ -160,8 +152,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set showCorner(value:
@@ -190,8 +180,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set background(value: string) {
@@ -208,8 +196,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set radius(value:
@@ -234,8 +220,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set border(value: boolean) {
@@ -252,8 +236,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderColor(value: string) {
@@ -270,8 +252,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set borderWidth(value: number) {
@@ -288,8 +268,6 @@ export class ControlEdition2D extends Node2D {
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(
@@ -342,8 +320,6 @@ export class ControlEdition2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/control-edition"] {
@@ -396,8 +372,6 @@ export class ControlEdition2D extends Node2D {
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

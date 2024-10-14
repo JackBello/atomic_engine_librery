@@ -17,7 +17,7 @@ import type { TEventNode, TEventNode2D } from "../../event.type";
 import type { AllTypesSimple, TAnything, TFunction } from "../../../types";
 
 import { MethodClone, MethodImport, MethodMake, PropType } from "../../symbols";
-import { _Drawer, ExportWorker, GetApp, SetGlobal } from "../../../symbols";
+import { _Drawer, ExportWorker, GetApp } from "../../../symbols";
 
 import { GlobalNode } from "../../global/global-node";
 
@@ -142,8 +142,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set selectable(value: boolean) {
@@ -160,8 +158,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set hovered(value: boolean) {
@@ -178,8 +174,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set lock(value: boolean) {
@@ -196,8 +190,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set cursor(value: TCursorOptions) {
@@ -214,8 +206,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set opacity(value: number) {
@@ -232,8 +222,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set x(value: number) {
@@ -251,8 +239,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set y(value: number) {
@@ -270,8 +256,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set width(value: number) {
@@ -289,8 +273,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set height(value: number) {
@@ -308,56 +290,42 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set centerScale(value: boolean) {
 		this._options.centerScale = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set centerRotation(value: boolean) {
 		this._options.centerRotation = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set flipX(value: boolean) {
 		this._options.flipX = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set flipY(value: boolean) {
 		this._options.flipY = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set originX(value: TTypeOriginX) {
 		this._options.originX = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set originY(value: TTypeOriginY) {
 		this._options.originY = value;
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set scaleX(value: number) {
@@ -375,8 +343,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set scaleY(value: number) {
@@ -394,8 +360,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set skewX(value: number) {
@@ -413,8 +377,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set skewY(value: number) {
@@ -432,8 +394,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	set rotation(value: number) {
@@ -451,8 +411,6 @@ export class Node2D
 		);
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	constructor(slug: string, options?: Partial<TCanvasNodeOptions["2D/node"]>) {
@@ -505,8 +463,8 @@ export class Node2D
 					(this.height * this.scaleY) / 2) /
 				2;
 		} else {
-			this.x = this[GetApp]().width / 2;
-			this.y = this[GetApp]().height / 2;
+			this.x = this[GetApp]().size.width / 2;
+			this.y = this[GetApp]().size.height / 2;
 		}
 	}
 
@@ -517,7 +475,7 @@ export class Node2D
 					(this.width * this.scaleX) / 2) /
 				2;
 		} else {
-			this.x = (this[GetApp]().width / 2 - (this.width * this.scaleX) / 2) / 2;
+			this.x = (this[GetApp]().size.width / 2 - (this.width * this.scaleX) / 2) / 2;
 		}
 	}
 
@@ -529,7 +487,7 @@ export class Node2D
 				2;
 		} else {
 			this.y =
-				(this[GetApp]().height / 2 - (this.height * this.scaleY) / 2) / 2;
+				(this[GetApp]().size.height / 2 - (this.height * this.scaleY) / 2) / 2;
 		}
 	}
 
@@ -555,20 +513,20 @@ export class Node2D
 		};
 
 		calculate.scale = {
-			x: this.scaleX,
-			y: this.scaleY,
+			x: this._options.scaleX,
+			y: this._options.scaleY,
 		};
 
 		calculate.translate = {
-			x: this.x,
-			y: this.y,
+			x: this._options.x,
+			y: this._options.y,
 		};
 
-		calculate.rotation = (this.rotation * Math.PI) / 180;
+		calculate.rotation = (this._options.rotation * Math.PI) / 180;
 
 		calculate.scaleFactor = {
-			width: this.width,
-			height: this.height,
+			width: this._options.width,
+			height: this._options.height,
 		};
 
 		calculate.middleScaleFactor = {
@@ -623,8 +581,6 @@ export class Node2D
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	toObject(): TCanvasNodeOptions["2D/node"] {
@@ -676,8 +632,6 @@ export class Node2D
 		}
 
 		this[GetApp]()[_Drawer].render.reDraw();
-
-		this[GetApp]()[SetGlobal]("re-draw", true);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

@@ -1,7 +1,8 @@
 import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 
-import { $Canvas, DispatchEvent } from "@/symbols";
+import { $Canvas, _Input, DispatchEvent, SetGlobal } from "@/symbols";
+import { HandleEventInput } from "./symbols";
 
 export default class EventController {
 	private $app: EngineCore | GameCore;
@@ -18,6 +19,10 @@ export default class EventController {
 		if (target) {
 			event.preventDefault();
 
+			this.$app[SetGlobal]("dispatch-event", true);
+
+			this.$app[_Input][HandleEventInput](event);
+
 			this.$app[DispatchEvent]("canvas/mouse:down", event, this.$app);
 		}
 	};
@@ -28,16 +33,28 @@ export default class EventController {
 		if (target) {
 			event.preventDefault();
 
+			this.$app[SetGlobal]("dispatch-event", true);
+
+			this.$app[_Input][HandleEventInput](event);
+
 			this.$app[DispatchEvent]("canvas/mouse:up", event, this.$app);
 		}
 	};
 
 	protected mousemove = (event: MouseEvent) => {
+		this.$app[SetGlobal]("dispatch-event", true);
+
+		this.$app[_Input][HandleEventInput](event);
+
 		this.$app[DispatchEvent]("canvas/mouse:move", event, this.$app);
 	};
 
 	protected wheel = (event: WheelEvent) => {
 		event.preventDefault();
+
+		this.$app[SetGlobal]("dispatch-event", true);
+
+		this.$app[_Input][HandleEventInput](event);
 
 		this.$app[DispatchEvent]("canvas/mouse:wheel", event, this.$app);
 
@@ -56,11 +73,19 @@ export default class EventController {
 			}
 		}
 
+		this.$app[SetGlobal]("dispatch-event", true);
+
+		this.$app[_Input][HandleEventInput](event);
+
 		this.$app[DispatchEvent]("canvas/key:down", event, this.$app);
 	};
 
 	protected keyup = (event: KeyboardEvent) => {
 		if (this.$app.mode === "game") event.preventDefault();
+
+		this.$app[SetGlobal]("dispatch-event", true);
+
+		this.$app[_Input][HandleEventInput](event);
 
 		this.$app[DispatchEvent]("canvas/key:up", event, this.$app);
 	};

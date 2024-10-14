@@ -3,6 +3,12 @@ import { RenderNode } from "@/nodes/global/render-node";
 const nodes = new RenderNode();
 
 self.onmessage = (event) => {
+	if (event.data.action === "status")
+		self.postMessage({
+			type: "status",
+			data: "ready",
+		});
+
 	// root
 	if (event.data.action === "get:root") {
 		self.postMessage({

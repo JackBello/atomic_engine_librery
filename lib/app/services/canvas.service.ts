@@ -111,9 +111,7 @@ export default class CanvasService {
 		this._main.appendChild(this.event);
 
 		if (selector) document.querySelector(selector)?.appendChild(this._main);
-		else {
-			document.body.appendChild(this._main);
-		}
+		else document.body.appendChild(this._main);
 	}
 
 	protected initLayerEvent(width: number, height: number) {
@@ -129,6 +127,15 @@ export default class CanvasService {
 		this._event.style.userSelect = "none";
 		this._event.style.touchAction = "none";
 		this._event.setAttribute("data-type-canvas", "events");
+	}
+
+	infoText(text: string, font: string) {
+		const canvas = document.createElement("canvas");
+		const context = canvas.getContext("2d") as CanvasRenderingContext2D ;
+
+		context.font = font;
+
+		return context.measureText(text)
 	}
 
 	setSize(width: number, height: number, ignoreInstance = false) {

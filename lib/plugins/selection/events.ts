@@ -134,7 +134,9 @@ export const handleKeyDown = (event: KeyboardEvent, app: EngineCore) => {
 
 	const node = app[_ROOT_].getNodeByPath(_.node.__path__);
 
-	if (node)
+	const isEdition = app.global("mode") === "edition";
+
+	if (node && isEdition)
 		moveNodeByKeyboard(
 			node,
 			event.key,

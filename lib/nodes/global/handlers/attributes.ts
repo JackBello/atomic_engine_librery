@@ -8,7 +8,7 @@ import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
 import { MethodSetAttributes, PropAttributes } from "@/nodes/symbols";
-import { _Drawer, GetApp, SetGlobal } from "@/symbols";
+import { _Drawer, GetApp } from "@/symbols";
 
 export class HandlerAttribute implements IHandleAttribute {
 	private $node: GlobalNode;
@@ -39,8 +39,6 @@ export class HandlerAttribute implements IHandleAttribute {
 		this[PropAttributes].set(name, options);
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	has(name: string): boolean {
@@ -50,8 +48,6 @@ export class HandlerAttribute implements IHandleAttribute {
 	delete(name: string): boolean {
 		this.$app[_Drawer].render.reDraw();
 
-		this.$app[SetGlobal]("re-draw", true);
-
 		return this[PropAttributes].delete(name);
 	}
 
@@ -59,8 +55,6 @@ export class HandlerAttribute implements IHandleAttribute {
 		this[PropAttributes].clear();
 
 		this.$app[_Drawer].render.reDraw();
-
-		this.$app[SetGlobal]("re-draw", true);
 	}
 
 	[MethodSetAttributes](attributes: TAttributeTuple[]): void {
