@@ -1,40 +1,40 @@
-import * as YAML from "yaml";
-import JSON5 from "json5";
-import { uid } from "uid";
+import * as stdUlid from "@std/ulid";
 
 import type {
 	IControlEditor,
 	IControlHierarchy,
 	IControlNode,
 	IGlobalNode,
-	INodeWorker,
+	INodeProcess,
 	TExportNode,
 	TTypeNodes,
-} from "./node.types";
-import type { TEventNode } from "../event.type";
-import type { TCanvasNodes, TCanvasNodeOptions } from "../types";
-import type { AllTypesSimple, TAnything, TFunction } from "@/types";
+} from "./types";
+import type { TEventNode } from "../events";
+import type { TCanvasNodeOptions, TCanvasNodes } from "../types";
+import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import {
-	MethodSetIndex,
-	MethodSetId,
-	PropType,
-	MethodSetParent,
-	MethodSetRoot,
-	MethodClone,
-	MethodImport,
 	$ConstructorNodes,
-	MethodMake,
-	$ConstructorScript,
+	NodeFunctionClone,
+	NodeFunctionImport,
+	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
+	NodePropType,
+	NodeSetId,
+	NodeSetIndex,
+	NodeSetParent,
 } from "../symbols";
 import {
-	_Drawer,
+	$Scenes,
+	_Render,
+	_Script,
+	_Worker,
 	DispatchEvent,
-	DispatchScript,
 	ExportData,
 	ExportWorker,
 	GetApp,
-} from "@/symbols";
+} from "@/app/symbols";
 
 import EventObserver from "@/app/utils/observer";
 
@@ -47,6 +47,8 @@ import { HandlerNode } from "./handlers/nodes";
 import AbstractNode from "../abstract/node.abstract";
 
 import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "@/configs/nodes/global/node";
+import { HandlerScript } from "./handlers/script";
+import { serializers } from "@/app/utils/serialize";
 
 export class GlobalNode
 	extends AbstractNode
@@ -58,8 +60,6 @@ export class GlobalNode
 	protected _options: TCanvasNodeOptions["global/node"];
 	protected _initial: TCanvasNodeOptions["global/node"];
 
-	protected _root: undefined | GlobalNode = undefined;
-
 	protected _parent: undefined | GlobalNode;
 
 	protected _events: EventObserver;
@@ -68,7 +68,7 @@ export class GlobalNode
 	protected _slug: string;
 	protected _id: string;
 
-	[PropType]: TCanvasNodes = "global/node";
+	[NodePropType]: TCanvasNodes = "global/node";
 
 	readonly NODE_NAME: TTypeNodes = "GlobalNode";
 
@@ -77,12 +77,10 @@ export class GlobalNode
 	readonly $functions: HandlerFunction;
 	readonly $metaKeys: HandlerMetaKey;
 	readonly $nodes: HandlerNode;
-
-	scriptMode: "class" | "function" = "function";
-	script: string | URL | null;
+	readonly $script: HandlerScript;
 
 	get ROOT() {
-		return this._root;
+		return this[GetApp].ROOT;
 	}
 
 	get parent(): GlobalNode | undefined {
@@ -95,7 +93,9 @@ export class GlobalNode
 	}
 
 	get last(): GlobalNode | undefined {
-		if (this.parent) return this.parent.$nodes.all[this.parent.$nodes.size - 1];
+		if (this.parent) {
+			return this.parent.$nodes.all[this.parent.$nodes.size - 1];
+		}
 		return undefined;
 	}
 
@@ -129,15 +129,17 @@ export class GlobalNode
 	set slug(value: string) {
 		this._slug = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				slug: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
+		if (this[GetApp][$Scenes].currentScene) {
+			this[GetApp][_Worker].nodes.updateNode(
+				this.id,
+				{
+					slug: value,
+				},
+				this.path,
+				"path",
+				"index",
+			);
+		}
 	}
 
 	get title() {
@@ -151,31 +153,37 @@ export class GlobalNode
 	set title(value: string) {
 		this._options.title = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				title: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
+		if (this[GetApp][$Scenes].currentScene) {
+			this[GetApp][_Worker].nodes.updateNode(
+				this.id,
+				{
+					title: value,
+				},
+				this.path,
+				"path",
+				"index",
+			);
+		}
 	}
 
 	set description(value: string) {
 		this._options.description = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				description: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
+		if (this[GetApp][$Scenes].currentScene) {
+			this[GetApp][_Worker].nodes.updateNode(
+				this.id,
+				{
+					description: value,
+				},
+				this.path,
+				"path",
+				"index",
+			);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+			this[GetApp][_Worker].render.draw();
+
+			this[GetApp][_Render].draw = true;
+		}
 	}
 
 	constructor(
@@ -194,19 +202,20 @@ export class GlobalNode
 
 		this._index = 0;
 		this._slug = slug;
-		this._id = uid(12);
+		this._id = stdUlid.monotonicUlid(12);
 
-		this.script = null;
+		this._script = null;
 
 		this.$attributes = new HandlerAttribute(this);
 		this.$components = new HandlerComponent(this);
 		this.$functions = new HandlerFunction(this);
 		this.$metaKeys = new HandlerMetaKey(this);
 		this.$nodes = new HandlerNode(this);
+		this.$script = new HandlerScript(this);
 	}
 
 	clone(): GlobalNode {
-		return this[MethodClone]();
+		return this[NodeFunctionClone]();
 	}
 
 	emit(event: TEventNode, callback: TFunction): void {
@@ -214,128 +223,145 @@ export class GlobalNode
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["global/node"]): void {
-		if (property) {
-			this._options[property] = this._initial[property];
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, AllTypesSimple> = {};
-
-				relative[property] = this._initial[property];
-
-				this[GetApp]()[_Drawer].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			this[GetApp]()[_Drawer].nodes.updateNode(
-				this.id,
-				this.utils.omitKeys(this._initial, this._omit),
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[NodeFunctionReset](property);
 	}
 
 	toObject(): TCanvasNodeOptions["global/node"] {
 		return { ...this._options };
 	}
 
+	destroy() {
+		this[GetApp].ROOT.deleteNodeByPath(this.path, "index");
+
+		const _destroy = this.$functions.get("_destroy");
+
+		if (_destroy) _destroy(this);
+	}
+
 	set(
 		property: keyof TCanvasNodeOptions["global/node"],
-		value: AllTypesSimple,
+		value: TAnything,
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["global/node"]>): void;
-	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[properties as keyof TCanvasNodeOptions["global/node"]] =
-				value as never;
+	set(properties?: TAnything, value?: TAnything): void {
+		this[NodeFunctionSet](properties, value);
+	}
 
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, AllTypesSimple> = {};
+	export(format: TSerialize = "JSON"): string {
+		return serializers[format].stringify(this[ExportData]());
+	}
 
-				relative[properties] = value;
+	static import(data: string, format: TSerialize = "JSON"): GlobalNode {
+		return GlobalNode[NodeFunctionImport](data, format);
+	}
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
+	static make(structure: TExportNode<TAnything>) {
+		return GlobalNode[NodeFunctionMake](structure) as GlobalNode;
+	}
+
+	static [NodeFunctionMake](structure: TExportNode<TAnything>) {
+		return GlobalNode[$ConstructorNodes].makeNode(structure);
+	}
+
+	static [NodeFunctionImport](data: string, format: TSerialize) {
+		const structure: TExportNode<TAnything> = serializers[format].parse(data);
+
+		return GlobalNode[$ConstructorNodes].makeNode(structure);
+	}
+
+	[NodeFunctionReset](property?: TAnything) {
+		let change = {};
+
+		if (property) {
+			(this._options as TAnything)[property] = (this._initial as TAnything)[
+				property
+			];
+
+			if (!this._omit.includes(property)) {
+				const relative: Record<string, TAnything> = {};
+
+				relative[property] = (this._initial as TAnything)[property];
+
+				change = relative;
 			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["global/node"]] =
-					value as never;
-			}
+		} else {
+			this._options = { ...this._initial };
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			change = this.utils.omitKeys(this._initial, this._omit);
+		}
+
+		if (this[GetApp][$Scenes].currentScene) {
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
-				this.utils.omitKeys(properties, this._omit),
+				change,
 				this.path,
 				"path",
 				"index",
 			);
+
+			this[GetApp][_Worker].render.draw();
+
+			this[GetApp][_Render].draw = true;
+		}
+	}
+
+	[NodeFunctionSet](property: TAnything, value: TAnything): void;
+	[NodeFunctionSet](properties: TAnything): void;
+	[NodeFunctionSet](properties?: TAnything, value?: TAnything): void {
+		let change = {};
+
+		if (properties && typeof properties === "string" && value) {
+			(this._options as TAnything)[properties] = value;
+
+			if (!this._omit.includes(properties)) {
+				const relative: Record<string, TAnything> = {};
+
+				relative[properties] = value;
+
+				change = relative;
+			}
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		if (properties && typeof properties !== "object") {
+			for (const [key, value] of Object.entries(properties)) {
+				(this._options as TAnything)[key] = value;
+			}
+
+			change = this.utils.omitKeys(properties, this._omit);
+		}
+
+		if (this[GetApp][$Scenes].currentScene) {
+			this[GetApp][_Worker].nodes.updateNode(
+				this.id,
+				change,
+				this.path,
+				"path",
+				"index",
+			);
+
+			this[GetApp][_Worker].render.draw();
+
+			this[GetApp][_Render].draw = true;
+		}
 	}
 
-	export(format: "JSON" | "YAML" = "JSON"): string {
-		return format === "YAML"
-			? YAML.stringify(this[ExportData]())
-			: JSON5.stringify(this[ExportData]());
-	}
-
-	static import(data: string, format: "JSON" | "YAML" = "JSON"): GlobalNode {
-		return GlobalNode[MethodImport](data, format);
-	}
-
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[MethodMake](structure) as GlobalNode;
-	}
-
-	static [MethodMake](structure: TExportNode<TAnything>) {
-		return GlobalNode[$ConstructorNodes].makeNode(structure);
-	}
-
-	static [MethodImport](data: string, format: string) {
-		const structure: TExportNode<TAnything> =
-			format === "YAML" ? YAML.parse(data) : JSON5.parse(data);
-
-		return GlobalNode[$ConstructorNodes].makeNode(structure);
-	}
-
-	[MethodClone]() {
+	[NodeFunctionClone]() {
 		const node = GlobalNode[$ConstructorNodes].makeNode(this[ExportData](true));
 
-		node[MethodSetId](uid(12));
+		node[NodeSetId](stdUlid.ulid(12));
 
 		return node;
 	}
 
-	[MethodSetRoot](root: GlobalNode | undefined) {
-		this._root = root;
-	}
-
-	[MethodSetParent](parent: GlobalNode | undefined) {
+	[NodeSetParent](parent: GlobalNode | undefined) {
 		this._parent = parent;
 	}
 
-	[MethodSetIndex](index: number): void {
+	[NodeSetIndex](index: number): void {
 		this._index = index;
 	}
 
-	[MethodSetId](id: string): void {
+	[NodeSetId](id: string): void {
 		this._id = id;
 	}
 
@@ -343,34 +369,17 @@ export class GlobalNode
 		this._events.emitEvent(event, ...args);
 	}
 
-	async [DispatchScript]() {
-		if (this.script === null) return;
+	[ExportWorker](childNode = true): INodeProcess {
+		const nodes: INodeProcess[] = [];
 
-		const { __FUNC__, __VARS__ } = await this[$ConstructorScript].executeScript(
-			this,
-			this[GetApp](),
-		);
-
-		for (const name of Object.keys(__VARS__)) {
-			if (!this[name]) this[name] = __VARS__[name];
-		}
-
-		for (const name of Object.keys(__FUNC__)) {
-			if (!name.startsWith("_")) this[name] = __FUNC__[name];
-			this.$functions.add(name, __FUNC__[name]);
-		}
-	}
-
-	[ExportWorker](childNode = true): INodeWorker {
-		const nodes: INodeWorker[] = [];
-
-		if (childNode && this.$nodes.size)
+		if (childNode && this.$nodes.size) {
 			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeWorker);
+				nodes.push(node[ExportWorker](true) as INodeProcess);
 			}
+		}
 
 		return {
-			__type__: this[PropType],
+			__type__: this[NodePropType],
 			__path__: this.path,
 			location: {
 				id: this.id,
@@ -385,10 +394,11 @@ export class GlobalNode
 	[ExportData](childNode = true): TExportNode<TAnything> {
 		const nodes: TExportNode<TAnything>[] = [];
 
-		if (childNode && this.$nodes.size)
+		if (childNode && this.$nodes.size) {
 			for (const node of this.$nodes.all) {
 				nodes.push(node[ExportData](childNode));
 			}
+		}
 
 		return {
 			id: this.id,
@@ -396,7 +406,7 @@ export class GlobalNode
 			attributes: this.$attributes.toEntries(),
 			metaKeys: this.$metaKeys.toEntries(),
 			type: this.NODE_NAME,
-			script: this.script,
+			script: this._script,
 			path: this.path,
 			index: this.index,
 			nodes,

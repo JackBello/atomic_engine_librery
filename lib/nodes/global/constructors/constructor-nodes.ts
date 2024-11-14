@@ -1,67 +1,86 @@
-import type { TExportNode } from "../node.types";
+import type { TExportNode } from "../types";
 import type { GlobalNode } from "../global-node";
-import type { TAnything, TClass } from "@/types";
+import type { TAnything, TClass } from "@/app/types";
 
 import {
-	MethodSetAttributes,
-	MethodSetIndex,
-	MethodSetNodes,
-	MethodSetParent,
-	MethodSetId,
-	MethodSetMetaKeys,
-	AddNodeToConstructorNode,
-	AddNodesToConstructorNode,
-	GetNodeToConstructorNode,
-	GetNodesToConstructorNode,
+	NodeSetHandlerAttributes,
+	NodeSetHandlerMetaKeys,
+	NodeSetHandlerNodes,
+	NodeSetId,
+	NodeSetIndex,
+	NodeSetParent,
 } from "../../symbols";
 
 export default class ConstructorNodes {
 	private static nodesTypes: Map<string, TClass<GlobalNode>> = new Map();
+	private static reserveNodes = [""];
 
-	static [AddNodeToConstructorNode](
-		name: string,
-		construct: TClass<GlobalNode>,
-	) {
+	static addNode(name: string, construct: TClass<GlobalNode>) {
+		if (this.reserveNodes.includes(name)) {
+			throw new Error(
+				`You can't add this node '${name}' because it is already part of the engine `,
+			);
+		}
+
 		ConstructorNodes.nodesTypes.set(name, construct);
 	}
 
-	static [AddNodesToConstructorNode](
-		nodes: Record<string, TClass<GlobalNode>>,
-	) {
-		for (const name of Object.keys(nodes)) {
+	static addNodes(nodes: Record<string, TClass<GlobalNode>>) {
+		for (const name in nodes) {
 			if (ConstructorNodes.nodesTypes.has(name)) continue;
 
 			ConstructorNodes.nodesTypes.set(name, nodes[name]);
 		}
 	}
 
-	static [GetNodeToConstructorNode](name: string) {
+	static getNode(name: string) {
 		return ConstructorNodes.nodesTypes.get(name);
 	}
 
-	static [GetNodesToConstructorNode]() {
-		return Object.fromEntries(ConstructorNodes.nodesTypes.entries()); 
+	static getNodes() {
+		return Object.fromEntries(ConstructorNodes.nodesTypes);
+	}
+
+	static hasNode(name: string) {
+		return this.nodesTypes.has(name);
+	}
+
+	static deleteNode(name: string) {
+		if (this.reserveNodes.includes(name)) {
+			throw new Error(
+				`You can't delete this node '${name}' because it is already part of the engine `,
+			);
+		}
+
+		this.nodesTypes.delete(name);
 	}
 
 	public makeNode(node: TExportNode<TAnything>): GlobalNode {
 		const construct = ConstructorNodes.nodesTypes.get(node.type);
 
-		if (!construct) throw Error(`this is constructor not found ${node.type}`);
+		if (!construct) {
+			throw Error(`this is constructor not found ${node.type}`);
+		}
 
-		const abstract = new construct(node.slug, node.options);
+		const instance = new construct(node.slug, node.options);
 
-		abstract.script = node.script;
+		instance[NodeSetIndex](node.index);
+		instance[NodeSetId](node.id);
 
-		abstract[MethodSetIndex](node.index);
-		abstract[MethodSetId](node.id);
+		if (node.script) {
+			instance.$script.defineScript(node.script);
+		}
 
-		abstract.$attributes[MethodSetAttributes](node.attributes);
-		abstract.$metaKeys[MethodSetMetaKeys](node.metaKeys);
+		instance.$attributes[NodeSetHandlerAttributes](node.attributes);
+		instance.$metaKeys[NodeSetHandlerMetaKeys](node.metaKeys);
 
-		if (node.nodes.length > 0)
-			abstract.$nodes[MethodSetNodes](this.makeNodes(node.nodes, abstract));
+		if (node.nodes.length > 0) {
+			instance.$nodes[NodeSetHandlerNodes](
+				this.makeNodes(node.nodes, instance),
+			);
+		}
 
-		return abstract;
+		return instance;
 	}
 
 	public makeNodes(
@@ -73,24 +92,31 @@ export default class ConstructorNodes {
 		for (const node of nodes) {
 			const construct = ConstructorNodes.nodesTypes.get(node.type);
 
-			if (!construct) throw Error(`this is constructor not found ${node.type}`);
+			if (!construct) {
+				throw Error(`this is constructor not found ${node.type}`);
+			}
 
-			const abstract = new construct(node.slug, node.options);
+			const instance = new construct(node.slug, node.options);
 
-			if (parent) abstract[MethodSetParent](parent);
+			if (parent) instance[NodeSetParent](parent);
 
-			abstract.script = node.script;
+			instance[NodeSetIndex](node.index);
+			instance[NodeSetId](node.id);
 
-			abstract[MethodSetIndex](node.index);
-			abstract[MethodSetId](node.id);
+			if (node.script) {
+				instance.$script.defineScript(node.script);
+			}
 
-			abstract.$attributes[MethodSetAttributes](node.attributes);
-			abstract.$metaKeys[MethodSetMetaKeys](node.metaKeys);
+			instance.$attributes[NodeSetHandlerAttributes](node.attributes);
+			instance.$metaKeys[NodeSetHandlerMetaKeys](node.metaKeys);
 
-			if (node.nodes.length > 0)
-				abstract.$nodes[MethodSetNodes](this.makeNodes(node.nodes, abstract));
+			if (node.nodes.length > 0) {
+				instance.$nodes[NodeSetHandlerNodes](
+					this.makeNodes(node.nodes, instance),
+				);
+			}
 
-			instances.push(abstract);
+			instances.push(instance);
 		}
 
 		return instances;

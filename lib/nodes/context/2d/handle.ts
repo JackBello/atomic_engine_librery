@@ -3,7 +3,7 @@ import type {
 	TCanvasActionsContext2D,
 	TCanvasNode2D,
 } from "@/nodes/types";
-import type { TAnything, TFunction } from "../../../types";
+import type { TAnything, TFunction } from "../../../app/types";
 import {
 	clear_canvas_2D,
 	restore_canvas_2D,
@@ -16,8 +16,25 @@ import { effect_line_flow_2D } from "./nodes/effect-line-flow";
 import { rectangle_2D } from "./nodes/rectangle";
 import { selection_2D } from "./nodes/selection";
 import { text_2D } from "./nodes/text";
+import { circle_2D } from "./nodes/circle";
+import type { GlobalNode } from "@/nodes";
+import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
+import { collision_shape } from "./components/collision-shape";
 
-export const handleContext2D = (
+export const handleComponent2D = (
+	node: GlobalNode,
+	context: CanvasRenderingContext2D,
+) => {
+	if (node.$components.has("collision-shape")) {
+		const component = node.$components.get(
+			"collision-shape",
+		) as CollisionShapeComponent;
+
+		if (component.debug) collision_shape(context, component);
+	}
+};
+
+export const handleDrawContext2D = (
 	action:
 		| Exclude<
 				TCanvasNode2D,
@@ -38,6 +55,7 @@ export const handleContext2D = (
 		TFunction
 	> = {
 		"2D/rectangle": rectangle_2D,
+		"2D/circle": circle_2D,
 		"2D/text": text_2D,
 		"2D/selection": selection_2D,
 		"2D/line-flow-effect": effect_line_flow_2D,

@@ -4,27 +4,30 @@ export class Transform2D {
 	public position: Vector2;
 	public rotation: number;
 	public scale: Vector2;
+	public skew: number;
 
 	constructor(
-		position = new Vector2(),
+		position = new Vector2(0, 0),
 		rotation = 0,
 		scale = new Vector2(1, 1),
+		skew = 0,
 	) {
 		this.position = position;
 		this.rotation = rotation;
 		this.scale = scale;
+		this.skew = skew;
 	}
 
-	translate(vector: Vector2) {
+	applyTranslate(vector: Vector2) {
 		this.position = this.position.add(vector);
 	}
 
-	rotate(angle: number) {
+	applyRotate(angle: number) {
 		this.rotation += angle;
 	}
 
-	resize(scalar: number) {
-		this.scale = this.scale.multiply(scalar);
+	applyScale(vector: Vector2) {
+		this.scale = this.scale.multiply(vector);
 	}
 
 	applyTransform(vector: Vector2) {

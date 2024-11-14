@@ -1,15 +1,15 @@
-import type { TAnything, TFunction } from "@/types";
-import type { TEventAnimation } from "./event.type";
+import type { TAnything, TFunction } from "@/app/types";
+import type { TEventAnimation } from "./events";
 import type { GameCore } from "../game";
 import type { EngineCore } from "../engine";
 
 import {
-	DispatchEvent,
-	_Script,
-	_Drawer,
 	_Collision,
-	SetGlobal,
-} from "@/symbols";
+	_Frame,
+	_Script,
+	_Worker,
+	DispatchEvent,
+} from "@/app/symbols";
 
 import EventObserver from "../utils/observer";
 
@@ -19,20 +19,10 @@ export default class AnimationService {
 	protected _loop!: number;
 	protected _events: EventObserver = new EventObserver();
 
-	protected _deltaTime = 0;
-	protected _lastTime = 0;
 	protected _status = {
 		pause: false,
 		playing: false,
 	};
-
-	get DELTA_TIME() {
-		return this._deltaTime;
-	}
-
-	get TIME_STAMP() {
-		return this._lastTime;
-	}
 
 	get isPlaying() {
 		return this._status.playing;
@@ -46,30 +36,11 @@ export default class AnimationService {
 		this.$app = app;
 	}
 
-	protected async loop(timestamp: number) {
-		if (!this._lastTime) this._lastTime = timestamp;
+	protected loop = (timestamp: number) => {
+		this.$app[_Frame].controlUnlimitedFrame(timestamp);
 
-		this._deltaTime = (timestamp - this._lastTime) / 1000;
-
-		const isPreview = this.$app.global("mode") === "preview";
-		const isPlayingGame =
-			this.$app.mode === "game" && this.$app.global("status") === "play";
-
-		if (isPlayingGame || isPreview) {
-			this.$app[_Collision].process();
-
-			await this.$app[_Script].process(this._deltaTime);
-		}
-
-		if (isPlayingGame || this.$app.mode === "editor")
-			await this.$app[_Drawer].process();
-
-		this.$app[SetGlobal]("dispatch-event", false);
-
-		this._lastTime = timestamp;
-
-		this._loop = window.requestAnimationFrame(this.loop.bind(this));
-	}
+		this._loop = window.requestAnimationFrame(this.loop);
+	};
 
 	play() {
 		if (!this._status.playing) {
@@ -78,7 +49,7 @@ export default class AnimationService {
 			this._status.playing = true;
 			this._status.pause = false;
 
-			this._loop = window.requestAnimationFrame(this.loop.bind(this));
+			this._loop = window.requestAnimationFrame(this.loop);
 		}
 
 		return this;
@@ -92,9 +63,6 @@ export default class AnimationService {
 
 			this._status.playing = false;
 			this._status.pause = true;
-
-			this._lastTime = 0;
-			this._deltaTime = 0;
 		}
 
 		return this;

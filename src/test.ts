@@ -17,8 +17,6 @@ buttonUploadGame.addEventListener("input", () => {
 		reader.onload = async () => {
 			await game.load(reader.result as string);
 
-			game.start();
-
 			buttonUploadGame.remove();
 
 			reader.abort();

@@ -1,12 +1,13 @@
-import type { AbstractCanvas } from "@/canvas/abstract/canvas.abstract";
-import type { TCanvasType } from "@/canvas/canvas.types";
+import type { AbstractCanvas } from "../canvas/abstract/canvas.abstract";
+import type { TCanvasType } from "../canvas/canvas.types";
 import { EngineCore } from "../engine";
 import { GameCore } from "../game";
 
-import { GetOptions } from "@/symbols";
+import { GetOptions } from "@/app/symbols";
 
-import { CanvasEditor } from "@/canvas/canvas-editor";
-import { CanvasGame } from "@/canvas/canvas-game";
+import { CanvasEditor } from "../canvas/canvas-editor";
+import { CanvasGame } from "../canvas/canvas-game";
+import { TContextName } from "../types";
 
 export default class CanvasService {
 	private $app: EngineCore | GameCore;
@@ -26,10 +27,12 @@ export default class CanvasService {
 	get instance(): HTMLCanvasElement {
 		let canvas: HTMLCanvasElement = document.createElement("canvas");
 
-		if (this.$app.mode === "game")
+		if (this.$app.mode === "game") {
 			canvas = (this._canvas.get("game") as AbstractCanvas).canvas;
-		if (this.$app.mode === "editor")
+		}
+		if (this.$app.mode === "editor") {
 			canvas = (this._canvas.get("editor") as AbstractCanvas).canvas;
+		}
 
 		return canvas;
 	}
@@ -69,16 +72,17 @@ export default class CanvasService {
 			height: 0,
 		};
 
-		if (this.$app instanceof GameCore)
+		if (this.$app instanceof GameCore) {
 			size = {
 				width: this.$app[GetOptions]().viewport.width,
 				height: this.$app[GetOptions]().viewport.height,
 			};
-		else if (this.$app instanceof EngineCore)
+		} else if (this.$app instanceof EngineCore) {
 			size = {
 				width: this.$app[GetOptions]().width,
 				height: this.$app[GetOptions]().height,
 			};
+		}
 
 		return size;
 	}
@@ -98,15 +102,17 @@ export default class CanvasService {
 		this._main.style.height = `${height}px`;
 		this._main.style.background = this.$app[GetOptions]().background;
 
-		if (this.$app.mode === "editor")
+		if (this.$app.mode === "editor") {
 			this._main.appendChild(
 				(this._canvas.get("editor") as AbstractCanvas).canvas,
 			);
+		}
 
-		if (this.$app.mode === "game")
+		if (this.$app.mode === "game") {
 			this._main.appendChild(
 				(this._canvas.get("game") as AbstractCanvas).canvas,
 			);
+		}
 
 		this._main.appendChild(this.event);
 
@@ -126,16 +132,12 @@ export default class CanvasService {
 		this._event.style.cursor = "default";
 		this._event.style.userSelect = "none";
 		this._event.style.touchAction = "none";
+		this._event.tabIndex = 0;
 		this._event.setAttribute("data-type-canvas", "events");
 	}
 
-	infoText(text: string, font: string) {
-		const canvas = document.createElement("canvas");
-		const context = canvas.getContext("2d") as CanvasRenderingContext2D ;
-
-		context.font = font;
-
-		return context.measureText(text)
+	makeContext(context: TContextName | "bitmaprenderer") {
+		return this.instance.getContext(context);
 	}
 
 	setSize(width: number, height: number, ignoreInstance = false) {

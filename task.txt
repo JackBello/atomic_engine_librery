@@ -1,5 +1,5 @@
 - add all formats export & import
-  JSON5: Fácil de usar en JavaScript nativo, buen rendimiento. *LISTO
+  JSON: Fácil de usar en JavaScript nativo, buen rendimiento. *LISTO
   YAML: Más legible para configuraciones complejas, requiere js-yaml. *LISTO
   XML: Verboso, pero bien soportado en navegadores.
   INI: Simple y legible, requiere ini para analizar.

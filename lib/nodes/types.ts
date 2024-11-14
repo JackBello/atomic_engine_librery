@@ -1,13 +1,12 @@
-import type { IControlEdition, IControlEditor } from "./global/node.types";
+import type { IControlCanvas, IControlEditor } from "./global/types";
 
 import type {
 	IBorder2D,
-	ICollisionShape2D,
+	ICircle2D,
 	IControlEdition2D,
 	ICoords2D,
 	ILineFlowEffect2D,
 	INode2D,
-	IOpacity,
 	IRectangle2D,
 	ISelection2D,
 	ISize2D,
@@ -22,17 +21,27 @@ export type TCanvasActions =
 
 export type TCanvasActionsContext2D = "canvas:save" | "canvas:restore";
 
-export type TCanvasNodePrimitive = "global/node" | "global/scene";
+export type TCanvasNodePrimitive =
+	| "global/node"
+	| "global/scene"
+	| "global/abstract/canvas-node";
 
 export type TCanvasNode2D =
 	| "2D/node"
-	| "2D/handler/collision"
-	| "2D/handler/collision-shape"
 	| "2D/rectangle"
+	| "2D/circle"
 	| "2D/text"
 	| "2D/selection"
 	| "2D/line-flow-effect"
 	| "2D/control-edition";
+
+export type TCanvasOperations =
+	| "canvas:translate"
+	| "canvas:scale"
+	| "canvas:rotation"
+	| "canvas:save"
+	| "canvas:restore"
+	| "canvas:clear";
 
 export type TCanvasNode3D = "3D/cube";
 
@@ -61,40 +70,28 @@ export type TCanvasNodeOptions = {
 
 	"global/scene": IControlEditor;
 
-	"2D/node": IControlEditor &
-		IControlEdition &
-		IOpacity &
-		ICoords2D &
-		ISize2D &
-		INode2D;
+	"global/abstract/canvas-node": IControlCanvas & IControlEditor;
 
-	"2D/handler/collision": IControlEditor &
-		IControlEdition &
-		IOpacity &
-		ICoords2D &
-		ISize2D &
-		INode2D;
-
-	"2D/handler/collision-shape": IControlEditor &
-		IControlEdition &
-		IOpacity &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		ICollisionShape2D;
+	"2D/node": IControlEditor & IControlCanvas & ICoords2D & ISize2D & INode2D;
 
 	"2D/rectangle": IControlEditor &
-		IControlEdition &
-		IOpacity &
+		IControlCanvas &
 		ICoords2D &
 		ISize2D &
 		INode2D &
 		IRectangle2D &
 		IBorder2D;
 
+	"2D/circle": IControlEditor &
+		IControlCanvas &
+		ICoords2D &
+		ISize2D &
+		INode2D &
+		ICircle2D &
+		IBorder2D;
+
 	"2D/text": IControlEditor &
-		IControlEdition &
-		IOpacity &
+		IControlCanvas &
 		ICoords2D &
 		ISize2D &
 		INode2D &
@@ -102,16 +99,14 @@ export type TCanvasNodeOptions = {
 		IText2D;
 
 	"2D/line-flow-effect": IControlEditor &
-		IControlEdition &
-		IOpacity &
+		IControlCanvas &
 		ICoords2D &
 		ISize2D &
 		INode2D &
 		ILineFlowEffect2D;
 
 	"2D/selection": IControlEditor &
-		IControlEdition &
-		IOpacity &
+		IControlCanvas &
 		ICoords2D &
 		ISize2D &
 		INode2D &
@@ -120,8 +115,7 @@ export type TCanvasNodeOptions = {
 		IBorder2D;
 
 	"2D/control-edition": IControlEditor &
-		IControlEdition &
-		IOpacity &
+		IControlCanvas &
 		ICoords2D &
 		ISize2D &
 		INode2D &

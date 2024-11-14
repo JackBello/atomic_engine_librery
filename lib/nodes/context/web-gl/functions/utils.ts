@@ -1,4 +1,4 @@
-import type { TAnything } from "@/types";
+import type { TAnything } from "@/app/types";
 import { formatterColor } from "./colors";
 
 export const serializeOptions = (

@@ -1,29 +1,31 @@
-export const $ConstructorNodes = Symbol("$ConstructorNodes");
-export const $ConstructorScript = Symbol("$ConstructorScript");
+// Global nodes
+export const $ConstructorNodes = Symbol();
+export const $ConstructorScript = Symbol();
 
-export const PropFunctions = Symbol("PropFunctions");
-export const PropAttributes = Symbol("PropAttributes");
-export const PropMetaKeys = Symbol("PropMetaKeys");
-export const PropNodes = Symbol("PropNodes");
-export const PropComponents = Symbol("PropComponents");
-export const PropType = Symbol("PropType");
-export const PropCollider = Symbol("PropCollider");
+export const NodePropType = Symbol();
 
-export const MethodClone = Symbol("MethodClone");
-export const MethodImport = Symbol("MethodImport");
-export const MethodMake = Symbol("MethodMake");
+export const NodeSetParent = Symbol();
+export const NodeSetIndex = Symbol();
+export const NodeSetId = Symbol();
 
-export const MethodSetRoot = Symbol("MethodSetRoot");
-export const MethodSetParent = Symbol("MethodSetParent");
-export const MethodSetIndex = Symbol("MethodSetIndex");
-export const MethodSetId = Symbol("MethodSetId");
-export const MethodSetAttributes = Symbol("MethodSetAttributes");
-export const MethodSetComponents = Symbol("MethodSetComponents");
-export const MethodSetFunctions = Symbol("MethodSetFunctions");
-export const MethodSetMetaKeys = Symbol("MethodSetMetaKeys");
-export const MethodSetNodes = Symbol("MethodSetNodes");
+export const NodeFunctionSet = Symbol();
+export const NodeFunctionReset = Symbol();
+export const NodeFunctionClone = Symbol();
+export const NodeFunctionImport = Symbol();
+export const NodeFunctionMake = Symbol();
 
-export const AddNodeToConstructorNode = Symbol("AddNodeToConstructorNode");
-export const AddNodesToConstructorNode = Symbol("AddNodesToConstructorNode");
-export const GetNodeToConstructorNode = Symbol("GetNodeToConstructorNode");
-export const GetNodesToConstructorNode = Symbol("GetNodesToConstructorNode")
+export const NodePropHandlerAttributes = Symbol();
+export const NodePropHandlerComponents = Symbol();
+export const NodePropHandlerFunctions = Symbol();
+export const NodePropHandlerMetaKeys = Symbol();
+export const NodePropHandlerNodes = Symbol();
+
+export const NodeSetHandlerAttributes = Symbol();
+export const NodeSetHandlerComponents = Symbol();
+export const NodeSetHandlerFunctions = Symbol();
+export const NodeSetHandlerMetaKeys = Symbol();
+export const NodeSetHandlerNodes = Symbol();
+
+// Specific nodes
+export const ScriptsNodeFromScene = Symbol();
+export const NodeFromObject = Symbol();

@@ -1,37 +1,31 @@
-import type { TAnything, TMode } from "@/types";
-import type { INodeWorker } from "../global/node.types";
-import type { ISize2D } from "../class/nodes-2D.types";
+import type { TAnything } from "@/app/types";
+import type { INodeOperation, INodeProcess } from "../global/types";
+import { GlobalNode } from "@/nodes";
+import { OperationNode } from "../global/class/operation-node";
 
 export abstract class AbstractRender {
-	protected abstract node: INodeWorker;
-	protected abstract mode: TMode;
-	protected abstract afterDraw: TAnything[];
-	protected abstract beforeDraw: TAnything[];
-	protected abstract scaleViewport: number;
-	protected abstract gameSize: ISize2D;
-	protected abstract editorSize: ISize2D;
+	abstract scaleViewport: number;
 
-	abstract configs: Record<string, TAnything>;
-	abstract context: TAnything;
-
-	abstract setScaleViewport(scale: number): void;
-
-	abstract setGameSize(size: ISize2D): void;
-
-	abstract setEditorSize(size: ISize2D): void;
-
-	abstract setAfterDraw(draw: TAnything): void;
-
-	abstract setBeforeDraw(draw: TAnything): void;
-
-	abstract loadNode(node: INodeWorker): void;
+	protected abstract context: TAnything;
+	protected abstract thread: "main" | "sub";
 
 	abstract clear(): void;
 
-	abstract draw(): void;
+	abstract draw(root: INodeProcess | GlobalNode, operations?: {
+		after: Map<string, INodeOperation | OperationNode>;
+		before: Map<string, INodeOperation | OperationNode>;
+	}): void;
 
-	protected abstract executeDrawEditor(
-		node: INodeWorker,
+	protected abstract executeSubOperation(
+		...operations: INodeOperation[]
+	): void;
+
+	protected abstract executeMainOperation(
+		...operations: OperationNode[]
+	): void;
+
+	protected abstract executeMainDraw(
+		node: GlobalNode,
 		parentTransform: {
 			x: number;
 			y: number;
@@ -42,8 +36,8 @@ export abstract class AbstractRender {
 		},
 	): void;
 
-	protected abstract executeDrawGame(
-		node: INodeWorker,
+	protected abstract executeSubDraw(
+		node: INodeProcess,
 		parentTransform: {
 			x: number;
 			y: number;

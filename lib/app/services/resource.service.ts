@@ -12,5 +12,7 @@ export default class ResourceService {
 
 	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
+
+		this.$app;
 	}
 }

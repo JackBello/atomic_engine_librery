@@ -4,11 +4,7 @@ import type {
 	TTypeOrigin,
 	TTypeOriginX,
 	TTypeOriginY,
-} from "../global/node.types";
-
-export interface IOpacity {
-	opacity: number;
-}
+} from "../global/types";
 
 export interface IHandleCoords2D {
 	center(): void;
@@ -70,6 +66,14 @@ export interface IRectangle2D {
 				bottomLeft: number;
 				bottomRight: number;
 		  };
+}
+
+export interface ICircle2D {
+	background: string;
+	radius: number;
+	startAngle: number;
+	endAngle: number;
+	counterclockwise: boolean;
 }
 
 export interface ISelection2D {

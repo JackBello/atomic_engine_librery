@@ -1,4 +1,4 @@
-import type { IOptionsEngineCore } from "../../types";
+import type { IOptionsEngineCore } from "../../app/types";
 
 export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	background: "#eeeeee",
@@ -26,4 +26,5 @@ export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	height: 500,
 	width: 500,
 	selector: undefined,
+	renderProcess: "sub-thread",
 };

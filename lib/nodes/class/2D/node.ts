@@ -1,33 +1,40 @@
 import type {
-	INodeWorker,
-	TCursorOptions,
+	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 	TTypeOrigin,
 	TTypeOriginX,
 	TTypeOriginY,
-} from "@/nodes/global/node.types";
+} from "@/nodes/global/types";
 import type {
 	ICalculate,
 	IControlNode2D,
 	IHandleCoords2D,
 } from "../nodes-2D.types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
-import type { TEventNode, TEventNode2D } from "../../event.type";
-import type { AllTypesSimple, TAnything, TFunction } from "../../../types";
+import type { TEventNode, TEventNode2D } from "../../events";
+import type { TAnything, TFunction } from "../../../app/types";
 
-import { MethodClone, MethodImport, MethodMake, PropType } from "../../symbols";
-import { _Drawer, ExportWorker, GetApp } from "../../../symbols";
+import {
+	NodeFunctionClone,
+	NodeFunctionImport,
+	NodeFunctionMake,
+	NodePropType,
+} from "../../symbols";
+import { _Render, _Worker, ExportWorker, GetApp } from "../../../app/symbols";
 
 import { GlobalNode } from "../../global/global-node";
 
 import { DEFAULT_CONFIG_NODE_2D } from "../../../configs/nodes/2D/node";
+import { Transform2D } from "@/nodes/transforms/transform-2D";
+import { Vector2 } from "@/nodes/vectors/vector-2";
+import { CanvasNode } from "@/nodes/global/class/canvas-node";
 
 export class Node2D
-	extends GlobalNode
+	extends CanvasNode
 	implements IControlNode2D, IHandleCoords2D
 {
-	[PropType]: TCanvasNodes = "2D/node";
+	[NodePropType]: TCanvasNodes = "2D/node";
 
 	protected _omit: string[] = [
 		"centerRotation",
@@ -42,31 +49,9 @@ export class Node2D
 	protected _options: TCanvasNodeOptions["2D/node"];
 	protected _initial: TCanvasNodeOptions["2D/node"];
 
+	protected _transform: Transform2D;
+
 	readonly NODE_NAME: TTypeNodes = "Node2D";
-
-	get visible() {
-		return this._options.visible;
-	}
-
-	get selectable() {
-		return this._options.selectable;
-	}
-
-	get hovered() {
-		return this._options.hovered;
-	}
-
-	get lock() {
-		return this._options.lock;
-	}
-
-	get cursor() {
-		return this._options.cursor;
-	}
-
-	get opacity() {
-		return this._options.opacity;
-	}
 
 	get x() {
 		return this._options.x;
@@ -74,14 +59,6 @@ export class Node2D
 
 	get y() {
 		return this._options.y;
-	}
-
-	get width() {
-		return this._options.width;
-	}
-
-	get height() {
-		return this._options.height;
 	}
 
 	get centerScale() {
@@ -128,106 +105,10 @@ export class Node2D
 		return this._options.rotation;
 	}
 
-	set visible(value: boolean) {
-		this._options.visible = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				visible: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set selectable(value: boolean) {
-		this._options.selectable = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				selectable: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set hovered(value: boolean) {
-		this._options.hovered = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				hovered: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set lock(value: boolean) {
-		this._options.lock = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				lock: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set cursor(value: TCursorOptions) {
-		this._options.cursor = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				cursor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set opacity(value: number) {
-		this._options.opacity = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				opacity: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
 	set x(value: number) {
 		this._options.x = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				x: value,
@@ -238,13 +119,15 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set y(value: number) {
 		this._options.y = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				y: value,
@@ -255,83 +138,63 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
+		this[GetApp][_Worker].render.draw();
 
-	set width(value: number) {
-		this._options.width = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				width: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
-	}
-
-	set height(value: number) {
-		this._options.height = value;
-
-		this[GetApp]()[_Drawer].nodes.updateNode(
-			this.id,
-			{
-				height: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set centerScale(value: boolean) {
 		this._options.centerScale = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set centerRotation(value: boolean) {
 		this._options.centerRotation = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set flipX(value: boolean) {
 		this._options.flipX = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set flipY(value: boolean) {
 		this._options.flipY = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set originX(value: TTypeOriginX) {
 		this._options.originX = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set originY(value: TTypeOriginY) {
 		this._options.originY = value;
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set scaleX(value: number) {
 		this._options.scaleX = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				scaleX: value,
@@ -342,13 +205,15 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set scaleY(value: number) {
 		this._options.scaleY = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				scaleY: value,
@@ -359,13 +224,15 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set skewX(value: number) {
 		this._options.skewX = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				skewX: value,
@@ -376,13 +243,15 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set skewY(value: number) {
 		this._options.skewY = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				skewY: value,
@@ -393,13 +262,15 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set rotation(value: number) {
 		this._options.rotation = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				rotation: value,
@@ -410,7 +281,9 @@ export class Node2D
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	constructor(slug: string, options?: Partial<TCanvasNodeOptions["2D/node"]>) {
@@ -418,6 +291,12 @@ export class Node2D
 
 		this._initial = { ...DEFAULT_CONFIG_NODE_2D, ...options };
 		this._options = { ...this._initial };
+
+		this._transform = new Transform2D(
+			new Vector2(this._options.x, this._options.y),
+			this._options.rotation,
+			new Vector2(this._options.scaleX, this._options.scaleY),
+		);
 	}
 
 	setOrigin(origin: TTypeOrigin): void {
@@ -440,11 +319,11 @@ export class Node2D
 	}
 
 	scaleToWidth(width: number): void {
-		this.scaleX = width / this.width;
+		this.scaleX = width / this._options.width;
 	}
 
 	scaleToHeight(height: number): void {
-		this.scaleY = height / this.height;
+		this.scaleY = height / this._options.height;
 	}
 
 	setSkew(skew: number): void {
@@ -454,40 +333,27 @@ export class Node2D
 
 	center(): void {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.x =
-				((this._parent.width * this._parent.scaleX) / 2 -
-					(this.width * this.scaleX) / 2) /
-				2;
-			this.y =
-				((this._parent.height * this._parent.scaleY) / 2 -
-					(this.height * this.scaleY) / 2) /
-				2;
+			this.x = (this._parent.width * this._parent.scaleX) / 2;
+			this.y = (this._parent.height * this._parent.scaleY) / 2;
 		} else {
-			this.x = this[GetApp]().size.width / 2;
-			this.y = this[GetApp]().size.height / 2;
+			this.x = this[GetApp].size.width / 2;
+			this.y = this[GetApp].size.height / 2;
 		}
 	}
 
 	centerX() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.x =
-				((this._parent.width * this._parent.scaleX) / 2 -
-					(this.width * this.scaleX) / 2) /
-				2;
+			this.x = (this._parent.width * this._parent.scaleX) / 2;
 		} else {
-			this.x = (this[GetApp]().size.width / 2 - (this.width * this.scaleX) / 2) / 2;
+			this.x = this[GetApp].size.width / 2;
 		}
 	}
 
 	centerY() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.y =
-				((this._parent.height * this._parent.scaleY) / 2 -
-					(this.height * this.scaleY) / 2) /
-				2;
+			this.y = (this._parent.height * this._parent.scaleY) / 2;
 		} else {
-			this.y =
-				(this[GetApp]().size.height / 2 - (this.height * this.scaleY) / 2) / 2;
+			this.y = this[GetApp].size.height / 2;
 		}
 	}
 
@@ -538,7 +404,7 @@ export class Node2D
 	}
 
 	clone() {
-		return this[MethodClone]() as Node2D;
+		return this[NodeFunctionClone]() as Node2D;
 	}
 
 	emit(event: TEventNode | TEventNode2D, callback: TFunction): void {
@@ -550,12 +416,12 @@ export class Node2D
 			this._options[property] = this._initial[property] as never;
 
 			if (!this._omit.includes(property)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[property] = this._initial[property];
 				relative.calculate = this.processCalculate();
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -571,7 +437,7 @@ export class Node2D
 			]);
 			options.calculate = this.processCalculate();
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				options,
 				this.path,
@@ -580,17 +446,16 @@ export class Node2D
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	toObject(): TCanvasNodeOptions["2D/node"] {
 		return { ...this._options };
 	}
 
-	set(
-		property: keyof TCanvasNodeOptions["2D/node"],
-		value: AllTypesSimple,
-	): void;
+	set(property: keyof TCanvasNodeOptions["2D/node"], value: TAnything): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/node"]>): void;
 	set(properties?: unknown, value?: unknown): void {
 		if (properties && typeof properties === "string" && value) {
@@ -598,12 +463,12 @@ export class Node2D
 				value as never;
 
 			if (!this._omit.includes(properties)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[properties] = value;
 				relative.calculate = this.processCalculate();
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -622,7 +487,7 @@ export class Node2D
 			]);
 			options.calculate = this.processCalculate();
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				options,
 				this.path,
@@ -631,27 +496,30 @@ export class Node2D
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[MethodImport](data, format) as Node2D;
+		return GlobalNode[NodeFunctionImport](data, format) as Node2D;
 	}
 
 	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[MethodMake](structure) as Node2D;
+		return GlobalNode[NodeFunctionMake](structure) as Node2D;
 	}
 
-	[ExportWorker](childNode = true): INodeWorker {
-		const nodes: INodeWorker[] = [];
+	[ExportWorker](childNode = true): INodeProcess {
+		const nodes: INodeProcess[] = [];
 
-		if (childNode && this.$nodes.size)
+		if (childNode && this.$nodes.size) {
 			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeWorker);
+				nodes.push(node[ExportWorker](true) as INodeProcess);
 			}
+		}
 
 		const node = {
-			__type__: this[PropType],
+			__type__: this[NodePropType],
 			__path__: this.path,
 			location: {
 				id: this.id,

@@ -1,11 +1,22 @@
 import { defineConfig } from "vite";
 import mkcert from "vite-plugin-mkcert";
 import { resolve } from "node:path";
+import dts from "vite-plugin-dts";
 
 export default defineConfig({
-	plugins: [mkcert()],
+	plugins: [
+		mkcert(),
+		dts({
+			insertTypesEntry: true,
+			rollupTypes: true,
+			tsconfigPath: resolve(__dirname, "./tsconfig.build.json"),
+			exclude: ["src", "public"],
+			include: ["lib"],
+		}),
+	],
 	build: {
 		copyPublicDir: false,
+		emptyOutDir: true,
 		lib: {
 			entry: resolve(__dirname, "lib/index.ts"),
 			name: "Atomic",
@@ -17,6 +28,9 @@ export default defineConfig({
 				format: "es",
 			},
 		},
+		sourcemap: true,
+		target: "esnext",
+		minify: true,
 	},
 	worker: {
 		format: "es",

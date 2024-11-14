@@ -1,32 +1,30 @@
-import * as YAML from "yaml";
-import JSON5 from "json5";
-
 import type {
-	AllTypesSimple,
 	IOptionsGameCore,
 	TAnything,
+	TEventApp,
 	TFunction,
 	TMode,
-} from "../types";
-import type { TEventCanvas } from "../event.type";
+	TSerialize,
+} from "./types";
 
 import {
-	DispatchEvent,
-	SetApp,
-	$Scenes,
-	_ROOT_,
 	$Animation,
 	$Canvas,
-	_Drawer,
-	_Events,
-	_Script,
+	$Scenes,
 	_Collision,
-	SetGlobal,
-	GetOptions,
-	SetOptions,
+	_Events,
+	_Frame,
 	_Input,
-} from "../symbols";
-import { AddNodesToConstructorNode } from "../nodes/symbols";
+	_Render,
+	_ROOT_,
+	_Script,
+	_Worker,
+	DispatchEvent,
+	GetOptions,
+	SetApp,
+	SetGlobal,
+	SetOptions,
+} from "./symbols";
 
 import EventObserver from "./utils/observer";
 
@@ -34,22 +32,22 @@ import AnimationService from "./services/animation.service";
 import CanvasService from "./services/canvas.service";
 import ScenesService from "./services/scenes.service";
 
+import FrameController from "./controllers/frame.controller";
 import CollisionController from "./controllers/collision.controller";
 import ScriptController from "./controllers/script.controller";
 import InputController from "./controllers/input.controller";
 import EventController from "./controllers/event.controller";
-import DrawerController from "./controllers/drawer.controller";
+import WorkerController from "./controllers/worker.controller";
+import RenderController from "./controllers/render.controller";
 
 import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNode from "../nodes/global/root-node";
+import RootNodeMainProcess from "../nodes/global/root/root-node.main";
 
 import {
-	GlobalNode,
-	Collision2D,
-	CollisionShape2D,
 	ControlEdition2D,
+	GlobalNode,
 	LineFlowEffect2D,
 	Node2D,
 	Rectangle2D,
@@ -60,24 +58,28 @@ import {
 
 import { DEFAULT_CONFIG_ATOMIC_GAME } from "../configs/engine/game";
 
+import { serializers } from "./utils/serialize";
+
 export class GameCore {
 	[key: string]: TAnything;
 
 	readonly VERSION = "1.0.0";
 
 	protected _options!: IOptionsGameCore;
-	protected _global: Map<string, AllTypesSimple> = new Map();
+	protected _global: Map<string, TAnything> = new Map();
 	protected _events: EventObserver = new EventObserver();
 
 	readonly mode: TMode = "game";
 
-	[_ROOT_]!: RootNode;
+	[_ROOT_]!: RootNodeMainProcess;
 
 	[$Animation]!: AnimationService;
 	[$Canvas]!: CanvasService;
 	[$Scenes]!: ScenesService;
 
-	[_Drawer]!: DrawerController;
+	[_Frame]!: FrameController;
+	[_Worker]!: WorkerController;
+	[_Render]!: RenderController;
 	[_Input]!: InputController;
 	[_Events]!: EventController;
 	[_Script]!: ScriptController;
@@ -142,7 +144,7 @@ export class GameCore {
 	setSize(width: number, height: number) {
 		this.canvas.setSize(width, height, true);
 
-		this[_Drawer].render.setSize(width, height);
+		this[_Worker].render.setSize(width, height);
 
 		return this;
 	}
@@ -151,14 +153,14 @@ export class GameCore {
 		return this._global.get(name);
 	}
 
-	emit(name: TEventCanvas, callback: TFunction) {
+	emit(name: TEventApp, callback: TFunction) {
 		this._events.addEventListener(name, callback);
 
 		return this;
 	}
 
-	async load(text: string, format: "JSON" | "YAML" = "JSON") {
-		const structure = format === "JSON" ? JSON5.parse(text) : YAML.parse(text);
+	async load(text: string, format: TSerialize = "JSON") {
+		const structure = serializers[format].parse(text);
 
 		this._options = structure.options;
 
@@ -168,10 +170,8 @@ export class GameCore {
 		this._global.set("dispatch-event", false);
 
 		AbstractNode[SetApp](this);
-		ConstructorNodes[AddNodesToConstructorNode]({
+		ConstructorNodes.addNodes({
 			GlobalNode,
-			Collision2D,
-			CollisionShape2D,
 			ControlEdition2D,
 			LineFlowEffect2D,
 			Node2D,
@@ -181,39 +181,55 @@ export class GameCore {
 			Text2D,
 		});
 
-		this[_ROOT_] = new RootNode();
+		this[_ROOT_] = new RootNodeMainProcess(this);
 
 		this[$Animation] = new AnimationService(this);
 		this[$Canvas] = new CanvasService(this);
 		this[$Scenes] = new ScenesService(this);
 
-		this[_Drawer] = new DrawerController(this);
+		this[_Frame] = new FrameController(this);
+		this[_Worker] = new WorkerController(this);
+		this[_Render] = new RenderController(this);
 		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
 		this[_Script] = new ScriptController(this);
 		this[_Collision] = new CollisionController(this);
 
-		this[_Drawer].render.setViewportGame(
+		this[_Script].initHelpersScript();
+
+		if (this._options.renderProcess === "main-thread") {
+			this[_Render].load({
+				context: this._options.context,
+				dimension: this._options.dimension,
+				mode: this.mode,
+			});
+			this[_Render].init(
+				this.options.viewport.width,
+				this.options.viewport.height,
+			);
+		}
+
+		this[_Worker].render.setSize(
 			this.options.viewport.width,
 			this.options.viewport.height,
 		);
 
 		this[$Scenes].add(Scene.make(structure.scenes[0]));
 
-		await this[$Scenes].change(this._options.scene ?? "");
+		this[$Scenes].change(this._options.scene ?? "");
 
 		this.resize();
 
 		this[$Animation].play();
 
-		await this[_Script].ready();
+		this[_Script].ready();
 	}
 
 	[GetOptions]() {
 		return this._options;
 	}
 
-	[SetGlobal](name: string, value: AllTypesSimple) {
+	[SetGlobal](name: string, value: TAnything) {
 		this._global.set(name, value);
 	}
 
@@ -223,7 +239,7 @@ export class GameCore {
 		this.init();
 	}
 
-	[DispatchEvent](event: TEventCanvas, ...args: AllTypesSimple[]): void {
+	[DispatchEvent](event: TEventApp, ...args: TAnything[]): void {
 		this._events.emitEvent(event, ...args);
 	}
 }

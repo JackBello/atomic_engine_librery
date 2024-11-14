@@ -9,17 +9,28 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
+		"@angular/core": "^18.2.10",
+		"@types/node": "^22.7.6",
+		"@types/react": "^18.3.12",
+		"@types/wicg-file-system-access": "^2023.10.5",
+		"@webgpu/types": "^0.1.49",
+		"react": "^18.3.1",
+		"svelte": "^5.1.12",
 		"typescript": "^5.5.3",
 		"vite": "^5.4.1",
+		"vite-plugin-dts": "^4.3.0",
 		"vite-plugin-mkcert": "^1.17.5",
 		"vue": "^3.4.21"
 	},
 	"dependencies": {
-		"uid": "^2.0.2",
-		"yaml": "^2.4.1",
-		"json5": "^2.2.3"
+		"@std/ini": "npm:@jsr/std__ini@1.0.0-rc.4",
+		"@std/toml": "npm:@jsr/std__toml@^1.0.1",
+		"@std/ulid": "npm:@jsr/std__ulid@1.0.0-rc.4",
+		"@std/yaml": "npm:@jsr/std__yaml@^1.0.5"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"exports": {
 		".": {
 			"import": "./dist/atomic-engine.es.js",

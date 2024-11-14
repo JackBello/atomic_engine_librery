@@ -1,15 +1,23 @@
-import type { TCanvasNodes, TCanvasNodeOptions } from "../types";
-import type { INodeWorker, TExportNode, TTypeNodes } from "./node.types";
-import type { TEventNode, TEventScene } from "../event.type";
-import type { AllTypesSimple, TAnything, TFunction } from "@/types";
+import type { TCanvasNodeOptions, TCanvasNodes } from "../types";
+import type { INodeProcess, TExportNode, TTypeNodes } from "./types";
+import type { TEventNode, TEventScene } from "../events";
+import type { TAnything, TFunction } from "@/app/types";
 
-import { MethodClone, MethodImport, MethodMake, PropType } from "../symbols";
-import { _Drawer, ExportWorker, GetApp } from "@/symbols";
+import {
+	NodeFunctionClone,
+	NodeFunctionImport,
+	NodeFunctionMake,
+	NodePropType,
+	ScriptsNodeFromScene,
+} from "../symbols";
+import { _Render, _Worker, ExportWorker, GetApp } from "@/app/symbols";
 
 import { GlobalNode } from "./global-node";
 
 export class Scene extends GlobalNode {
-	[PropType]: TCanvasNodes = "global/scene";
+	[NodePropType]: TCanvasNodes = "global/scene";
+
+	[ScriptsNodeFromScene]: Set<GlobalNode>;
 
 	readonly NODE_NAME: TTypeNodes = "Scene";
 
@@ -19,11 +27,11 @@ export class Scene extends GlobalNode {
 	) {
 		super(slug, options);
 
-		this._root = this;
+		this[ScriptsNodeFromScene] = new Set();
 	}
 
-	clone(): Scene {
-		return this[MethodClone]();
+	clone() {
+		return this[NodeFunctionClone]() as Scene;
 	}
 
 	emit(event: TEventNode | TEventScene, callback: TFunction): void {
@@ -35,11 +43,11 @@ export class Scene extends GlobalNode {
 			this._options[property] = this._initial[property];
 
 			if (!this._omit.includes(property)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[property] = this._initial[property];
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -50,7 +58,7 @@ export class Scene extends GlobalNode {
 		} else {
 			this._options = { ...this._initial };
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				this.utils.omitKeys(this._initial, this._omit),
 				this.path,
@@ -59,7 +67,9 @@ export class Scene extends GlobalNode {
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	toObject(): TCanvasNodeOptions["global/scene"] {
@@ -68,7 +78,7 @@ export class Scene extends GlobalNode {
 
 	set(
 		property: keyof TCanvasNodeOptions["global/scene"],
-		value: AllTypesSimple,
+		value: TAnything,
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["global/scene"]>): void;
 	set(properties?: unknown, value?: unknown): void {
@@ -77,11 +87,11 @@ export class Scene extends GlobalNode {
 				value as never;
 
 			if (!this._omit.includes(properties)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[properties] = value;
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -95,7 +105,7 @@ export class Scene extends GlobalNode {
 					value as never;
 			}
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				this.utils.omitKeys(properties, this._omit),
 				this.path,
@@ -104,27 +114,30 @@ export class Scene extends GlobalNode {
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON"): Scene {
-		return GlobalNode[MethodImport](data, format);
+	static import(data: string, format: "JSON" | "YAML" = "JSON") {
+		return GlobalNode[NodeFunctionImport](data, format) as Scene;
 	}
 
 	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[MethodMake](structure) as Scene;
+		return GlobalNode[NodeFunctionMake](structure) as Scene;
 	}
 
-	[ExportWorker](childNode = true): INodeWorker {
-		const nodes: INodeWorker[] = [];
+	[ExportWorker](childNode = true): INodeProcess {
+		const nodes: INodeProcess[] = [];
 
-		if (childNode && this.$nodes.size)
+		if (childNode && this.$nodes.size) {
 			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeWorker);
+				nodes.push(node[ExportWorker](true) as INodeProcess);
 			}
+		}
 
 		return {
-			__type__: this[PropType],
+			__type__: this[NodePropType],
 			__path__: this.path,
 			location: {
 				id: this.id,

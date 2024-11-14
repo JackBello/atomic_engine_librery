@@ -2,6 +2,14 @@
   "extends": "./tsconfig.json",
   "include": ["lib"],
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "declarationDir": "./dist",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmitOnError": false,
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["lib/*"]
+    }
   }
 }

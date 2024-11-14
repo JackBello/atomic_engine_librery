@@ -1,25 +1,23 @@
-import * as YAML from "yaml";
-import JSON5 from "json5";
-
 import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
-import type { TAnything, TFunction } from "@/types";
-import type { IControlEditor, TExportNode } from "@/nodes/global/node.types";
-import type { TEventScenes } from "./event.type";
+import type { TAnything, TFunction, TSerialize } from "@/app/types";
+import type { IControlEditor, TExportNode } from "@/nodes/global/types";
+import type { TEventScenes } from "./events";
 
 import {
-	_Drawer,
 	_Script,
+	_Worker,
 	DispatchEvent,
 	DispatchScript,
 	ExportData,
 	ExportWorker,
 	ReloadApp,
-} from "../../symbols";
+} from "../symbols";
 
-import { Scene } from "@/nodes";
+import { type GlobalNode, Scene } from "@/nodes";
 
 import EventObserver from "../utils/observer";
+import { serializers } from "../utils/serialize";
 
 export default class ScenesService {
 	private $app: EngineCore | GameCore;
@@ -41,7 +39,9 @@ export default class ScenesService {
 	}
 
 	get(slug: string) {
-		if (!this._scenes.has(slug)) throw new Error(`not found scene "${slug}"`);
+		if (!this._scenes.has(slug)) {
+			throw new Error(`not found scene "${slug}"`);
+		}
 
 		return this._scenes.get(slug);
 	}
@@ -63,52 +63,63 @@ export default class ScenesService {
 		this[DispatchEvent]("scenes:delete", slug);
 	}
 
-	async change(slug: string) {
+	change(slug: string) {
 		if (this._scene) this._scene[DispatchEvent]("scene:finish");
 
 		const preScene = this.get(slug);
 
-		if (!preScene) throw new Error(`the scene to load does not exist ${slug}`);
+		if (!preScene) {
+			throw new Error(`the scene to load does not exist ${slug}`);
+		}
 
 		this._scene = preScene;
 
-		preScene[DispatchEvent]("scene:preload");
+		this[DispatchEvent]("scenes:change", slug);
+	}
+
+	async load() {
+		if (!this._scene) {
+			throw new Error("No scene selected to be loaded");
+		}
+
+		this._scene[DispatchEvent]("scene:preload");
+
+		this.$app[_Worker].nodes.setRoot(this._scene[ExportWorker]());
 
 		await this.$app[_Script][DispatchScript]();
 
-		this.$app[_Drawer].nodes.setRoot(preScene[ExportWorker]());
-
-		this[DispatchEvent]("scenes:change", slug);
-
-		preScene[DispatchEvent]("scene:ready");
+		this._scene[DispatchEvent]("scene:ready");
 	}
 
-	reset(node: Scene) {
+	async refresh() {
+		await this.$app[_Script][DispatchScript]();
+	}
+
+	reset(node: Scene | GlobalNode) {
 		if (node) {
 			node.reset();
 
-			if (node.$nodes.size > 0)
+			if (node.$nodes.size > 0) {
 				for (const child of node.$nodes.all) {
 					this.reset(child);
 				}
+			}
 		}
 	}
 
-	export(format: "JSON" | "YAML" = "JSON") {
+	export(format: TSerialize = "JSON") {
 		this[DispatchEvent]("scenes:export");
 
-		return format === "YAML"
-			? YAML.stringify(this[ExportData]())
-			: JSON5.stringify(this[ExportData]());
+		return serializers[format].stringify(this[ExportData]());
 	}
 
-	import(data: string, format: "JSON" | "YAML" = "JSON") {
+	import(data: string, format: TSerialize = "JSON") {
 		this[DispatchEvent]("scenes:import");
 
 		const scenes: [string, Scene][] = [];
 
-		const structures: TExportNode<IControlEditor>[] =
-			format === "YAML" ? YAML.parse(data) : JSON5.parse(data);
+		const structures: TExportNode<IControlEditor>[] = serializers[format]
+			.parse(data);
 
 		for (const structure of structures) {
 			scenes.push([structure.slug, Scene.make(structure)]);

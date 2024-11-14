@@ -1,6 +1,6 @@
 import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
-import type { IOptionsGame } from "@/types";
+import type { IOptionsGame } from "@/app/types";
 
 export default class WindowController {
 	private $app: EngineCore | GameCore;
@@ -16,9 +16,11 @@ export default class WindowController {
 			"scrollbars=no,status=no,menubar=no,toolbar=no,location=no,directories=no";
 
 		if (game.full_size) {
-			config += `,width=${screen.availWidth},height=${screen.availHeight}`;
+			config +=
+				`,width=${screen.availWidth},height=${screen.availHeight}`;
 		} else {
-			config += `,width=${game.viewport.width},height=${game.viewport.height}`;
+			config +=
+				`,width=${game.viewport.width},height=${game.viewport.height}`;
 		}
 
 		if (game.center && !game.full_size) {
@@ -62,10 +64,10 @@ export default class WindowController {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <script src="https://localhost:5173/atomic-engine.iife.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
       ${
-				game.icon
-					? `<link rel="icon" type="image/png" href="${game.icon}">`
-					: ""
-			}
+			game.icon
+				? `<link rel="icon" type="image/png" href="${game.icon}">`
+				: ""
+		}
       <title>${game.title ? game.title : "Atomic Engine"}</title>
       <style>
         body, html {
@@ -91,24 +93,22 @@ export default class WindowController {
             })(Atomic)
 
             ${
-							game.full_screen
-								? `
+			game.full_screen
+				? `
             if (!document.fullscreenElement) {
               app.canvas.instance.requestFullscreen();
             } else {
               document.exitFullscreen();
             }
             `
-								: ""
-						}
+				: ""
+		}
 
             ${
-							game.resizable
-								? ""
-								: `window.onresize = function() {
+			game.resizable ? "" : `window.onresize = function() {
               window.resizeTo(${game.viewport.width}, ${game.viewport.height});
             }`
-						}
+		}
           })
         </script>
     </body>

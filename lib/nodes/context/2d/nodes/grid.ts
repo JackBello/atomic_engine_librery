@@ -1,4 +1,4 @@
-import type { TAnything } from "@/types";
+import type { TAnything } from "@/app/types";
 
 export const _makeGrid = (
 	context: CanvasRenderingContext2D,

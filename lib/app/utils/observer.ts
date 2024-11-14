@@ -1,4 +1,4 @@
-import type { TAnything, TFunction } from "@/types";
+import type { TAnything, TFunction } from "@/app/types";
 
 export default class EventObserver {
 	protected _eventListeners: Record<string, TFunction[]> = {};
@@ -28,7 +28,9 @@ export default class EventObserver {
 	}
 
 	public clearListeners() {
-		for (const event in this._eventListeners) this._eventListeners[event] = [];
+		for (const event in this._eventListeners) {
+			this._eventListeners[event] = [];
+		}
 	}
 
 	public emitEvent(event: string, ...args: TAnything[]) {

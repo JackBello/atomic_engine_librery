@@ -1,4 +1,4 @@
-import type { IOptionsGameCore } from "../../types";
+import type { IOptionsGameCore } from "../../app/types";
 
 export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsGameCore = {
 	context: "2d",
@@ -22,4 +22,5 @@ export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsGameCore = {
 		width: 800,
 	},
 	scene: undefined,
+	renderProcess: "sub-thread",
 };

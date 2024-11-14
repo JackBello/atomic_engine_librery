@@ -1,43 +1,42 @@
-import type { IHandleNode, INodeWorker, TMode } from "../node.types";
-import type { GlobalNode } from "@/nodes";
+import type { IHandleNode, INodeProcess } from "../types";
+import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
-import { _Drawer, ExportWorker, GetApp } from "@/symbols";
+import { _Render, _Script, _Worker, ExportWorker, GetApp } from "@/app/symbols";
 import {
-	MethodSetIndex,
-	MethodSetNodes,
-	MethodSetParent,
-	MethodSetRoot,
-	PropNodes,
+	NodePropHandlerNodes,
+	NodeSetHandlerNodes,
+	NodeSetIndex,
+	NodeSetParent,
 } from "@/nodes/symbols";
 
 export class HandlerNode implements IHandleNode {
 	private $node: GlobalNode;
 	private $app: EngineCore | GameCore;
 
-	[PropNodes]: GlobalNode[];
+	[NodePropHandlerNodes]: GlobalNode[];
 
 	get all(): GlobalNode[] {
-		return this[PropNodes];
+		return this[NodePropHandlerNodes];
 	}
 
 	get size(): number {
-		return this[PropNodes].length;
+		return this[NodePropHandlerNodes].length;
 	}
 
 	constructor($node: GlobalNode) {
 		this.$node = $node;
-		this.$app = this.$node[GetApp]();
+		this.$app = this.$node[GetApp];
 
-		this[PropNodes] = [];
+		this[NodePropHandlerNodes] = [];
 	}
 
 	private _updateNodes_(nodes: GlobalNode[]) {
 		for (let index = 0; index < nodes.length; index++) {
 			const node = nodes[index];
 
-			node[MethodSetIndex](index);
+			node[NodeSetIndex](index);
 
 			if (node.nodes.length) {
 				this._updateNodes_(node.nodes);
@@ -47,15 +46,15 @@ export class HandlerNode implements IHandleNode {
 
 	get(index: number): GlobalNode | undefined {
 		let left = 0;
-		let right = this[PropNodes].length - 1;
+		let right = this[NodePropHandlerNodes].length - 1;
 
 		while (left <= right) {
 			const mid = Math.floor((left + right) / 2);
 
-			const midValue = this[PropNodes][mid].index;
+			const midValue = this[NodePropHandlerNodes][mid].index;
 
 			if (midValue === index) {
-				return this[PropNodes][mid];
+				return this[NodePropHandlerNodes][mid];
 			}
 			if (midValue < index) {
 				left = mid + 1;
@@ -68,23 +67,24 @@ export class HandlerNode implements IHandleNode {
 	}
 
 	add(...nodes: GlobalNode[]): void {
-		if (!this.$node.ROOT) throw new Error("root not found");
-
 		for (const node of nodes) {
-			node[MethodSetParent](this.$node);
-			node[MethodSetIndex](this.size);
-			node[MethodSetRoot](this.$node.ROOT);
-			this[PropNodes].push(node);
+			node[NodeSetParent](this.$node);
+			node[NodeSetIndex](this.size);
+			this[NodePropHandlerNodes].push(node);
 
-			this.$app[_Drawer].nodes.addNode(
-				node[ExportWorker]() as INodeWorker,
-				this.$node.path,
-				"path",
-				"index",
-			);
+			if (this.$app.scenes.currentScene) {
+				this.$app[_Worker].nodes.addNode(
+					node[ExportWorker]() as INodeProcess,
+					this.$node.path,
+					"path",
+					"index",
+				);
+
+				this.$app[_Worker].render.draw();
+
+				this.$app[_Render].draw = true;
+			}
 		}
-
-		this.$app[_Drawer].render.reDraw();
 	}
 
 	has(index: number): boolean {
@@ -96,23 +96,33 @@ export class HandlerNode implements IHandleNode {
 
 		if ($node === undefined) return false;
 
-		this[PropNodes].splice($node.index, 1);
+		this[NodePropHandlerNodes].splice($node.index, 1);
 
-		this.$app[_Drawer].nodes.deleteNode($node.path, "path", "index");
+		this.$app[_Script].removeScript($node);
 
-		this._updateNodes_(this[PropNodes]);
+		this._updateNodes_(this[NodePropHandlerNodes]);
 
-		this.$app[_Drawer].render.reDraw();
+		if (this.$app.scenes.currentScene) {
+			this.$app[_Worker].nodes.deleteNode($node.path, "path", "index");
+
+			this.$app[_Worker].render.draw();
+
+			this.$app[_Render].draw = true;
+		}
 
 		return true;
 	}
 
 	clear(): boolean {
-		this[PropNodes] = [];
+		this[NodePropHandlerNodes] = [];
 
-		this.$app[_Drawer].nodes.clearNodes(this.$node.path, "path", "index");
+		if (this.$app.scenes.currentScene) {
+			this.$app[_Worker].nodes.clearNodes(this.$node.path, "path", "index");
 
-		this.$app[_Drawer].render.reDraw();
+			this.$app[_Worker].render.draw();
+
+			this.$app[_Render].draw = true;
+		}
 
 		return true;
 	}
@@ -122,21 +132,27 @@ export class HandlerNode implements IHandleNode {
 
 		if ($node === undefined) return false;
 
-		if (index < 0 || index >= this.size) throw new Error("Indexes out ranges");
+		if (index < 0 || index >= this.size) {
+			throw new Error("Indexes out ranges");
+		}
 
-		node[MethodSetParent]($node.parent);
-		this[PropNodes][$node.index] = node;
+		node[NodeSetParent]($node.parent);
+		this[NodePropHandlerNodes][$node.index] = node;
 
-		this.$app[_Drawer].nodes.replaceNode(
-			node[ExportWorker]() as INodeWorker,
-			$node.path,
-			"path",
-			"index",
-		);
+		this._updateNodes_(this[NodePropHandlerNodes]);
 
-		this._updateNodes_(this[PropNodes]);
+		if (this.$app.scenes.currentScene) {
+			this.$app[_Worker].nodes.replaceNode(
+				node[ExportWorker]() as INodeProcess,
+				$node.path,
+				"path",
+				"index",
+			);
 
-		this.$app[_Drawer].render.reDraw();
+			this.$app[_Worker].render.draw();
+
+			this.$app[_Render].draw = true;
+		}
 
 		return true;
 	}
@@ -158,8 +174,9 @@ export class HandlerNode implements IHandleNode {
 	}
 
 	move(from: number, to: number): boolean {
-		if (from < 0 || from >= this.size)
+		if (from < 0 || from >= this.size) {
 			throw new Error("From indexes out ranges");
+		}
 		if (to < 0 || to >= this.size) throw new Error("To indexes out ranges");
 
 		const $nodeFrom = this.get(from);
@@ -168,25 +185,29 @@ export class HandlerNode implements IHandleNode {
 		if ($nodeFrom === undefined) return false;
 		if ($nodeTo === undefined) return false;
 
-		this[PropNodes].splice($nodeTo.index + 1, 0, $nodeFrom.clone());
-		this[PropNodes].splice($nodeFrom.index, 1);
+		this[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, $nodeFrom.clone());
+		this[NodePropHandlerNodes].splice($nodeFrom.index, 1);
 
-		this.$app[_Drawer].nodes.moveNode(
-			{
-				mode: "index",
-				search: $nodeFrom.path,
-			},
-			{
-				mode: "index",
-				search: $nodeTo.path,
-			},
-			"path",
-			"before",
-		);
+		this._updateNodes_(this[NodePropHandlerNodes]);
 
-		this._updateNodes_(this[PropNodes]);
+		if (this.$app.scenes.currentScene) {
+			this.$app[_Worker].nodes.moveNode(
+				{
+					mode: "index",
+					search: $nodeFrom.path,
+				},
+				{
+					mode: "index",
+					search: $nodeTo.path,
+				},
+				"path",
+				"before",
+			);
 
-		this.$app[_Drawer].render.reDraw();
+			this.$app[_Worker].render.draw();
+
+			this.$app[_Render].draw = true;
+		}
 
 		return true;
 	}
@@ -194,30 +215,14 @@ export class HandlerNode implements IHandleNode {
 	traverse(callback: (node: GlobalNode) => void): void {
 		callback(this.$node);
 
-		if (this.size > 0)
-			for (const child of this[PropNodes]) {
+		if (this.size > 0) {
+			for (const child of this[NodePropHandlerNodes]) {
 				child.$nodes.traverse(callback);
 			}
+		}
 	}
 
-	path(
-		path: string,
-		mode: TMode,
-	): {
-		get(index: number): GlobalNode | undefined;
-		add(...nodes: GlobalNode[]): void;
-		has(index: number): boolean;
-		delete(index: number): boolean;
-		clear(): boolean;
-		replace(index: number, node: GlobalNode): boolean;
-		search(slug: string): GlobalNode | undefined;
-		move(from: number, index: number): boolean;
-		traverse(callback: (node: GlobalNode) => void): void;
-	} {
-		throw new Error("Method not implemented.");
-	}
-
-	[MethodSetNodes](nodes: GlobalNode[]): void {
-		this[PropNodes] = nodes;
+	[NodeSetHandlerNodes](nodes: GlobalNode[]): void {
+		this[NodePropHandlerNodes] = nodes;
 	}
 }

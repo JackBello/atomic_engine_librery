@@ -1,18 +1,19 @@
 import type { GlobalNode } from "../global-node";
-import type { TAnything, TFunction } from "@/types";
+import type { TAnything, TFunction } from "@/app/types";
 
-import { GetNodesToConstructorNode, GetNodeToConstructorNode } from "@/nodes/symbols";
-import { $Scenes, _Input, GetOptions, SetGlobal } from "@/symbols";
+import { _Frame, _Input, _Script } from "@/app/symbols";
 
-import { EngineCore } from "@/app/engine";
-import { GameCore } from "@/app/game";
+import type { EngineCore } from "@/app/engine";
+import type { GameCore } from "@/app/game";
 
 import ConstructorNodes from "./constructor-nodes";
-import type { Scene } from "../scene";
 
 export default class ConstructorScript {
 	private $node!: GlobalNode;
 	private $app!: EngineCore | GameCore;
+	private $script!: string | URL;
+
+	protected _helpers = new Map();
 
 	protected _restring = `const window = undefined;
     const document = undefined;
@@ -145,14 +146,17 @@ export default class ConstructorScript {
 					typeof prototype[method] === "function" && method !== "constructor",
 			);
 
-			if (filters.length > 0)
+			if (filters.length > 0) {
 				for (const method of methods) {
-					if (filters.includes(method)) result[method] = instance[method];
+					if (filters.includes(method)) {
+						result[method] = instance[method];
+					}
 				}
-			else
+			} else {
 				for (const method of methods) {
 					result[method] = instance[method].bind(this.$node);
 				}
+			}
 
 			return result;
 		},
@@ -161,13 +165,13 @@ export default class ConstructorScript {
 				"_omit",
 				"_options",
 				"_initial",
-				"_root",
 				"_parent",
 				"_events",
 				"_index",
 				"_slug",
 				"_id",
 				"_add",
+				"_transform",
 				"utils",
 				"NODE_NAME",
 				"$attributes",
@@ -175,8 +179,7 @@ export default class ConstructorScript {
 				"$functions",
 				"$metaKeys",
 				"$nodes",
-				"scriptMode",
-				"script",
+				"$script",
 			];
 
 			const result: Record<string, TAnything> = {};
@@ -185,20 +188,24 @@ export default class ConstructorScript {
 				(prop) => !ignore.includes(prop),
 			);
 
-			if (filters.length > 0)
+			if (filters.length > 0) {
 				for (const prop of props) {
-					if (filters.includes(prop) && typeof instance[prop] === "function")
+					if (filters.includes(prop) && typeof instance[prop] === "function") {
 						result[prop] = instance[prop].bind(this.$node);
-					if (filters.includes(prop) && typeof instance[prop] !== "function")
+					}
+					if (filters.includes(prop) && typeof instance[prop] !== "function") {
 						result[prop] = instance[prop];
+					}
 				}
-			else
+			} else {
 				for (const prop of props) {
-					if (typeof instance[prop] === "function")
+					if (typeof instance[prop] === "function") {
 						result[prop] = instance[prop].bind(this.$node);
+					}
 
 					result[prop] = instance[prop];
 				}
+			}
 
 			return result;
 		},
@@ -241,103 +248,8 @@ export default class ConstructorScript {
 		},
 	};
 
-	protected getHelpers() {
-		const $Timer = {
-			timeout: (time: number, callback: TFunction) => 
-				setTimeout(callback, time)
-			,
-			interval: (time: number, callback: TFunction) => 
-				setInterval(callback, time)
-			,
-			clear: (reference: number, type: "interval" | "timeout") => type === "interval" ? clearInterval(reference) : clearTimeout(reference)
-		};
-
-		const $Node = {
-			collider: () => {
-				const collision = this.$node.$nodes.all.find(
-					(node) => node.NODE_NAME === "CollisionShape2D",
-				);
-
-				return collision?.getCollider();
-			},
-			destroy: () => {
-				this.$app.ROOT.deleteNodeByPath(this.$node.path, "index");
-
-				const _destroy = this.$node.$functions.get("_destroy");
-
-				if (_destroy) _destroy();
-			},
-		};
-
-		const $Game = {
-			finish: () => {
-				this.$app[SetGlobal]("status", "pause");
-			},
-			reset: () => {
-				this.$app[SetGlobal]("reset", true);
-				this.$app[$Scenes].reset(this.$app[$Scenes].currentScene as Scene);
-				this.$app[SetGlobal]("status", "play");
-			},
-			reload: () => {
-
-			},
-			pause: () => {
-				this.$app[SetGlobal]("status", "pause");
-			},
-		};
-
-		const $Logger = {
-			message: (...data: TAnything[]) => {
-				console.log(...data);
-			},
-			error: (...data: TAnything[]) => {
-				console.error(...data);
-			},
-			warning: (...data: TAnything[]) => {
-				console.warn(...data);
-			},
-			info: (...data: TAnything[]) => {
-				console.info(...data);
-			},
-		};
-
-		const $Window = {
-			viewport: () => {
-				let viewport = {
-					width: 0,
-					height: 0,
-				};
-		
-				if (this.$app instanceof EngineCore) {
-					viewport = this.$app[GetOptions]().game.viewport;
-				} else if (this.$app instanceof GameCore) {
-					viewport = this.$app[GetOptions]().viewport;
-				}
-		
-				return viewport;
-			}
-		}
-
-		const $Input = this.$app[_Input];
-
-		const $Nodes = ConstructorNodes[GetNodesToConstructorNode]()
-
-		const $Scene = this.$app.scenes.currentScene;
-
-		return {
-			$Input,
-			$Logger,
-			$Game,
-			$Timer,
-			$Window,
-			$Nodes,
-			$Node,
-			$Scene
-		};
-	}
-
 	protected async getCode() {
-		const script = this.$node.script;
+		const script = this.$script;
 
 		if (!script) return "";
 
@@ -353,7 +265,7 @@ export default class ConstructorScript {
 
 		let result = "";
 
-		if (this.$node.scriptMode === "function") {
+		if (this.$node.$script.compilation === "functions") {
 			result = `${this._restring} with(helpers) {\n\nwith (node) {\n\n${code
 				.trim()
 				.replace(/@expose /g, "")}; ${this.REGEXP.getExpressionIntoCode(
@@ -361,7 +273,7 @@ export default class ConstructorScript {
 			)}\n\n}\n\n}`;
 		}
 
-		if (this.$node.scriptMode === "class") {
+		if (this.$node.$script.compilation === "class") {
 			result = `${this._restring}\n with(helpers) { ${code.trim()}
         return new ${this.REGEXP.getNameFromClassIntoCode(code)}() }`;
 		}
@@ -369,8 +281,10 @@ export default class ConstructorScript {
 		return result;
 	}
 
-	protected async getExec(code: string, helpers: Record<string, any>) {
+	protected async getExec(code: string) {
 		const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
+
+		const helpers = this.$app[_Script].getHelpersScript();
 
 		let execute: TFunction<TAnything>;
 		let result: {
@@ -381,43 +295,40 @@ export default class ConstructorScript {
 			__VARS__: {},
 		};
 
-		if (this.$node.scriptMode === "function") {
-			execute = new AsyncFunction("helpers", code);
+		if (this.$node.$script.compilation === "functions") {
+			execute = new AsyncFunction("node, helpers", code);
 
-			result = await execute(helpers);
+			result = await execute(this.$node, helpers);
 		} else {
-			const extendsClass = ConstructorNodes[GetNodeToConstructorNode](
-				this.$node.NODE_NAME,
-			);
+			const extendsClass = ConstructorNodes.getNode(this.$node.NODE_NAME);
 
 			const execute = new AsyncFunction(
-				`node, helpers, ${this.$node.NODE_NAME}`,
+				`helpers, ${this.$node.NODE_NAME}`,
 				code,
 			);
 
-			result = await execute(
-				this.$node,
-				helpers,
-				extendsClass,
-			);
+			result = await execute(helpers, extendsClass);
 
-			if ("NODE_NAME" in result)
+			if ("NODE_NAME" in result) {
 				result = {
 					__FUNC__: this.CLASS.getMethodsFromClass(result as TAnything),
 					__VARS__: this.CLASS.getPropsFromClass(result as TAnything),
 				};
+			}
 		}
 
 		return result;
 	}
 
-	public async executeScript(node: GlobalNode, app: EngineCore | GameCore) {
+	public async executeScript(
+		node: GlobalNode,
+		app: EngineCore | GameCore,
+		script: string | URL,
+	) {
 		this.$app = app;
 		this.$node = node;
+		this.$script = script;
 
-		const helpers = this.getHelpers();
-		const code = await this.getCode();
-
-		return await this.getExec(code, helpers);
+		return await this.getExec(await this.getCode());
 	}
 }

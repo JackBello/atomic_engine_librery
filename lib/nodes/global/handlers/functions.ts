@@ -1,51 +1,54 @@
-import type { IHandleFunction, TFunctionTuple } from "../node.types";
-import type { GlobalNode } from "@/nodes";
+import type { IHandleFunction, TFunctionTuple } from "../types";
+import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
-import type { TAnything, TFunction } from "@/types";
+import type { TAnything, TFunction } from "@/app/types";
 
-import { MethodSetFunctions, PropFunctions } from "@/nodes/symbols";
-import { _Drawer, GetApp } from "@/symbols";
+import {
+	NodePropHandlerFunctions,
+	NodeSetHandlerFunctions,
+} from "@/nodes/symbols";
+import { _Worker, GetApp } from "@/app/symbols";
 
 export class HandlerFunction implements IHandleFunction {
 	private $node: GlobalNode;
 	private $app: EngineCore | GameCore;
 
-	[PropFunctions]: Map<string, TFunction>;
+	[NodePropHandlerFunctions]: Map<string, TFunction>;
 
 	constructor($node: GlobalNode) {
 		this.$node = $node;
-		this.$app = this.$node[GetApp]();
+		this.$app = this.$node[GetApp];
 
-		this[PropFunctions] = new Map();
+		this[NodePropHandlerFunctions] = new Map();
 	}
 
 	toEntries(): TFunctionTuple[] {
-		return [...this[PropFunctions].entries()];
+		return [...this[NodePropHandlerFunctions].entries()];
 	}
 
 	gelAll(): TFunction[] {
-		return [...this[PropFunctions].values()];
+		return [...this[NodePropHandlerFunctions].values()];
 	}
 
 	get(name: string): TFunction | undefined {
-		return this[PropFunctions].get(name);
+		return this[NodePropHandlerFunctions].get(name);
 	}
 
 	add(name: string, func: TFunction): void {
-		this[PropFunctions].set(name, func);
+		this[NodePropHandlerFunctions].set(name, func);
 
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 	}
 
 	has(name: string): boolean {
-		return this[PropFunctions].has(name);
+		return this[NodePropHandlerFunctions].has(name);
 	}
 
 	delete(name: string): boolean {
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 
-		return this[PropFunctions].delete(name);
+		return this[NodePropHandlerFunctions].delete(name);
 	}
 
 	execute(name: string, ...args: TAnything[]): void {
@@ -57,12 +60,12 @@ export class HandlerFunction implements IHandleFunction {
 	}
 
 	clear(): void {
-		this[PropFunctions].clear();
+		this[NodePropHandlerFunctions].clear();
 
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 	}
 
-	[MethodSetFunctions](functions: TFunctionTuple[]): void {
-		this[PropFunctions] = new Map(functions);
+	[NodeSetHandlerFunctions](functions: TFunctionTuple[]): void {
+		this[NodePropHandlerFunctions] = new Map(functions);
 	}
 }

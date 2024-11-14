@@ -48,5 +48,5 @@ export const translate_canvas_2D = (
 
 export const scale_canvas_2D = (
 	context: CanvasRenderingContext2D,
-	scale: number,
-) => context.scale(scale, scale);
+	options: { scale: number },
+) => context.scale(options.scale, options.scale);

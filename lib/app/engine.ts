@@ -1,33 +1,34 @@
 import type {
-	AllTypesSimple,
 	IOptionsEngineCore,
 	TAnything,
+	TClass,
+	TEventApp,
 	TFunction,
 	TMode,
-} from "../types";
-import type { TPlugin, TPluginReturn } from "../plugins/types";
-import type { TEventCanvas } from "../event.type";
+} from "./types";
 
 import {
-	$Canvas,
-	HiddenPlugin,
-	DispatchEvent,
-	SetOptions,
-	SetApp,
-	$Scenes,
 	$Animation,
-	_Drawer,
-	_Events,
-	_Window,
-	_Script,
+	$Canvas,
+	$Scenes,
 	_Collision,
 	_Distribution,
-	_ROOT_,
-	SetGlobal,
-	GetOptions,
+	_Events,
+	_Frame,
 	_Input,
-} from "../symbols";
-import { AddNodesToConstructorNode } from "../nodes/symbols";
+	_Render,
+	_ROOT_,
+	_Script,
+	_Window,
+	_Worker,
+	DispatchEvent,
+	GetOptions,
+	SetApp,
+	SetGlobal,
+	SetOptions,
+} from "./symbols";
+
+import type { Plugin } from "./plugin";
 
 import EventObserver from "./utils/observer";
 
@@ -40,18 +41,20 @@ import CollisionController from "./controllers/collision.controller";
 import EventController from "./controllers/event.controller";
 import WindowController from "./controllers/window.controller";
 import ScriptController from "./controllers/script.controller";
-import DrawerController from "./controllers/drawer.controller";
+import WorkerController from "./controllers/worker.controller";
+import RenderController from "./controllers/render.controller";
+import FrameController from "./controllers/frame.controller";
+import InputController from "./controllers/input.controller";
 
 import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNode from "../nodes/global/root-node";
+import RootNodeMainProcess from "../nodes/global/root/root-node.main";
 
 import {
-	GlobalNode,
-	Collision2D,
-	CollisionShape2D,
+	Circle2D,
 	ControlEdition2D,
+	GlobalNode,
 	LineFlowEffect2D,
 	Node2D,
 	Rectangle2D,
@@ -61,7 +64,6 @@ import {
 } from "@/nodes";
 
 import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
-import InputController from "./controllers/input.controller";
 
 export class EngineCore {
 	[key: string]: TAnything;
@@ -69,22 +71,21 @@ export class EngineCore {
 	readonly VERSION = "1.0.0";
 
 	protected _options: IOptionsEngineCore;
-	protected _plugins: Map<string, Omit<TPluginReturn, "inject">> = new Map();
-	protected _providers: Map<string, AllTypesSimple> = new Map();
-	protected _configs: Map<string, AllTypesSimple> = new Map();
-	protected _nodes: Map<string, AllTypesSimple> = new Map();
-	protected _global: Map<string, AllTypesSimple> = new Map();
+	protected _plugins: Map<string, Plugin> = new Map();
+	protected _global: Map<string, TAnything> = new Map();
 	protected _events: EventObserver = new EventObserver();
 
 	readonly mode: TMode = "editor";
 
-	[_ROOT_]!: RootNode;
+	[_ROOT_]!: RootNodeMainProcess;
 
 	[$Animation]!: AnimationService;
 	[$Canvas]!: CanvasService;
 	[$Scenes]!: ScenesService;
 
-	[_Drawer]!: DrawerController;
+	[_Frame]!: FrameController;
+	[_Worker]!: WorkerController;
+	[_Render]!: RenderController;
 	[_Input]!: InputController;
 	[_Events]!: EventController;
 	[_Window]!: WindowController;
@@ -114,8 +115,9 @@ export class EngineCore {
 					}
 				},
 				pause: () => {
-					if (this.global("mode") === "preview")
+					if (this.global("mode") === "preview") {
 						this._global.set("mode", "edition");
+					}
 				},
 			},
 			game: {
@@ -146,13 +148,20 @@ export class EngineCore {
 	}
 
 	get input() {
-		return this[_Input]
+		return this[_Input];
 	}
 
 	get size() {
 		return {
 			width: this._options.width,
 			height: this._options.height,
+		};
+	}
+
+	get viewport() {
+		return {
+			width: this._options.game.viewport.width,
+			height: this._options.game.viewport.height,
 		};
 	}
 
@@ -171,10 +180,9 @@ export class EngineCore {
 		this._global.set("dispatch-event", false);
 
 		AbstractNode[SetApp](this);
-		ConstructorNodes[AddNodesToConstructorNode]({
+
+		ConstructorNodes.addNodes({
 			GlobalNode,
-			Collision2D,
-			CollisionShape2D,
 			ControlEdition2D,
 			LineFlowEffect2D,
 			Node2D,
@@ -182,21 +190,35 @@ export class EngineCore {
 			Scene,
 			Selection2D,
 			Text2D,
+			Circle2D,
 		});
-
-		this[_ROOT_] = new RootNode();
 
 		this[$Animation] = new AnimationService(this);
 		this[$Canvas] = new CanvasService(this);
 		this[$Scenes] = new ScenesService(this);
 
-		this[_Drawer] = new DrawerController(this);
+		this[_Frame] = new FrameController(this);
+		this[_Worker] = new WorkerController(this);
+		this[_Render] = new RenderController(this);
 		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
 		this[_Window] = new WindowController(this);
 		this[_Script] = new ScriptController(this);
 		this[_Collision] = new CollisionController(this);
 		this[_Distribution] = new DistributionController(this);
+
+		this[_ROOT_] = new RootNodeMainProcess(this);
+
+		this[_Script].initHelpersScript();
+
+		if (this._options.renderProcess === "main-thread") {
+			this[_Render].load({
+				context: this._options.context,
+				dimension: this._options.dimension,
+				mode: this.mode,
+			});
+			this[_Render].init(this._options.width, this._options.height);
+		}
 
 		this.setSize(this._options.width, this._options.height);
 
@@ -209,36 +231,66 @@ export class EngineCore {
 
 		this[$Canvas].setSize(width, height);
 
-		this[_Drawer].render.setSize(width, height);
-		this[_Drawer].render.setSizeEditor(width, height);
+		if (this._options.renderProcess === "sub-thread") {
+			this[_Worker].render.setSize(width, height);
+		}
 
-		return this;
-	}
-
-	use(plugin: TPlugin, options?: object) {
-		const install = plugin.install(this, options);
-
-		this._plugins.set(plugin.name, {
-			nodes: install.nodes,
-			config: install.config,
-			process: install.process,
-			[HiddenPlugin]: install[HiddenPlugin],
-		});
-
-		if (install.functions) {
-			const processPlugin: Record<string, AllTypesSimple> = {};
-
-			for (const [name, method] of Object.entries(install.functions)) {
-				processPlugin[name] = method.bind(this);
-			}
-
-			this[plugin.name] = processPlugin;
+		if (this._options.renderProcess === "main-thread") {
+			this[_Render].setSize(width, height);
 		}
 
 		return this;
 	}
 
-	emit(name: TEventCanvas, callback: TFunction) {
+	use(
+		name: string,
+		plugin: TClass<Plugin>,
+		options: Record<string, TAnything> = {},
+	) {
+		this._plugins.set(name, new plugin(this, name));
+
+		let instance = this._plugins.get(name);
+
+		if (!instance) throw new Error("");
+
+		instance.install(options);
+
+		let functions = Object.entries(instance.inject());
+		let operations = instance.operations();
+
+		if (operations.after.length > 0) {
+			for (const operation of operations.after) {
+				this[_Worker].render.addAfterOperation(operation);
+			}
+		}
+
+		if (operations.before.length > 0) {
+			for (const operation of operations.before) {
+				this[_Worker].render.addBeforeOperation(operation);
+			}
+		}
+
+		if (functions.length > 0) {
+			const functionsInject: Record<string, TFunction> = {};
+
+			for (const [name, method] of functions) {
+				functionsInject[name] = method.bind(this);
+			}
+
+			this[instance.name] = functionsInject;
+		}
+
+		instance = undefined;
+		functions = [];
+		operations = {
+			after: [],
+			before: [],
+		};
+
+		return this;
+	}
+
+	emit(name: TEventApp, callback: TFunction) {
 		this._events.addEventListener(name, callback);
 
 		return this;
@@ -275,7 +327,7 @@ export class EngineCore {
 		return this._options;
 	}
 
-	[SetGlobal](name: string, value: AllTypesSimple) {
+	[SetGlobal](name: string, value: TAnything) {
 		this._global.set(name, value);
 	}
 
@@ -283,7 +335,7 @@ export class EngineCore {
 		this._options = { ...DEFAULT_CONFIG_ATOMIC_ENGINE, ...options };
 	}
 
-	[DispatchEvent](event: TEventCanvas, ...args: AllTypesSimple[]): void {
+	[DispatchEvent](event: TEventApp, ...args: TAnything[]): void {
 		this._events.emitEvent(event, ...args);
 	}
 }

@@ -1,59 +1,62 @@
-import type { IHandleMetaKey, TMetaKey, TMetaKeyTuple } from "../node.types";
-import type { GlobalNode } from "@/nodes";
+import type { IHandleMetaKey, TMetaKey, TMetaKeyTuple } from "../types";
+import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
-import { _Drawer, GetApp } from "@/symbols";
-import { MethodSetMetaKeys, PropMetaKeys } from "@/nodes/symbols";
+import { _Worker, GetApp } from "@/app/symbols";
+import {
+	NodePropHandlerMetaKeys,
+	NodeSetHandlerMetaKeys,
+} from "@/nodes/symbols";
 
 export class HandlerMetaKey implements IHandleMetaKey {
 	private $node: GlobalNode;
 	private $app: EngineCore | GameCore;
 
-	[PropMetaKeys]: Map<string, TMetaKey>;
+	[NodePropHandlerMetaKeys]: Map<string, TMetaKey>;
 
 	constructor($node: GlobalNode) {
 		this.$node = $node;
-		this.$app = this.$node[GetApp]();
+		this.$app = this.$node[GetApp];
 
-		this[PropMetaKeys] = new Map();
+		this[NodePropHandlerMetaKeys] = new Map();
 	}
 
 	toEntries(): TMetaKeyTuple[] {
-		return [...this[PropMetaKeys].entries()];
+		return [...this[NodePropHandlerMetaKeys].entries()];
 	}
 
 	getAll(): TMetaKey[] {
-		return [...this[PropMetaKeys].values()];
+		return [...this[NodePropHandlerMetaKeys].values()];
 	}
 
 	get(name: string): TMetaKey | undefined {
-		return this[PropMetaKeys].get(name);
+		return this[NodePropHandlerMetaKeys].get(name);
 	}
 
 	add(name: string, options: TMetaKey): void {
-		this[PropMetaKeys].set(name, options);
+		this[NodePropHandlerMetaKeys].set(name, options);
 
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 	}
 
 	has(name: string): boolean {
-		return this[PropMetaKeys].has(name);
+		return this[NodePropHandlerMetaKeys].has(name);
 	}
 
 	delete(name: string): boolean {
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 
-		return this[PropMetaKeys].delete(name);
+		return this[NodePropHandlerMetaKeys].delete(name);
 	}
 
 	clear(): void {
-		this[PropMetaKeys].clear();
+		this[NodePropHandlerMetaKeys].clear();
 
-		this.$app[_Drawer].render.reDraw();
+		this.$app[_Worker].render.draw();
 	}
 
-	[MethodSetMetaKeys](metaKeys: TMetaKeyTuple[]): void {
-		this[PropMetaKeys] = new Map(metaKeys);
+	[NodeSetHandlerMetaKeys](metaKeys: TMetaKeyTuple[]): void {
+		this[NodePropHandlerMetaKeys] = new Map(metaKeys);
 	}
 }

@@ -1,18 +1,23 @@
-import type { AllTypesSimple, TAnything } from "@/types";
+import type { TAnything } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
-	INodeWorker,
+	INodeProcess,
 	TExportNode,
 	TTypeNodes,
-} from "@/nodes/global/node.types";
+} from "@/nodes/global/types";
 
 import {
-	MethodClone,
-	MethodImport,
-	MethodMake,
-	PropType,
+	NodeFunctionClone,
+	NodeFunctionImport,
+	NodeFunctionMake,
+	NodePropType,
 } from "../../../symbols";
-import { _Drawer, ExportWorker, GetApp } from "../../../../symbols";
+import {
+	_Render,
+	_Worker,
+	ExportWorker,
+	GetApp,
+} from "../../../../app/symbols";
 
 import { Node2D } from "../node";
 import { GlobalNode } from "@/nodes";
@@ -20,7 +25,7 @@ import { GlobalNode } from "@/nodes";
 import { DEFAULT_CONFIG_CONTROL_EDITION_2D } from "../../../../configs/nodes/2D/edition/control-edition";
 
 export class ControlEdition2D extends Node2D {
-	[PropType]: TCanvasNodes = "2D/control-edition";
+	[NodePropType]: TCanvasNodes = "2D/control-edition";
 
 	protected _options: TCanvasNodeOptions["2D/control-edition"];
 	protected _initial: TCanvasNodeOptions["2D/control-edition"];
@@ -71,13 +76,21 @@ export class ControlEdition2D extends Node2D {
 		return this._options.borderWidth;
 	}
 
+	get width() {
+		return this._options.width;
+	}
+
+	get height() {
+		return this._options.height;
+	}
+
 	set padding(value:
 		| number
 		| [number, number]
 		| [number, number, number, number]) {
 		this._options.padding = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				padding: value,
@@ -87,13 +100,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set cornerSize(value: number) {
 		this._options.cornerSize = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				cornerSize: value,
@@ -103,13 +116,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set cornerColor(value: string) {
 		this._options.cornerColor = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				cornerColor: value,
@@ -119,13 +132,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set cornerBorder(value: boolean) {
 		this._options.cornerBorder = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				cornerBorder: value,
@@ -135,13 +148,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set cornerColorBorder(value: string) {
 		this._options.cornerColorBorder = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				cornerColorBorder: value,
@@ -151,7 +164,7 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set showCorner(value:
@@ -169,7 +182,7 @@ export class ControlEdition2D extends Node2D {
 		  }) {
 		this._options.showCorner = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				showCorner: value,
@@ -179,13 +192,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set background(value: string) {
 		this._options.background = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				background: value,
@@ -195,7 +208,7 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set radius(value:
@@ -209,7 +222,7 @@ export class ControlEdition2D extends Node2D {
 		  }) {
 		this._options.radius = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				radius: value,
@@ -219,13 +232,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set border(value: boolean) {
 		this._options.border = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				border: value,
@@ -235,13 +248,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set borderColor(value: string) {
 		this._options.borderColor = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				borderColor: value,
@@ -251,13 +264,13 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	set borderWidth(value: number) {
 		this._options.borderWidth = value;
 
-		this[GetApp]()[_Drawer].nodes.updateNode(
+		this[GetApp][_Worker].nodes.updateNode(
 			this.id,
 			{
 				borderWidth: value,
@@ -267,7 +280,45 @@ export class ControlEdition2D extends Node2D {
 			"index",
 		);
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
+	}
+
+	set width(value: number) {
+		this._options.width = value;
+
+		this[GetApp][_Worker].nodes.updateNode(
+			this.id,
+			{
+				width: value,
+				calculate: this.processCalculate(),
+			},
+			this.path,
+			"path",
+			"index",
+		);
+
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
+	}
+
+	set height(value: number) {
+		this._options.height = value;
+
+		this[GetApp][_Worker].nodes.updateNode(
+			this.id,
+			{
+				height: value,
+				calculate: this.processCalculate(),
+			},
+			this.path,
+			"path",
+			"index",
+		);
+
+		this[GetApp][_Worker].render.draw();
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	constructor(
@@ -281,7 +332,7 @@ export class ControlEdition2D extends Node2D {
 	}
 
 	clone() {
-		return this[MethodClone]() as ControlEdition2D;
+		return this[NodeFunctionClone]() as ControlEdition2D;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/control-edition"]): void {
@@ -289,12 +340,12 @@ export class ControlEdition2D extends Node2D {
 			this._options[property] = this._initial[property] as never;
 
 			if (!this._omit.includes(property)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[property] = this._initial[property];
 				relative.calculate = this.processCalculate();
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -310,7 +361,7 @@ export class ControlEdition2D extends Node2D {
 			]);
 			options.calculate = this.processCalculate();
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				options,
 				this.path,
@@ -319,7 +370,7 @@ export class ControlEdition2D extends Node2D {
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	toObject(): TCanvasNodeOptions["2D/control-edition"] {
@@ -328,7 +379,7 @@ export class ControlEdition2D extends Node2D {
 
 	set(
 		property: keyof TCanvasNodeOptions["2D/control-edition"],
-		value: AllTypesSimple,
+		value: TAnything,
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/control-edition"]>): void;
 	set(properties?: unknown, value?: unknown): void {
@@ -338,12 +389,12 @@ export class ControlEdition2D extends Node2D {
 			] = value as never;
 
 			if (!this._omit.includes(properties)) {
-				const relative: Record<string, AllTypesSimple> = {};
+				const relative: Record<string, TAnything> = {};
 
 				relative[properties] = value;
 				relative.calculate = this.processCalculate();
 
-				this[GetApp]()[_Drawer].nodes.updateNode(
+				this[GetApp][_Worker].nodes.updateNode(
 					this.id,
 					relative,
 					this.path,
@@ -362,7 +413,7 @@ export class ControlEdition2D extends Node2D {
 			]);
 			options.calculate = this.processCalculate();
 
-			this[GetApp]()[_Drawer].nodes.updateNode(
+			this[GetApp][_Worker].nodes.updateNode(
 				this.id,
 				options,
 				this.path,
@@ -371,27 +422,28 @@ export class ControlEdition2D extends Node2D {
 			);
 		}
 
-		this[GetApp]()[_Drawer].render.reDraw();
+		this[GetApp][_Worker].render.draw();
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[MethodImport](data, format) as ControlEdition2D;
+		return GlobalNode[NodeFunctionImport](data, format) as ControlEdition2D;
 	}
 
 	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[MethodMake](structure) as ControlEdition2D;
+		return GlobalNode[NodeFunctionMake](structure) as ControlEdition2D;
 	}
 
-	[ExportWorker](childNode = true): INodeWorker {
-		const nodes: INodeWorker[] = [];
+	[ExportWorker](childNode = true): INodeProcess {
+		const nodes: INodeProcess[] = [];
 
-		if (childNode && this.$nodes.size)
+		if (childNode && this.$nodes.size) {
 			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeWorker);
+				nodes.push(node[ExportWorker](true) as INodeProcess);
 			}
+		}
 
 		const node = {
-			__type__: this[PropType],
+			__type__: this[NodePropType],
 			__path__: this.path,
 			location: {
 				id: this.id,

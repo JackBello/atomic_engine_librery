@@ -1,10 +1,7 @@
-import type {
-	IControlEdition,
-	IControlEditor,
-} from "@/nodes/global/node.types";
+import type { IControlCanvas, IControlEditor } from "@/nodes/global/types";
 
 export const DEFAULT_CONFIG_SCENE_2D: Omit<
-	IControlEdition,
+	IControlCanvas,
 	"cursor" | "selectable" | "hovered"
 > &
 	IControlEditor = {

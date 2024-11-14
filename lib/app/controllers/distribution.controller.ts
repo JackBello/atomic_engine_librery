@@ -1,12 +1,10 @@
-import * as YAML from "yaml";
-import JSON5 from "json5";
-
 import type { EngineCore } from "../engine";
-import type { IOptionsGameCore } from "@/types";
+import type { IOptionsGameCore, TSerialize } from "@/app/types";
 
-import { $Scenes, ExportData, GetOptions, SetOptions } from "@/symbols";
+import { $Scenes, ExportData, GetOptions, SetOptions } from "@/app/symbols";
 
 import { Scene } from "@/nodes";
+import { serializers } from "../utils/serialize";
 
 export default class DistributionController {
 	private $app: EngineCore;
@@ -15,8 +13,8 @@ export default class DistributionController {
 		this.$app = app;
 	}
 
-	import(data: string, format: "JSON" | "YAML" = "JSON") {
-		const structure = format === "JSON" ? JSON5.parse(data) : YAML.parse(data);
+	import(data: string, format: TSerialize = "JSON") {
+		const structure = serializers[format].parse(data);
 
 		this.$app[SetOptions](structure.options);
 
@@ -31,18 +29,16 @@ export default class DistributionController {
 
 	export(
 		mode: "editor" | "game",
-		format: "JSON" | "YAML" = this.$app.options.export.format,
+		format: TSerialize = this.$app.options.export.format,
 	) {
-		return format === "YAML"
-			? YAML.stringify(this[ExportData](mode))
-			: JSON5.stringify(this[ExportData](mode));
+		return serializers[format].stringify(this[ExportData](mode));
 	}
 
 	[ExportData](mode: "editor" | "game") {
 		const scenes = this.$app[$Scenes][ExportData]();
 		const options = structuredClone(this.$app[GetOptions]());
 
-		if (mode === "game")
+		if (mode === "game") {
 			return {
 				options: {
 					background: options.game.background,
@@ -70,6 +66,7 @@ export default class DistributionController {
 				scenes,
 				version: this.$app.VERSION,
 			};
+		}
 
 		return {
 			options,
