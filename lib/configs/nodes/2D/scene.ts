@@ -1,12 +1,6 @@
-import type { IControlCanvas, IControlEditor } from "@/nodes/global/types";
+import { TCanvasNodeOptions } from "@/nodes/types";
 
-export const DEFAULT_CONFIG_SCENE_2D: Omit<
-	IControlCanvas,
-	"cursor" | "selectable" | "hovered"
-> &
-	IControlEditor = {
+export const DEFAULT_CONFIG_SCENE_2D: TCanvasNodeOptions["global/scene"] = {
 	description: "",
 	title: "",
-	lock: false,
-	visible: true,
 };

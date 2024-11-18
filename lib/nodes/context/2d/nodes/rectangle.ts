@@ -1,11 +1,10 @@
-import type { ICalculate } from "../../../class/nodes-2D.types";
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const rectangle_2D = (
 	context: CanvasRenderingContext2D,
-	options: TCanvasNodeOptions["2D/rectangle"] & ICalculate,
+	options: TCanvasNodeOptions["2D/rectangle"],
 ) => {
-	const { calculate } = options;
+	if (options.alpha <= 0) return
 
 	context.fillStyle = options.background;
 
@@ -19,26 +18,23 @@ export const rectangle_2D = (
 	if (options.radius) {
 		if (typeof options.radius === "number")
 			context.roundRect(
-				-calculate.middleScaleFactor.width,
-				-calculate.middleScaleFactor.height,
-				calculate.scaleFactor.width,
-				calculate.scaleFactor.height,
+				0, 0,
+				options.width,
+				options.height,
 				options.radius,
 			);
 		else if (Array.isArray(options.radius))
 			context.roundRect(
-				-calculate.middleScaleFactor.width,
-				-calculate.middleScaleFactor.height,
-				calculate.scaleFactor.width,
-				calculate.scaleFactor.height,
+				0, 0,
+				options.width,
+				options.height,
 				options.radius,
 			);
 		else
 			context.roundRect(
-				-calculate.middleScaleFactor.width,
-				-calculate.middleScaleFactor.height,
-				calculate.scaleFactor.width,
-				calculate.scaleFactor.height,
+				0, 0,
+				options.width,
+				options.height,
 				[
 					options.radius.topLeft,
 					options.radius.topRight,
@@ -48,10 +44,9 @@ export const rectangle_2D = (
 			);
 	} else {
 		context.rect(
-			-calculate.middleScaleFactor.width,
-			-calculate.middleScaleFactor.height,
-			calculate.scaleFactor.width,
-			calculate.scaleFactor.height,
+			0, 0,
+			options.width,
+			options.height,
 		);
 	}
 

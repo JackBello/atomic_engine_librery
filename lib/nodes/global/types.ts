@@ -33,7 +33,8 @@ export type TTypeNode2D =
 	| "Selection2D"
 	| "ControlEdition2D"
 	| "Collision2D"
-	| "CollisionShape2D";
+	| "CollisionShape2D"
+	| "Image2D";
 
 export type TTypeNode3D = "Cube3D" | "Sphere3D";
 
@@ -201,6 +202,24 @@ export interface IControlCanvas {
 	cursor: TCursorOptions;
 	hovered: boolean;
 	alpha: number;
+}
+
+export type ImageFormat = "png" | "jpg" | "svg" | "avif" | "webp" | "gif"
+export type AudioFormat = "mp3" | "waw"
+export type VideoFormat = "mp4" | "avi" | "mkv"
+
+export type MapFormatSource = {
+	"image": ImageFormat
+	"audio": AudioFormat
+	"video": VideoFormat
+}
+export type SourceType = "image" | "audio" | "video"
+
+export interface ISourceNode<T extends SourceType> {
+	type: T
+	format: MapFormatSource[T]
+	source: string | URL
+	origin: "same-origin" | "anonymous" | "cross-origin"
 }
 
 export interface IControlNode {

@@ -1,7 +1,6 @@
 import type { TAnything } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
-	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 } from "@/nodes/global/types";
@@ -10,12 +9,13 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 } from "../../../symbols";
 import {
 	_Render,
 	_Worker,
-	ExportWorker,
 	GetApp,
 } from "../../../../app/symbols";
 
@@ -63,18 +63,6 @@ export class Rectangle2D extends Node2D {
 	set background(value: string) {
 		this._options.background = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				background: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
@@ -82,24 +70,12 @@ export class Rectangle2D extends Node2D {
 		| number
 		| [number, number]
 		| {
-				topLeft: number;
-				topRight: number;
-				bottomLeft: number;
-				bottomRight: number;
-		  }) {
+			topLeft: number;
+			topRight: number;
+			bottomLeft: number;
+			bottomRight: number;
+		}) {
 		this._options.radius = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				radius: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -107,35 +83,11 @@ export class Rectangle2D extends Node2D {
 	set border(value: boolean) {
 		this._options.border = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				border: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set borderColor(value: string) {
 		this._options.borderColor = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderColor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -143,55 +95,17 @@ export class Rectangle2D extends Node2D {
 	set borderWidth(value: number) {
 		this._options.borderWidth = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderWidth: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set width(value: number) {
 		this._options.width = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				width: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				height: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -211,43 +125,7 @@ export class Rectangle2D extends Node2D {
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/rectangle"]): void {
-		if (property) {
-			this._options[property] = this._initial[property] as never;
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			const options = this.utils.omitKeys(this._initial, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
-
-		this[GetApp][_Render].draw = true;
+		this[NodeFunctionReset](property)
 	}
 
 	toObject(): TCanvasNodeOptions["2D/rectangle"] {
@@ -260,45 +138,7 @@ export class Rectangle2D extends Node2D {
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/rectangle"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[properties as keyof TCanvasNodeOptions["2D/rectangle"]] =
-				value as never;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["2D/rectangle"]] =
-					value as never;
-			}
-
-			const options = this.utils.omitKeys(properties, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this[NodeFunctionSet](properties, value)
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -309,31 +149,5 @@ export class Rectangle2D extends Node2D {
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as Rectangle2D;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		const node = {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit, ["calculate"]),
-		};
-
-		node.options.calculate = this.processCalculate();
-
-		return node;
 	}
 }

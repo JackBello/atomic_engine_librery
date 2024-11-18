@@ -1,8 +1,13 @@
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 import type { GlobalNode } from "../global-node";
-import { $ConstructorScript, ScriptsNodeFromScene } from "@/nodes/symbols";
+import {
+	$ConstructorScript,
+	NodeDestroy,
+	ScriptsNodeFromScene,
+} from "@/nodes/symbols";
 import { _Script, DispatchScript, GetApp } from "@/app/symbols";
+import type { TAnything } from "@/app/types";
 
 export class HandlerScript {
 	private $node: GlobalNode;
@@ -103,5 +108,10 @@ export class HandlerScript {
 			if (!name.startsWith("_")) this.$node[name] = __FUNC__[name];
 			this.$node.$functions.add(name, __FUNC__[name]);
 		}
+	}
+
+	[NodeDestroy]() {
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

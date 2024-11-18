@@ -5,9 +5,11 @@ import type { EngineCore } from "@/app/engine";
 
 import { _Worker, GetApp } from "@/app/symbols";
 import {
+	NodeDestroy,
 	NodePropHandlerMetaKeys,
 	NodeSetHandlerMetaKeys,
 } from "@/nodes/symbols";
+import type { TAnything } from "@/app/types";
 
 export class HandlerMetaKey implements IHandleMetaKey {
 	private $node: GlobalNode;
@@ -20,6 +22,8 @@ export class HandlerMetaKey implements IHandleMetaKey {
 		this.$app = this.$node[GetApp];
 
 		this[NodePropHandlerMetaKeys] = new Map();
+
+		this.$app;
 	}
 
 	toEntries(): TMetaKeyTuple[] {
@@ -36,8 +40,6 @@ export class HandlerMetaKey implements IHandleMetaKey {
 
 	add(name: string, options: TMetaKey): void {
 		this[NodePropHandlerMetaKeys].set(name, options);
-
-		this.$app[_Worker].render.draw();
 	}
 
 	has(name: string): boolean {
@@ -45,18 +47,19 @@ export class HandlerMetaKey implements IHandleMetaKey {
 	}
 
 	delete(name: string): boolean {
-		this.$app[_Worker].render.draw();
-
 		return this[NodePropHandlerMetaKeys].delete(name);
 	}
 
 	clear(): void {
 		this[NodePropHandlerMetaKeys].clear();
-
-		this.$app[_Worker].render.draw();
 	}
 
 	[NodeSetHandlerMetaKeys](metaKeys: TMetaKeyTuple[]): void {
 		this[NodePropHandlerMetaKeys] = new Map(metaKeys);
+	}
+
+	[NodeDestroy]() {
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

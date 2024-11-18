@@ -1,6 +1,6 @@
 import { ComponentNode } from "@/nodes/global/class/component-node";
 import type { CollisionShapeComponent } from "./collision-shape.component";
-import { GlobalNode } from "@/nodes";
+import type { GlobalNode } from "@/nodes";
 import { AreaComponent } from "../area.component";
 import { CharacterBodyComponent } from "../body/character-body.component";
 import { StaticBodyComponent } from "../body/static-body.component";
@@ -15,6 +15,17 @@ export class CollisionComponent extends ComponentNode {
 	protected _name = "collision";
 	protected _description = "detect collision between nodes";
 	protected _collider: GlobalNode | null = null;
+	protected _touch: {
+		top: boolean;
+		bottom: boolean;
+		left: boolean;
+		right: boolean;
+	} = {
+			bottom: false,
+			top: false,
+			left: false,
+			right: false,
+		};
 
 	get debug() {
 		return this._options.debug;
@@ -47,92 +58,229 @@ export class CollisionComponent extends ComponentNode {
 			secondCollision: CollisionShapeComponent,
 		) => boolean
 	> = {
-		"rectangle-rectangle": (
+			"rectangle-rectangle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				const firstCollisionWidth =
+					firstCollision.width * firstCollision.scale[0];
+				const firstCollisionHeight =
+					firstCollision.height * firstCollision.scale[1];
+				const firstCollisionX =
+					firstCollision.position[0] + firstCollision.$node.x - firstCollision.$node.calculate.origin[0];
+				const firstCollisionY =
+					firstCollision.position[1] + firstCollision.$node.y - firstCollision.$node.calculate.origin[1];
+
+				const secondCollisionWidth =
+					secondCollision.width * secondCollision.scale[0];
+				const secondCollisionHeight =
+					secondCollision.height * secondCollision.scale[1];
+				const secondCollisionX =
+					secondCollision.position[0] + secondCollision.$node.x - secondCollision.$node.calculate.origin[0];
+				const secondCollisionY =
+					secondCollision.position[1] + secondCollision.$node.y - secondCollision.$node.calculate.origin[1];
+
+				return (
+					firstCollisionX < secondCollisionX + secondCollisionWidth &&
+					firstCollisionX + firstCollisionWidth > secondCollisionX &&
+					firstCollisionY < secondCollisionY + secondCollisionHeight &&
+					firstCollisionY + firstCollisionHeight > secondCollisionY
+				);
+			},
+			"circle-circle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
+
+				return true;
+			},
+			"rectangle-circle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
+
+				return true;
+			},
+			"circle-rectangle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
+
+				return true;
+			},
+		};
+
+	protected static typeTouchCollisions: Record<
+		TCollisionShape,
+		(
 			firstCollision: CollisionShapeComponent,
 			secondCollision: CollisionShapeComponent,
 		) => {
-			const firstCollisionWidth =
-				firstCollision.width * firstCollision.scale[0];
-			const firstCollisionHeight =
-				firstCollision.height * firstCollision.scale[1];
-			const firstCollisionX =
-				firstCollision.position[0] + firstCollision.$node.x;
-			const firstCollisionY =
-				firstCollision.position[1] + firstCollision.$node.y;
+			top: boolean;
+			bottom: boolean;
+			left: boolean;
+			right: boolean;
+		}
+	> = {
+			"rectangle-rectangle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				const firstCollisionWidth =
+					firstCollision.width * firstCollision.scale[0];
+				const firstCollisionHeight =
+					firstCollision.height * firstCollision.scale[1];
+				const firstCollisionX =
+					firstCollision.position[0] + firstCollision.$node.x - firstCollision.$node.calculate.origin[0];
+				const firstCollisionY =
+					firstCollision.position[1] + firstCollision.$node.y - firstCollision.$node.calculate.origin[1];
 
-			const secondCollisionWidth =
-				secondCollision.width * secondCollision.scale[0];
-			const secondCollisionHeight =
-				secondCollision.height * secondCollision.scale[1];
-			const secondCollisionX =
-				secondCollision.position[0] + secondCollision.$node.x;
-			const secondCollisionY =
-				secondCollision.position[1] + secondCollision.$node.y;
+				const secondCollisionWidth =
+					secondCollision.width * secondCollision.scale[0];
+				const secondCollisionHeight =
+					secondCollision.height * secondCollision.scale[1];
+				const secondCollisionX =
+					secondCollision.position[0] + secondCollision.$node.x - secondCollision.$node.calculate.origin[0];
+				const secondCollisionY =
+					secondCollision.position[1] + secondCollision.$node.y - secondCollision.$node.calculate.origin[1];
 
-			return (
-				firstCollisionX < secondCollisionX + secondCollisionWidth &&
-				firstCollisionX + firstCollisionWidth > secondCollisionX &&
-				firstCollisionY < secondCollisionY + secondCollisionHeight &&
-				firstCollisionY + firstCollisionHeight > secondCollisionY
-			);
-		},
-		"circle-circle": (
-			firstCollision: CollisionShapeComponent,
-			secondCollision: CollisionShapeComponent,
-		) => {
-			firstCollision;
-			secondCollision;
+				const collisionInfo = {
+					top: false,
+					bottom: false,
+					left: false,
+					right: false,
+				};
 
-			return true;
-		},
-		"rectangle-circle": (
-			firstCollision: CollisionShapeComponent,
-			secondCollision: CollisionShapeComponent,
-		) => {
-			firstCollision;
-			secondCollision;
+				const bottomDist =
+					secondCollisionY + secondCollisionHeight - firstCollisionY;
+				const topDist = firstCollisionY + firstCollisionHeight - secondCollisionY;
+				const rightDist =
+					secondCollisionX + secondCollisionWidth - firstCollisionX;
+				const leftDist = firstCollisionX + firstCollisionWidth - secondCollisionX;
 
-			return true;
-		},
-		"circle-rectangle": (
-			firstCollision: CollisionShapeComponent,
-			secondCollision: CollisionShapeComponent,
-		) => {
-			firstCollision;
-			secondCollision;
+				const minDist = Math.min(bottomDist, topDist, rightDist, leftDist);
 
-			return true;
-		},
-	};
+				if (minDist === bottomDist) {
+					collisionInfo.bottom = true;
+				} else if (minDist === topDist) {
+					collisionInfo.top = true;
+				} else if (minDist === rightDist) {
+					collisionInfo.right = true;
+				} else if (minDist === leftDist) {
+					collisionInfo.left = true;
+				}
 
-	protected static resolveArea({firstNode, secondNode} : {firstNode: GlobalNode, secondNode: GlobalNode}, mode: "entering" | "leaving") {
-		const firstArea = firstNode.$components.get("area-detect")
-		const secondArea = secondNode.$components.get("area-detect")
+				return collisionInfo;
+			},
+			"circle-circle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
 
-		if (firstArea && firstArea instanceof AreaComponent && mode === "entering") {
-			firstArea.bodyEnteringArea(secondNode)
+				return {
+					top: false,
+					bottom: false,
+					left: false,
+					right: false,
+				};
+			},
+			"rectangle-circle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
+
+				return {
+					top: false,
+					bottom: false,
+					left: false,
+					right: false,
+				};
+			},
+			"circle-rectangle": (
+				firstCollision: CollisionShapeComponent,
+				secondCollision: CollisionShapeComponent,
+			) => {
+				firstCollision;
+				secondCollision;
+
+				return {
+					top: false,
+					bottom: false,
+					left: false,
+					right: false,
+				};
+			},
+		};
+
+	protected static resolveArea(
+		{
+			firstNode,
+			secondNode,
+		}: { firstNode: GlobalNode; secondNode: GlobalNode },
+		mode: "entering" | "leaving",
+	) {
+		const firstArea = firstNode.$components.get("area-detect");
+		const secondArea = secondNode.$components.get("area-detect");
+
+		if (
+			firstArea &&
+			firstArea instanceof AreaComponent &&
+			mode === "entering"
+		) {
+			firstArea.bodyEnteringArea(secondNode);
 		}
 
 		if (firstArea && firstArea instanceof AreaComponent && mode === "leaving") {
-			firstArea.bodyLeavingArea(secondNode)
+			firstArea.bodyLeavingArea(secondNode);
 		}
 
-		if (secondArea && secondArea instanceof AreaComponent && mode === "entering") {
-			secondArea.bodyEnteringArea(firstNode)
+		if (
+			secondArea &&
+			secondArea instanceof AreaComponent &&
+			mode === "entering"
+		) {
+			secondArea.bodyEnteringArea(firstNode);
 		}
 
-		if (secondArea && secondArea instanceof AreaComponent && mode === "leaving") {
-			secondArea.bodyLeavingArea(firstNode)
+		if (
+			secondArea &&
+			secondArea instanceof AreaComponent &&
+			mode === "leaving"
+		) {
+			secondArea.bodyLeavingArea(firstNode);
 		}
 	}
 
-	protected static resolveCharacterBody({firstNode, secondNode} : {firstNode: GlobalNode, secondNode: GlobalNode}, value: boolean) {
-		const characterBody = firstNode.$components.get("character-body")
+	protected static resolveCharacterBody({
+		firstNode,
+		secondNode,
+	}: { firstNode: GlobalNode; secondNode: GlobalNode }) {
+		if (firstNode === null || secondNode === null) return;
+
+		const characterBody = firstNode.$components.get("character-body");
 		const staticBody = secondNode.$components.get("static-body");
 
-		if (characterBody && characterBody instanceof CharacterBodyComponent && staticBody && staticBody instanceof StaticBodyComponent) {
-			characterBody.floor = value;
-		} 
+		if (
+			characterBody &&
+			characterBody instanceof CharacterBodyComponent &&
+			staticBody &&
+			staticBody instanceof StaticBodyComponent
+		) {
+			const touch = staticBody.NODE.collision.getTouch();
+
+			if (touch.top) characterBody.floor = true;
+			else characterBody.floor = false;
+		}
 	}
 
 	static isColliding(
@@ -151,23 +299,61 @@ export class CollisionComponent extends ComponentNode {
 		return false;
 	}
 
+	static isTouch(
+		firstCollision: CollisionShapeComponent,
+		secondCollision: CollisionShapeComponent,
+	) {
+		const typeCollision =
+			`${firstCollision.shape}-${secondCollision.shape}` as TCollisionShape;
+
+		const checkTouchCollision =
+			CollisionComponent.typeTouchCollisions[typeCollision];
+
+		if (checkTouchCollision) {
+			return checkTouchCollision(firstCollision, secondCollision);
+		}
+
+		return {
+			top: false,
+			bottom: false,
+			left: false,
+			right: false,
+		};
+	}
+
 	static removeCollider(
 		firstCollision: CollisionShapeComponent,
 		secondCollision: CollisionShapeComponent,
 	) {
 		if (firstCollision._collider === secondCollision.$node) {
-			firstCollision.setCollider(null)
-			secondCollision.setCollider(null)
+			firstCollision.setCollider(null);
+			secondCollision.setCollider(null);
 
-			this.resolveArea({
+			firstCollision.setTouchCollider({
+				top: false,
+				bottom: false,
+				left: false,
+				right: false,
+			});
+			secondCollision.setTouchCollider({
+				top: false,
+				bottom: false,
+				left: false,
+				right: false,
+			});
+
+			CollisionComponent.resolveArea(
+				{
+					firstNode: firstCollision.$node,
+					secondNode: secondCollision.$node,
+				},
+				"leaving",
+			);
+
+			CollisionComponent.resolveCharacterBody({
 				firstNode: firstCollision.$node,
 				secondNode: secondCollision.$node,
-			}, "leaving")
-
-			this.resolveCharacterBody({
-				firstNode: firstCollision.$node,
-				secondNode: secondCollision.$node
-			}, false)
+			});
 		}
 	}
 
@@ -176,23 +362,42 @@ export class CollisionComponent extends ComponentNode {
 		secondCollision: CollisionShapeComponent,
 	) {
 		if (firstCollision._collider !== secondCollision.$node) {
-			firstCollision.setCollider(secondCollision.$node)
-			secondCollision.setCollider(firstCollision.$node)
-	
-			this.resolveArea({
-				firstNode: firstCollision.$node,
-				secondNode: secondCollision.$node
-			}, "entering")
+			firstCollision.setCollider(secondCollision.$node);
+			secondCollision.setCollider(firstCollision.$node);
 
-			this.resolveCharacterBody({
+			firstCollision.setTouchCollider(
+				CollisionComponent.isTouch(secondCollision, firstCollision),
+			);
+
+			secondCollision.setTouchCollider(
+				CollisionComponent.isTouch(firstCollision, secondCollision),
+			);
+
+			CollisionComponent.resolveArea(
+				{
+					firstNode: firstCollision.$node,
+					secondNode: secondCollision.$node,
+				},
+				"entering",
+			);
+
+			CollisionComponent.resolveCharacterBody({
 				firstNode: firstCollision.$node,
-				secondNode: secondCollision.$node
-			}, true)
+				secondNode: secondCollision.$node,
+			});
 		}
 	}
 
+	setTouchCollider(touch: {
+		top: boolean;
+		bottom: boolean;
+		left: boolean;
+		right: boolean;
+	}) {
+		this._touch = touch;
+	}
+
 	setCollider(node: GlobalNode | null) {
-		if (this._collider !== node) 
-			this._collider = node;
+		if (this._collider !== node) this._collider = node;
 	}
 }

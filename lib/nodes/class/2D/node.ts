@@ -1,5 +1,4 @@
 import type {
-	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 	TTypeOrigin,
@@ -19,9 +18,11 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 } from "../../symbols";
-import { _Render, _Worker, ExportWorker, GetApp } from "../../../app/symbols";
+import { _Render, GetApp } from "../../../app/symbols";
 
 import { GlobalNode } from "../../global/global-node";
 
@@ -32,24 +33,18 @@ import { CanvasNode } from "@/nodes/global/class/canvas-node";
 
 export class Node2D
 	extends CanvasNode
-	implements IControlNode2D, IHandleCoords2D
-{
+	implements IControlNode2D, IHandleCoords2D {
 	[NodePropType]: TCanvasNodes = "2D/node";
 
-	protected _omit: string[] = [
-		"centerRotation",
-		"centerScale",
-		"flipX",
-		"flipY",
-		"originX",
-		"originY",
-		"title",
-		"name",
-	];
 	protected _options: TCanvasNodeOptions["2D/node"];
 	protected _initial: TCanvasNodeOptions["2D/node"];
 
 	protected _transform: Transform2D;
+
+	protected _calculate: ICalculate = {
+		angle: 0,
+		origin: [0, 0]
+	};
 
 	readonly NODE_NAME: TTypeNodes = "Node2D";
 
@@ -59,14 +54,6 @@ export class Node2D
 
 	get y() {
 		return this._options.y;
-	}
-
-	get centerScale() {
-		return this._options.centerScale;
-	}
-
-	get centerRotation() {
-		return this._options.centerRotation;
 	}
 
 	get flipX() {
@@ -105,21 +92,12 @@ export class Node2D
 		return this._options.rotation;
 	}
 
+	get calculate() {
+		return this._calculate;
+	}
+
 	set x(value: number) {
 		this._options.x = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				x: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -127,42 +105,11 @@ export class Node2D
 	set y(value: number) {
 		this._options.y = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				y: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set centerScale(value: boolean) {
-		this._options.centerScale = value;
-
-		this[GetApp][_Worker].render.draw();
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set centerRotation(value: boolean) {
-		this._options.centerRotation = value;
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set flipX(value: boolean) {
 		this._options.flipX = value;
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -170,23 +117,21 @@ export class Node2D
 	set flipY(value: boolean) {
 		this._options.flipY = value;
 
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
-	set originX(value: TTypeOriginX) {
+	set originX(value: TTypeOriginX | number) {
 		this._options.originX = value;
 
-		this[GetApp][_Worker].render.draw();
+		this.processOrigin()
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set originY(value: TTypeOriginY) {
+	set originY(value: TTypeOriginY | number) {
 		this._options.originY = value;
 
-		this[GetApp][_Worker].render.draw();
+		this.processOrigin()
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -194,37 +139,11 @@ export class Node2D
 	set scaleX(value: number) {
 		this._options.scaleX = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				scaleX: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set scaleY(value: number) {
 		this._options.scaleY = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				scaleY: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -232,37 +151,11 @@ export class Node2D
 	set skewX(value: number) {
 		this._options.skewX = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				skewX: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set skewY(value: number) {
 		this._options.skewY = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				skewY: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -270,18 +163,7 @@ export class Node2D
 	set rotation(value: number) {
 		this._options.rotation = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				rotation: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this.processRotation()
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -297,19 +179,55 @@ export class Node2D
 			this._options.rotation,
 			new Vector2(this._options.scaleX, this._options.scaleY),
 		);
+
+		this.processOrigin()
+		this.processRotation()
 	}
 
-	setOrigin(origin: TTypeOrigin): void {
-		if (origin === "center") {
+	protected processOrigin() {
+		const originXNumber: Record<TTypeOriginX, number> = {
+			left: 1,
+			center: 0.5,
+			right: 0,
+		}
+
+		const originYNumber: Record<TTypeOriginY, number> = {
+			top: 1,
+			center: 0.5,
+			bottom: 0
+		}
+
+		if (typeof this._options.originX === "string") {
+			this._calculate.origin[0] = this._options.width * originXNumber[this._options.originX]
+		} else {
+			this._calculate.origin[0] = this._options.width * this._options.originX
+		}
+
+		if (typeof this._options.originY === "string") {
+			this._calculate.origin[1] = this._options.height * originYNumber[this._options.originY]
+		} else {
+			this._calculate.origin[1] = this._options.height * this._options.originY
+		}
+	}
+
+	protected processRotation() {
+		this._calculate.angle = (this._options.rotation * Math.PI) / 180;
+	}
+
+	setOrigin(origin: TTypeOrigin | number): void {
+		if (typeof origin === "string" && origin === "center") {
 			this.originX = origin;
 			this.originY = origin;
-		} else {
+		} else if (typeof origin === "string") {
 			const [originY, originX] = origin.split("-") as [
 				TTypeOriginY,
 				TTypeOriginX,
 			];
 			this.originX = originX;
 			this.originY = originY;
+		} else {
+			this.originX = origin
+			this.originY = origin
 		}
 	}
 
@@ -357,52 +275,6 @@ export class Node2D
 		}
 	}
 
-	processCalculate() {
-		const calculate: ICalculate["calculate"] = {
-			middleScaleFactor: {
-				height: 0,
-				width: 0,
-			},
-			rotation: 0,
-			scaleFactor: {
-				height: 0,
-				width: 0,
-			},
-			translate: {
-				x: 0,
-				y: 0,
-			},
-			scale: {
-				x: 0,
-				y: 0,
-			},
-		};
-
-		calculate.scale = {
-			x: this._options.scaleX,
-			y: this._options.scaleY,
-		};
-
-		calculate.translate = {
-			x: this._options.x,
-			y: this._options.y,
-		};
-
-		calculate.rotation = (this._options.rotation * Math.PI) / 180;
-
-		calculate.scaleFactor = {
-			width: this._options.width,
-			height: this._options.height,
-		};
-
-		calculate.middleScaleFactor = {
-			width: calculate.scaleFactor.width / 2,
-			height: calculate.scaleFactor.height / 2,
-		};
-
-		return calculate;
-	}
-
 	clone() {
 		return this[NodeFunctionClone]() as Node2D;
 	}
@@ -412,41 +284,10 @@ export class Node2D
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/node"]): void {
-		if (property) {
-			this._options[property] = this._initial[property] as never;
+		this[NodeFunctionReset](property)
 
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			const options = this.utils.omitKeys(this._initial, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this.processOrigin();
+		this.processRotation();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -458,45 +299,10 @@ export class Node2D
 	set(property: keyof TCanvasNodeOptions["2D/node"], value: TAnything): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/node"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[properties as keyof TCanvasNodeOptions["2D/node"]] =
-				value as never;
+		this[NodeFunctionSet](properties, value)
 
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["2D/node"]] =
-					value as never;
-			}
-
-			const options = this.utils.omitKeys(properties, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this.processOrigin();
+		this.processRotation();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -507,31 +313,5 @@ export class Node2D
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as Node2D;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		const node = {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit, ["calculate"]),
-		};
-
-		node.options.calculate = this.processCalculate();
-
-		return node;
 	}
 }

@@ -3,6 +3,7 @@ import type { GameCore } from "@/app/game";
 import type { GlobalNode } from "../global-node";
 import type { TAnything } from "@/app/types";
 import { GetApp } from "@/app/symbols";
+import { NodeDestroy } from "@/nodes/symbols";
 
 export class ComponentNode {
 	protected $node: GlobalNode;
@@ -33,4 +34,9 @@ export class ComponentNode {
 	init() {}
 
 	process() {}
+
+	[NodeDestroy]() {
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
+	}
 }

@@ -61,7 +61,6 @@ export interface IOptionsEngineCore extends ISize2D {
 	dimension: TDimension;
 	game: IOptionsGame;
 	fps: IOptionsFramePerSecond;
-	renderProcess: "main-thread" | "sub-thread";
 }
 
 export interface IOptionsGameCore extends IOptionsGame {
@@ -69,7 +68,6 @@ export interface IOptionsGameCore extends IOptionsGame {
 	selector: string;
 	fps: IOptionsFramePerSecond;
 	dimension: TDimension;
-	renderProcess: "main-thread" | "sub-thread";
 }
 
 export type TEventApp =

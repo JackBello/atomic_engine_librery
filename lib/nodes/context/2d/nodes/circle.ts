@@ -1,11 +1,10 @@
-import type { ICalculate } from "../../../class/nodes-2D.types";
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const circle_2D = (
     context: CanvasRenderingContext2D,
-    options: TCanvasNodeOptions["2D/circle"] & ICalculate,
+    options: TCanvasNodeOptions["2D/circle"],
 ) => {
-    // const { calculate } = options;
+    if (options.alpha <= 0) return
 
     context.fillStyle = options.background;
 

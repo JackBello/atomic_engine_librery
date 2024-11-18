@@ -3,6 +3,7 @@ import pluginSelection from "@/app/plugins/selection/plugin";
 import pluginPanAndZoom from "@/app/plugins/pan-and-zoom/plugin";
 import {
 	Circle2D,
+	type GlobalNode,
 	LineFlowEffect2D,
 	Node2D,
 	Rectangle2D,
@@ -61,7 +62,6 @@ const app = new EngineCore({
 	height: 600,
 	width: 600,
 	selector: "[data-canvas]",
-	renderProcess: "main-thread",
 });
 
 app.use("pan-and-zoom", pluginPanAndZoom).use("selection", pluginSelection);
@@ -90,7 +90,15 @@ app.input.defineAction("move_down", [
 	"joyPad/crossDown",
 ]);
 
+const objects: Record<string, null | GlobalNode> = {
+	player: null,
+};
+
 const lv1 = new Scene("lv-1");
+
+lv1.emit("scene:remove_node", (node: Rectangle2D) => {
+	objects[node.slug] = null;
+});
 
 const borderWindow = new Rectangle2D("border-window", {
 	border: true,
@@ -116,7 +124,7 @@ const circle1 = new Circle2D("ball", {
 
 lv1.$nodes.add(circle1);
 
-const rect1 = new Rectangle2D("player", {
+objects.player = new Rectangle2D("player", {
 	background: "black",
 	width: 100,
 	height: 100,
@@ -127,36 +135,30 @@ const rect1 = new Rectangle2D("player", {
 	scaleY: 1,
 });
 
-rect1.$components.add(CollisionShapeComponent);
-rect1.$components.add(CharacterBodyComponent)
+objects.player.$components.add(CollisionShapeComponent);
+objects.player.$components.add(CharacterBodyComponent);
 
-const rect1Collision = rect1.$components.get(
+const rect1Collision = objects.player.$components.get(
 	"collision-shape",
 ) as CollisionShapeComponent;
 
 rect1Collision.width = 100;
 rect1Collision.height = 100;
 
-rect1Collision.position = [-50, -50];
+objects.player.center();
 
-rect1.centerY();
+objects.player.$script.modeExecute = "none";
 
-rect1.$script.modeExecute = "none";
-
-rect1.$script.defineScript(`
+objects.player.$script.defineScript(`
 class MyNode extends Rectangle2D {
   speed = 200
-  jump_force = 200
-  gravity = 300
-  destroyTime = 5000
-  destroyInterval = 5
-  refTimeout = 0
-  refInterval = 0
-  textTime = undefined
+  speedY = 0;
+  jump_force = 300
+  gravity = 800
+  isDead = false
+  delete = false;
 
-  custom = () => {
-    $Logger.message(this)
-  }
+  textTime = undefined
 
   _ready() {
     $Logger.message("ready rect 1")
@@ -171,62 +173,64 @@ class MyNode extends Rectangle2D {
 	})
 
 	$Scene().$nodes.add(this.textTime);
-
-	// this.refInterval = $Timer.interval(1000, () => {
-	// 	this.destroyInterval--;
-	// 	this.textTime.text = this.destroyInterval + "seg";
-	// })
-	// this.refTimeout = $Timer.timeout(this.destroyTime, () => {
-	// 	this.destroy()
-	// 	$Logger.info("node is destroyed")
-	// })
   }
 
   _process(delta) {
-	const collider = this.collision.getCollider();
-
-  	if (collider) {
-    	// this.destroy()
-	}
-
-	if ($Input.isActionPressed("move_right"))
+  	if ($Input.isActionPressed("move_right") && !this.isDead)
     	this.x += this.speed * delta
-	if ($Input.isActionPressed("move_left"))
+	if ($Input.isActionPressed("move_left") && !this.isDead)
     	this.x -= this.speed * delta
 
 	if (this.collision.isOnFloor()) {
-		if ($Input.isActionPressed("move_up"))
-    		this.y -= this.jump_force
+		if ($Input.isActionPressed("move_up") && !this.isDead) {
+			this.speedY = -this.jump_force
+		}
+		else
+			this.speedY = 0
 	}
-	else
-		this.y += this.gravity * delta
+	else {
+		this.speedY += this.gravity * delta
+	}
 
-	// if ($Input.isActionPressed("move_down"))
-    // 	this.y += velocity[1] * delta
-
-  }
-
-  _input(event) {
-	// $Logger.message(event.hasMousePressed("left"))
+	this.y += this.speedY * delta;
   }
 
   _destroy() {
-	// $Timer.clear(this.refInterval, "interval");
-	// $Timer.clear(this.refTimeout, "timeout");
 	$Logger.info("game over")
 
 	this.textTime.text = "Game Over!"
 	this.textTime.fontSize = "50px"
 	this.textTime.center()
   }
+
+  dead() {
+  	if (!this.isDead) {
+		this.speedY = -500
+		this.isDead = true;
+	}
+	else {
+		this.delete = true
+	}
+  }
 }`);
 
 const countFPS = new Text2D("countFPS", {
 	text: "FPS: 0",
-	fontSize: "20px",
+	fontSize: "40px",
 	color: "black",
-	y: 10,
+	y: 0
 });
+
+// countFPS.setScale(3)
+
+// const test = new Text2D("test", {
+// 	text: "test",
+// 	fontSize: "20px",
+// 	color: "red",
+// 	y: 20
+// })
+
+// countFPS.$nodes.add(test)
 
 countFPS.centerX();
 
@@ -253,6 +257,9 @@ const lineFlow = new LineFlowEffect2D("effect-1", {
 	radius: 0,
 });
 
+lineFlow.$components.add(CollisionShapeComponent);
+lineFlow.$components.add(CharacterBodyComponent);
+
 lineFlow.$script.modeExecute = "none";
 
 lineFlow.$script.defineScript(`
@@ -273,37 +280,63 @@ class MyNode extends LineFlowEffect2D {
 }
 `);
 
-const water = new Node2D("water", {
-	height: 0,
-	width: 0,
-	y: 470,
+const floor = new Node2D("water", {
+	height: 100,
+	width: 450,
+	y: 495,
+});
+
+floor.centerX()
+
+floor.$components.add(CollisionShapeComponent);
+floor.$components.add(StaticBodyComponent);
+
+const floorCollision = floor.$components.get(
+	"collision-shape",
+) as CollisionShapeComponent;
+
+floorCollision.width = 450;
+floorCollision.height = 100;
+
+const areaDestroy = new Node2D("area-dead", {
+	height: 100,
+	width: app.size.width,
 	x: 0,
-})
+	y: app.size.height - 5,
+});
 
-water.$components.add(CollisionShapeComponent)
-water.$components.add(StaticBodyComponent)
+areaDestroy.centerX()
 
-const waterCollision = water.$components.get("collision-shape") as CollisionShapeComponent
+areaDestroy.$components.add(CollisionShapeComponent);
+areaDestroy.$components.add(AreaComponent);
 
-waterCollision.width = app.size.width;
-waterCollision.height = 100;
-waterCollision.position = [0, 0];
+const AreaCollision = areaDestroy.$components.get(
+	"collision-shape",
+) as CollisionShapeComponent;
 
-water.$script.modeExecute = "none"
+AreaCollision.width = app.size.width;
+AreaCollision.height = 100;
+AreaCollision.fill = "rgba(0,255,0,0.3)";
 
-water.$script.defineScript(`
+areaDestroy.$script.modeExecute = "none";
+
+areaDestroy.$script.defineScript(`
 class MyNode extends Node2D {
 	_body_entering_area(body) {
+		if (body.slug === "player")
+			body.dead()
 		$Logger.info("entered", body.slug)
 	}
 
 	_body_leaving_area(body) {
-		$Logger.info("exited", body.slug)
-		body.destroy()
-		$Logger.info($Scene().$nodes.all)
+		if (body.slug === "player" && body.delete) {
+			body.destroy()
+			$Logger.info("exited", body.slug)
+			$Logger.info($Scene().$nodes.all)
+		}
 	}
 }
-`)
+`);
 
 app.scenes.add(lv1);
 app.scenes.change(lv1.slug);
@@ -311,21 +344,23 @@ app.scenes.change(lv1.slug);
 await app.scenes.load();
 
 lv1.$nodes.add(lineFlow);
-lv1.$nodes.add(rect1);
+lv1.$nodes.add(objects.player);
 lv1.$nodes.add(countFPS);
-lv1.$nodes.add(water);
+lv1.$nodes.add(floor);
+lv1.$nodes.add(areaDestroy);
 
-await rect1.$script.executeScript();
+await objects.player.$script.executeScript();
 await countFPS.$script.executeScript();
 await lineFlow.$script.executeScript();
-await water.$script.executeScript()
+await areaDestroy.$script.executeScript();
 
 // console.log(lv1.$nodes.all);
 
-if (rect1.speed) {
-	inputVelocity.value = rect1.speed;
+if (objects.player.speed) {
+	inputVelocity.value = objects.player.speed;
+
 	inputVelocity.oninput = () => {
-		rect1.speed = Number(inputVelocity.value);
+		objects.player.speed = Number(inputVelocity.value);
 	};
 }
 

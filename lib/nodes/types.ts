@@ -1,4 +1,4 @@
-import type { IControlCanvas, IControlEditor } from "./global/types";
+import type { IControlCanvas, IControlEditor, ISourceNode } from "./global/types";
 
 import type {
 	IBorder2D,
@@ -33,7 +33,8 @@ export type TCanvasNode2D =
 	| "2D/text"
 	| "2D/selection"
 	| "2D/line-flow-effect"
-	| "2D/control-edition";
+	| "2D/control-edition"
+	| "2D/image";
 
 export type TCanvasOperations =
 	| "canvas:translate"
@@ -122,4 +123,6 @@ export type TCanvasNodeOptions = {
 		IControlEdition2D &
 		IRectangle2D &
 		IBorder2D;
+
+	"2D/image": IControlEditor & IControlCanvas & ICoords2D & ISize2D & INode2D & ISourceNode<"image"> 
 };

@@ -4,10 +4,12 @@ import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
 import {
+	NodeDestroy,
 	NodePropHandlerAttributes,
 	NodeSetHandlerAttributes,
 } from "@/nodes/symbols";
 import { _Worker, GetApp } from "@/app/symbols";
+import type { TAnything } from "@/app/types";
 
 export class HandlerAttribute implements IHandleAttribute {
 	private $node: GlobalNode;
@@ -20,6 +22,8 @@ export class HandlerAttribute implements IHandleAttribute {
 		this.$app = this.$node[GetApp];
 
 		this[NodePropHandlerAttributes] = new Map();
+
+		this.$app
 	}
 
 	toEntries(): TAttributeTuple[] {
@@ -36,8 +40,6 @@ export class HandlerAttribute implements IHandleAttribute {
 
 	add(name: string, options: TAttribute): void {
 		this[NodePropHandlerAttributes].set(name, options);
-
-		this.$app[_Worker].render.draw();
 	}
 
 	has(name: string): boolean {
@@ -45,18 +47,19 @@ export class HandlerAttribute implements IHandleAttribute {
 	}
 
 	delete(name: string): boolean {
-		this.$app[_Worker].render.draw();
-
 		return this[NodePropHandlerAttributes].delete(name);
 	}
 
 	clear(): void {
 		this[NodePropHandlerAttributes].clear();
-
-		this.$app[_Worker].render.draw();
 	}
 
 	[NodeSetHandlerAttributes](attributes: TAttributeTuple[]): void {
 		this[NodePropHandlerAttributes] = new Map(attributes);
+	}
+
+	[NodeDestroy]() {
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

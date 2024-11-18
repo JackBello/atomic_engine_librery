@@ -5,6 +5,7 @@ import type { EngineCore } from "@/app/engine";
 import type { TAnything, TFunction } from "@/app/types";
 
 import {
+	NodeDestroy,
 	NodePropHandlerFunctions,
 	NodeSetHandlerFunctions,
 } from "@/nodes/symbols";
@@ -21,6 +22,8 @@ export class HandlerFunction implements IHandleFunction {
 		this.$app = this.$node[GetApp];
 
 		this[NodePropHandlerFunctions] = new Map();
+
+		this.$app
 	}
 
 	toEntries(): TFunctionTuple[] {
@@ -37,8 +40,6 @@ export class HandlerFunction implements IHandleFunction {
 
 	add(name: string, func: TFunction): void {
 		this[NodePropHandlerFunctions].set(name, func);
-
-		this.$app[_Worker].render.draw();
 	}
 
 	has(name: string): boolean {
@@ -46,8 +47,6 @@ export class HandlerFunction implements IHandleFunction {
 	}
 
 	delete(name: string): boolean {
-		this.$app[_Worker].render.draw();
-
 		return this[NodePropHandlerFunctions].delete(name);
 	}
 
@@ -61,11 +60,20 @@ export class HandlerFunction implements IHandleFunction {
 
 	clear(): void {
 		this[NodePropHandlerFunctions].clear();
-
-		this.$app[_Worker].render.draw();
 	}
 
 	[NodeSetHandlerFunctions](functions: TFunctionTuple[]): void {
 		this[NodePropHandlerFunctions] = new Map(functions);
+	}
+
+	[NodeDestroy]() {
+		for (const [name] of this[NodePropHandlerFunctions]) {
+			if (this.$node[name]) {
+				this.$node[name] = null;
+			}
+		}
+
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

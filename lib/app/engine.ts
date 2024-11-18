@@ -41,7 +41,6 @@ import CollisionController from "./controllers/collision.controller";
 import EventController from "./controllers/event.controller";
 import WindowController from "./controllers/window.controller";
 import ScriptController from "./controllers/script.controller";
-import WorkerController from "./controllers/worker.controller";
 import RenderController from "./controllers/render.controller";
 import FrameController from "./controllers/frame.controller";
 import InputController from "./controllers/input.controller";
@@ -84,7 +83,6 @@ export class EngineCore {
 	[$Scenes]!: ScenesService;
 
 	[_Frame]!: FrameController;
-	[_Worker]!: WorkerController;
 	[_Render]!: RenderController;
 	[_Input]!: InputController;
 	[_Events]!: EventController;
@@ -198,7 +196,6 @@ export class EngineCore {
 		this[$Scenes] = new ScenesService(this);
 
 		this[_Frame] = new FrameController(this);
-		this[_Worker] = new WorkerController(this);
 		this[_Render] = new RenderController(this);
 		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
@@ -211,14 +208,12 @@ export class EngineCore {
 
 		this[_Script].initHelpersScript();
 
-		if (this._options.renderProcess === "main-thread") {
-			this[_Render].load({
-				context: this._options.context,
-				dimension: this._options.dimension,
-				mode: this.mode,
-			});
-			this[_Render].init(this._options.width, this._options.height);
-		}
+		this[_Render].load({
+			context: this._options.context,
+			dimension: this._options.dimension,
+			mode: this.mode,
+		});
+		this[_Render].init(this._options.width, this._options.height);
 
 		this.setSize(this._options.width, this._options.height);
 
@@ -231,13 +226,7 @@ export class EngineCore {
 
 		this[$Canvas].setSize(width, height);
 
-		if (this._options.renderProcess === "sub-thread") {
-			this[_Worker].render.setSize(width, height);
-		}
-
-		if (this._options.renderProcess === "main-thread") {
-			this[_Render].setSize(width, height);
-		}
+		this[_Render].setSize(width, height);
 
 		return this;
 	}
@@ -260,13 +249,13 @@ export class EngineCore {
 
 		if (operations.after.length > 0) {
 			for (const operation of operations.after) {
-				this[_Worker].render.addAfterOperation(operation);
+				operation
 			}
 		}
 
 		if (operations.before.length > 0) {
 			for (const operation of operations.before) {
-				this[_Worker].render.addBeforeOperation(operation);
+				operation
 			}
 		}
 

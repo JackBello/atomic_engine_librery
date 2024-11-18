@@ -1,5 +1,5 @@
 import type { TCanvasNodeOptions, TCanvasNodes } from "../types";
-import type { INodeProcess, TExportNode, TTypeNodes } from "./types";
+import type { TExportNode, TTypeNodes } from "./types";
 import type { TEventNode, TEventScene } from "../events";
 import type { TAnything, TFunction } from "@/app/types";
 
@@ -10,7 +10,7 @@ import {
 	NodePropType,
 	ScriptsNodeFromScene,
 } from "../symbols";
-import { _Render, _Worker, ExportWorker, GetApp } from "@/app/symbols";
+import { _Render, _Worker, GetApp } from "@/app/symbols";
 
 import { GlobalNode } from "./global-node";
 
@@ -41,33 +41,9 @@ export class Scene extends GlobalNode {
 	reset(property?: keyof TCanvasNodeOptions["global/scene"]): void {
 		if (property) {
 			this._options[property] = this._initial[property];
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
 		} else {
 			this._options = { ...this._initial };
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				this.utils.omitKeys(this._initial, this._omit),
-				this.path,
-				"path",
-				"index",
-			);
 		}
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -85,36 +61,12 @@ export class Scene extends GlobalNode {
 		if (properties && typeof properties === "string" && value) {
 			this._options[properties as keyof TCanvasNodeOptions["global/scene"]] =
 				value as never;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
 		} else if (typeof properties !== "string" && properties) {
 			for (const [key, value] of Object.entries(properties)) {
 				this._options[key as keyof TCanvasNodeOptions["global/scene"]] =
 					value as never;
 			}
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				this.utils.omitKeys(properties, this._omit),
-				this.path,
-				"path",
-				"index",
-			);
 		}
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -125,26 +77,5 @@ export class Scene extends GlobalNode {
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as Scene;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		return {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-		};
 	}
 }

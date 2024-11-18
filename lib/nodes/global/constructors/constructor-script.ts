@@ -7,6 +7,7 @@ import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
 import ConstructorNodes from "./constructor-nodes";
+import { NodeDestroy } from "@/nodes/symbols";
 
 export default class ConstructorScript {
 	private $node!: GlobalNode;
@@ -154,7 +155,7 @@ export default class ConstructorScript {
 				}
 			} else {
 				for (const method of methods) {
-					result[method] = instance[method].bind(this.$node);
+					result[method] = instance[method];
 				}
 			}
 
@@ -191,7 +192,7 @@ export default class ConstructorScript {
 			if (filters.length > 0) {
 				for (const prop of props) {
 					if (filters.includes(prop) && typeof instance[prop] === "function") {
-						result[prop] = instance[prop].bind(this.$node);
+						result[prop] = instance[prop];
 					}
 					if (filters.includes(prop) && typeof instance[prop] !== "function") {
 						result[prop] = instance[prop];
@@ -200,7 +201,7 @@ export default class ConstructorScript {
 			} else {
 				for (const prop of props) {
 					if (typeof instance[prop] === "function") {
-						result[prop] = instance[prop].bind(this.$node);
+						result[prop] = instance[prop];
 					}
 
 					result[prop] = instance[prop];
@@ -330,5 +331,10 @@ export default class ConstructorScript {
 		this.$script = script;
 
 		return await this.getExec(await this.getCode());
+	}
+
+	[NodeDestroy]() {
+		this.$app = null as TAnything;
+		this.$node = null as TAnything;
 	}
 }

@@ -4,6 +4,8 @@ export const _makeAxisCoords2D = (
 	context: CanvasRenderingContext2D,
 	options: TAnything,
 ) => {
+	if (options.alpha <= 0) return
+	
 	context.beginPath();
 	context.lineWidth = 2;
 	context.strokeStyle = options.axis.colorY;

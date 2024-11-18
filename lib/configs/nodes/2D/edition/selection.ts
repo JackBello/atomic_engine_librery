@@ -1,13 +1,11 @@
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const DEFAULT_CONFIG_SELECTION_2D: TCanvasNodeOptions["2D/selection"] = {
-	opacity: 1,
+	alpha: 1,
 	background: "#000",
 	border: true,
 	borderColor: "#eee",
 	borderWidth: 1,
-	centerRotation: true,
-	centerScale: true,
 	cursor: "default",
 	description: "",
 	endX: 0,
@@ -25,8 +23,8 @@ export const DEFAULT_CONFIG_SELECTION_2D: TCanvasNodeOptions["2D/selection"] = {
 	scaleY: 1,
 	selectable: true,
 	shape: "rectangle",
-	skewX: 1,
-	skewY: 1,
+	skewX: 0,
+	skewY: 0,
 	startX: 0,
 	startY: 0,
 	title: "",

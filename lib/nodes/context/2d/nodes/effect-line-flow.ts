@@ -1,12 +1,11 @@
-import type { ICalculate } from "../../../class/nodes-2D.types";
 import { validColor } from "../functions";
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const effect_line_flow_2D = (
 	context: CanvasRenderingContext2D,
-	options: TCanvasNodeOptions["2D/line-flow-effect"] & ICalculate,
+	options: TCanvasNodeOptions["2D/line-flow-effect"],
 ) => {
-	const { calculate } = options;
+	if (options.alpha <= 0) return
 
 	context.lineWidth = options.lineWidth;
 	context.strokeStyle = validColor(options.color, context, {
@@ -15,13 +14,13 @@ export const effect_line_flow_2D = (
 	});
 
 	for (
-		let row = -calculate.middleScaleFactor.height;
-		row < calculate.middleScaleFactor.height;
+		let row = 0;
+		row < options.height;
 		row += options.cellSize
 	) {
 		for (
-			let column = -calculate.middleScaleFactor.width;
-			column < calculate.middleScaleFactor.width;
+			let column = 0;
+			column < options.width;
 			column += options.cellSize
 		) {
 			context.beginPath();

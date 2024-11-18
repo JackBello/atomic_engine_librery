@@ -160,7 +160,7 @@ export default class ScriptController {
 				node?.visible &&
 				_ready
 			) {
-				_ready();
+				_ready.bind(node)();
 			}
 		}
 	}
@@ -177,13 +177,13 @@ export default class ScriptController {
 			const _input = node.$functions.get("_input");
 
 			if (mode && this.$app.global("dispatch-event") && _input) {
-				_input(this.$app[_Input]);
+				_input.bind(node)(this.$app[_Input]);
 			}
 
-			if (mode && node?.visible && _process) _process(delta);
+			if (mode && node?.visible && _process) _process.bind(node)(delta);
 
 			if (mode && node?.[NodePropType].startsWith("2D") && _draw) {
-				_draw();
+				_draw.bind(node)();
 			}
 		}
 	}

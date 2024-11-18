@@ -3,7 +3,6 @@ import type { TAnything, TFunction } from "@/app/types";
 
 import type { TEventNode, TEventNode2D, TEventSelection } from "@/nodes/events";
 import type {
-	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 } from "@/nodes/global/types";
@@ -12,13 +11,14 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 } from "../../../symbols";
 import {
 	_Render,
 	_Worker,
 	DispatchEvent,
-	ExportWorker,
 	GetApp,
 } from "../../../../app/symbols";
 
@@ -90,205 +90,79 @@ export class Selection2D extends Node2D {
 	set endX(value: number) {
 		this._options.endX = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				endX: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set endY(value: number) {
 		this._options.endY = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				endY: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set startX(value: number) {
 		this._options.startX = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				startX: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set startY(value: number) {
 		this._options.startY = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				startY: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set shape(value: "rectangle" | "circle" | "triangle" | "polygon") {
 		this._options.shape = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				shape: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set background(value: string) {
 		this._options.background = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				background: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set radius(value:
 		| number
 		| [number, number]
 		| {
-				topLeft: number;
-				topRight: number;
-				bottomLeft: number;
-				bottomRight: number;
-		  }) {
+			topLeft: number;
+			topRight: number;
+			bottomLeft: number;
+			bottomRight: number;
+		}) {
 		this._options.radius = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				radius: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set border(value: boolean) {
 		this._options.border = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				border: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set borderColor(value: string) {
 		this._options.borderColor = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderColor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set borderWidth(value: number) {
 		this._options.borderWidth = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderWidth: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set width(value: number) {
 		this._options.width = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				width: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				height: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -329,41 +203,7 @@ export class Selection2D extends Node2D {
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/selection"]): void {
-		if (property) {
-			this._options[property] = this._initial[property] as never;
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			const options = this.utils.omitKeys(this._initial, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this[NodeFunctionReset](property)
 	}
 
 	toObject(): TCanvasNodeOptions["2D/selection"] {
@@ -376,45 +216,7 @@ export class Selection2D extends Node2D {
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/selection"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[properties as keyof TCanvasNodeOptions["2D/selection"]] =
-				value as never;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["2D/selection"]] =
-					value as never;
-			}
-
-			const options = this.utils.omitKeys(properties, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this[NodeFunctionSet](properties, value)
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
@@ -423,31 +225,5 @@ export class Selection2D extends Node2D {
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as Selection2D;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		const node = {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit, ["calculate"]),
-		};
-
-		node.options.calculate = this.processCalculate();
-
-		return node;
 	}
 }

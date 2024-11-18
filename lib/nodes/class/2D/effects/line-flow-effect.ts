@@ -1,7 +1,6 @@
 import type { TAnything } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
-	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 } from "@/nodes/global/types";
@@ -10,12 +9,13 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 } from "../../../symbols";
 import {
 	_Render,
 	_Worker,
-	ExportWorker,
 	GetApp,
 } from "../../../../app/symbols";
 
@@ -63,35 +63,11 @@ export class LineFlowEffect2D extends Node2D {
 	set cellSize(value: number) {
 		this._options.cellSize = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cellSize: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set lineWidth(value: number) {
 		this._options.lineWidth = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				lineWidth: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -99,35 +75,11 @@ export class LineFlowEffect2D extends Node2D {
 	set spacing(value: number) {
 		this._options.spacing = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				spacing: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set color(value: string) {
 		this._options.color = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				color: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -135,55 +87,17 @@ export class LineFlowEffect2D extends Node2D {
 	set radius(value: number) {
 		this._options.radius = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				radius: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set width(value: number) {
 		this._options.width = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				width: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				height: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -203,43 +117,7 @@ export class LineFlowEffect2D extends Node2D {
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/line-flow-effect"]): void {
-		if (property) {
-			this._options[property] = this._initial[property] as never;
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			const options = this.utils.omitKeys(this._initial, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
-
-		this[GetApp][_Render].draw = true;
+		this[NodeFunctionReset](property)
 	}
 
 	toObject(): TCanvasNodeOptions["2D/line-flow-effect"] {
@@ -252,48 +130,7 @@ export class LineFlowEffect2D extends Node2D {
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/line-flow-effect"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[
-				properties as keyof TCanvasNodeOptions["2D/line-flow-effect"]
-			] = value as never;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["2D/line-flow-effect"]] =
-					value as never;
-			}
-
-			const options = this.utils.omitKeys(properties, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
-
-		this[GetApp][_Render].draw = true;
+		this[NodeFunctionSet](properties, value)
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
@@ -302,31 +139,5 @@ export class LineFlowEffect2D extends Node2D {
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as LineFlowEffect2D;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		const node = {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit, ["calculate"]),
-		};
-
-		node.options.calculate = this.processCalculate();
-
-		return node;
 	}
 }

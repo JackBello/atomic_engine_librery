@@ -1,10 +1,11 @@
 import type { TCanvasNodeOptions } from "@/nodes/types";
-import type { ICalculate } from "../../../class/nodes-2D.types";
 
 export const selection_2D = (
 	context: CanvasRenderingContext2D,
-	options: TCanvasNodeOptions["2D/selection"] & ICalculate,
+	options: TCanvasNodeOptions["2D/selection"],
 ) => {
+	if (options.alpha <= 0) return
+
 	if (!options) return;
 
 	context.fillStyle = options.background;

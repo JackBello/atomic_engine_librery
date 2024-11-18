@@ -26,5 +26,4 @@ export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	height: 500,
 	width: 500,
 	selector: undefined,
-	renderProcess: "sub-thread",
 };

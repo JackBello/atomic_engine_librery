@@ -16,28 +16,12 @@ export abstract class AbstractRender {
 		before: Map<string, INodeOperation | OperationNode>;
 	}): void;
 
-	protected abstract executeSubOperation(
-		...operations: INodeOperation[]
-	): void;
-
-	protected abstract executeMainOperation(
+	protected abstract executeOperation(
 		...operations: OperationNode[]
 	): void;
 
-	protected abstract executeMainDraw(
+	protected abstract executeDraw(
 		node: GlobalNode,
-		parentTransform: {
-			x: number;
-			y: number;
-			scaleX: number;
-			scaleY: number;
-			rotation: number;
-			alpha: number;
-		},
-	): void;
-
-	protected abstract executeSubDraw(
-		node: INodeProcess,
 		parentTransform: {
 			x: number;
 			y: number;

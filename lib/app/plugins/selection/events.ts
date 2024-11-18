@@ -1,6 +1,6 @@
 import type { EngineCore } from "@/app/engine";
 import { moveNodeByKeyboard, moveNodeByMouse } from "./functions";
-import { GetHidden } from "@/app/symbols";
+import { _Frame, GetHidden } from "@/app/symbols";
 
 export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 	const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
@@ -104,6 +104,7 @@ export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
 		panAndZoomConfig.zoom;
 	_.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
 		panAndZoomConfig.zoom;
+
 
 	// selection.set({
 	// 	background: "",

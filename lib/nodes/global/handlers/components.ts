@@ -4,12 +4,14 @@ import type { EngineCore } from "@/app/engine";
 import type { GlobalNode } from "../global-node";
 
 import {
+	NodeDestroy,
 	NodePropHandlerComponents,
 	NodeSetHandlerComponents,
 } from "@/nodes/symbols";
-import { GetApp } from "@/app/symbols";
+import { _Collision, GetApp } from "@/app/symbols";
 import type { ComponentNode } from "../class/component-node";
-import type { TClass } from "@/app/types";
+import type { TAnything, TClass } from "@/app/types";
+import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 
 export class HandlerComponent implements IHandleComponent {
 	private $node: GlobalNode;
@@ -58,5 +60,18 @@ export class HandlerComponent implements IHandleComponent {
 
 	[NodeSetHandlerComponents](components: TComponentTuple[]): void {
 		this[NodePropHandlerComponents] = new Map(components);
+	}
+
+	[NodeDestroy]() {
+		for (const [_, component] of this[NodePropHandlerComponents]) {
+			if (component instanceof CollisionShapeComponent) {
+				this.$app[_Collision].removeCollision(component);
+			}
+
+			component[NodeDestroy]();
+		}
+
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

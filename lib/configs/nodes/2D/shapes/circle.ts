@@ -1,7 +1,7 @@
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const DEFAULT_CONFIG_CIRCLE_2D: TCanvasNodeOptions["2D/circle"] = {
-    opacity: 1,
+    alpha: 1,
     rotation: 0,
     cursor: "default",
     height: 100,
@@ -9,12 +9,10 @@ export const DEFAULT_CONFIG_CIRCLE_2D: TCanvasNodeOptions["2D/circle"] = {
     title: "",
     originX: "center",
     originY: "center",
-    centerRotation: true,
-    centerScale: true,
     scaleX: 1,
     scaleY: 1,
-    skewX: 1,
-    skewY: 1,
+    skewX: 0,
+    skewY: 0,
     visible: true,
     width: 100,
     x: 0,

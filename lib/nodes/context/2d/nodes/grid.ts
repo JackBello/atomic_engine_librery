@@ -4,6 +4,8 @@ export const _makeGrid = (
 	context: CanvasRenderingContext2D,
 	options: TAnything,
 ) => {
+	if (options.alpha <= 0) return
+
 	const screenWidth = context.canvas.width;
 	const screenHeight = context.canvas.height;
 

@@ -37,7 +37,6 @@ import CollisionController from "./controllers/collision.controller";
 import ScriptController from "./controllers/script.controller";
 import InputController from "./controllers/input.controller";
 import EventController from "./controllers/event.controller";
-import WorkerController from "./controllers/worker.controller";
 import RenderController from "./controllers/render.controller";
 
 import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
@@ -78,7 +77,6 @@ export class GameCore {
 	[$Scenes]!: ScenesService;
 
 	[_Frame]!: FrameController;
-	[_Worker]!: WorkerController;
 	[_Render]!: RenderController;
 	[_Input]!: InputController;
 	[_Events]!: EventController;
@@ -142,9 +140,9 @@ export class GameCore {
 	}
 
 	setSize(width: number, height: number) {
-		this.canvas.setSize(width, height, true);
+		this[$Canvas].setSize(width, height, true);
 
-		this[_Worker].render.setSize(width, height);
+		this[_Render].setSize(width, height);
 
 		return this;
 	}
@@ -188,7 +186,6 @@ export class GameCore {
 		this[$Scenes] = new ScenesService(this);
 
 		this[_Frame] = new FrameController(this);
-		this[_Worker] = new WorkerController(this);
 		this[_Render] = new RenderController(this);
 		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
@@ -197,22 +194,16 @@ export class GameCore {
 
 		this[_Script].initHelpersScript();
 
-		if (this._options.renderProcess === "main-thread") {
-			this[_Render].load({
-				context: this._options.context,
-				dimension: this._options.dimension,
-				mode: this.mode,
-			});
-			this[_Render].init(
-				this.options.viewport.width,
-				this.options.viewport.height,
-			);
-		}
-
-		this[_Worker].render.setSize(
+		this[_Render].load({
+			context: this._options.context,
+			dimension: this._options.dimension,
+			mode: this.mode,
+		});
+		this[_Render].init(
 			this.options.viewport.width,
 			this.options.viewport.height,
 		);
+
 
 		this[$Scenes].add(Scene.make(structure.scenes[0]));
 

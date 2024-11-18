@@ -4,7 +4,7 @@ import type { TCursorOptions, TTypeNodes } from "../types";
 import { GlobalNode } from "../global-node";
 import { NodePropType } from "@/nodes/symbols";
 import { DEFAULT_CONFIG_PRIMITIVE_CANVAS_NODE } from "@/configs/nodes/global/canvas-node";
-import { _Render, _Worker, GetApp } from "@/app/symbols";
+import { _Render, GetApp } from "@/app/symbols";
 
 export abstract class CanvasNode extends GlobalNode {
 	protected _options: TCanvasNodeOptions["global/abstract/canvas-node"];
@@ -51,35 +51,11 @@ export abstract class CanvasNode extends GlobalNode {
 	set visible(value: boolean) {
 		this._options.visible = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				visible: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set selectable(value: boolean) {
 		this._options.selectable = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				selectable: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -87,35 +63,11 @@ export abstract class CanvasNode extends GlobalNode {
 	set hovered(value: boolean) {
 		this._options.hovered = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				hovered: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set lock(value: boolean) {
 		this._options.lock = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				lock: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -123,35 +75,11 @@ export abstract class CanvasNode extends GlobalNode {
 	set cursor(value: TCursorOptions) {
 		this._options.cursor = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cursor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
-
 		this[GetApp][_Render].draw = true;
 	}
 
 	set alpha(value: number) {
 		this._options.alpha = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				alpha: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}

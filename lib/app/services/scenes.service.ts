@@ -10,7 +10,6 @@ import {
 	DispatchEvent,
 	DispatchScript,
 	ExportData,
-	ExportWorker,
 	ReloadApp,
 } from "../symbols";
 
@@ -84,8 +83,6 @@ export default class ScenesService {
 
 		this._scene[DispatchEvent]("scene:preload");
 
-		this.$app[_Worker].nodes.setRoot(this._scene[ExportWorker]());
-
 		await this.$app[_Script][DispatchScript]();
 
 		this._scene[DispatchEvent]("scene:ready");
@@ -146,5 +143,5 @@ export default class ScenesService {
 		return scenes;
 	}
 
-	[ReloadApp]() {}
+	[ReloadApp]() { }
 }

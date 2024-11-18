@@ -58,8 +58,8 @@ export class CollisionShapeComponent extends CollisionComponent {
 			debug: true,
 			fill: "rgb(255 0 0 / 20%)",
 			disabled: false,
-			width: 0,
-			height: 0,
+			width: this.$node.width,
+			height: this.$node.height,
 			transform: {
 				position: [0, 0],
 				scale: [1, 1],
@@ -70,18 +70,30 @@ export class CollisionShapeComponent extends CollisionComponent {
 
 		this.$node.collision = {
 			getCollider: () => {
-				const collision = this.$node.$components.get("collision-shape")
+				const collision = this.$node.$components.get("collision-shape");
 
-				if (!collision) return null
+				if (!collision) return null;
 
-				if (!(collision instanceof CollisionShapeComponent)) return null
+				if (!(collision instanceof CollisionShapeComponent)) return null;
 
 				return this._collider;
 			},
 			getColliders: () => {
-				return []
+				return [];
+			},
+			getTouch: () => {
+				const collision = this.$node.$components.get("collision-shape");
+
+				if (!collision) return null;
+
+				if (!(collision instanceof CollisionShapeComponent)) return null;
+
+				return this._touch;
+			},
+			disabled: () => {
+				this._options.disabled = true;
 			}
-		}
-		this.$app[_Collision].addNodeToCollision(this.$node);
+		};
+		this.$app[_Collision].addCollision(this);
 	}
 }

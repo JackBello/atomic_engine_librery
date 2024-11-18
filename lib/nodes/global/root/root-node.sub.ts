@@ -5,15 +5,15 @@ import type { INodeProcess, TMode } from "../types";
 path default (index) = 0/0/2/1
 
 path {
-    - id = dcbc3e65506a7e6f15d30a357e884432/dcbc3e65506a7e6f15d30a357e884432/dcbc3e65506a7e6f15d30a357e884432 (string)
-    - index = 0/0/2/1 (string)
-    - slug = player-0/collision/shape
+	- id = dcbc3e65506a7e6f15d30a357e884432/dcbc3e65506a7e6f15d30a357e884432/dcbc3e65506a7e6f15d30a357e884432 (string)
+	- index = 0/0/2/1 (string)
+	- slug = player-0/collision/shape
 }
 
 location
-    - id = dcbc3e65506a7e6f15d30a357e884432 (string)
-    - index = 0 (number)
-    - slug = player-0 (string)
+	- id = dcbc3e65506a7e6f15d30a357e884432 (string)
+	- index = 0 (number)
+	- slug = player-0 (string)
 */
 
 export class RootNodeSubProcess {
@@ -73,35 +73,6 @@ export class RootNodeSubProcess {
 		this._root_ = root;
 	}
 
-	static isInEditor(
-		node: {
-			width: number;
-			height: number;
-			x: number;
-			y: number;
-			scaleX: number;
-			scaleY: number;
-		},
-		size: { width: number; height: number },
-		pan?: { x: number; y: number },
-		zoom?: number,
-	) {
-		const visibleWidth = size.width / (zoom ?? 1);
-		const visibleHeight = size.height / (zoom ?? 1);
-
-		const minX = -(pan?.x ?? 0);
-		const minY = -(pan?.y ?? 0);
-		const maxX = minX + visibleWidth;
-		const maxY = minY + visibleHeight;
-
-		return (
-			node.x + (node.width * node.scaleX) / 2 > minX &&
-			node.x - (node.width * node.scaleX) / 2 < maxX &&
-			node.y + (node.height * node.scaleY) / 2 > minY &&
-			node.y - (node.height * node.scaleY) / 2 < maxY
-		);
-	}
-
 	static isNodeIntersect({
 		node,
 		intersectionPoint,
@@ -114,22 +85,14 @@ export class RootNodeSubProcess {
 			width: number;
 			height: number;
 			rotation: number;
+			origin: [number, number]
 		};
 		intersectionPoint: { x: number; y: number };
 	}) {
-		// const rotatedMouseX =
-		// (mouseX - node.x) * Math.cos(-node.rotation) -
-		// (mouseY - node.y) * Math.sin(-node.rotation) +
-		// node.x
-		// const rotatedMouseY =
-		// (mouseX - node.x) * Math.sin(-node.rotation) -
-		// (mouseY - node.y) * Math.cos(-node.rotation) +
-		// node.y
-
 		const WIDTH = node.width * node.scaleX;
 		const HEIGHT = node.height * node.scaleY;
-		const X = node.x - WIDTH / 2;
-		const Y = node.y - HEIGHT / 2;
+		const X = node.x - node.origin[0];
+		const Y = node.y - node.origin[1];
 
 		const mouseX = intersectionPoint.x;
 		const mouseY = intersectionPoint.y;

@@ -10,6 +10,8 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 } from "../../../symbols";
 import {
@@ -90,233 +92,97 @@ export class ControlEdition2D extends Node2D {
 		| [number, number, number, number]) {
 		this._options.padding = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				padding: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set cornerSize(value: number) {
 		this._options.cornerSize = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cornerSize: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set cornerColor(value: string) {
 		this._options.cornerColor = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cornerColor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set cornerBorder(value: boolean) {
 		this._options.cornerBorder = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cornerBorder: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set cornerColorBorder(value: string) {
 		this._options.cornerColorBorder = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				cornerColorBorder: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set showCorner(value:
 		| boolean
 		| {
-				"top-left": boolean;
-				"top-center": boolean;
-				"top-right": boolean;
-				"middle-left": boolean;
-				"middle-center": boolean;
-				"middle-right": boolean;
-				"bottom-left": boolean;
-				"bottom-center": boolean;
-				"bottom-right": boolean;
-		  }) {
+			"top-left": boolean;
+			"top-center": boolean;
+			"top-right": boolean;
+			"middle-left": boolean;
+			"middle-center": boolean;
+			"middle-right": boolean;
+			"bottom-left": boolean;
+			"bottom-center": boolean;
+			"bottom-right": boolean;
+		}) {
 		this._options.showCorner = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				showCorner: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set background(value: string) {
 		this._options.background = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				background: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set radius(value:
 		| number
 		| [number, number]
 		| {
-				topLeft: number;
-				topRight: number;
-				bottomLeft: number;
-				bottomRight: number;
-		  }) {
+			topLeft: number;
+			topRight: number;
+			bottomLeft: number;
+			bottomRight: number;
+		}) {
 		this._options.radius = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				radius: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set border(value: boolean) {
 		this._options.border = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				border: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set borderColor(value: string) {
 		this._options.borderColor = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderColor: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set borderWidth(value: number) {
 		this._options.borderWidth = value;
 
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				borderWidth: value,
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
+		this[GetApp][_Render].draw = true;
 	}
 
 	set width(value: number) {
 		this._options.width = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				width: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
-
-		this[GetApp][_Worker].nodes.updateNode(
-			this.id,
-			{
-				height: value,
-				calculate: this.processCalculate(),
-			},
-			this.path,
-			"path",
-			"index",
-		);
-
-		this[GetApp][_Worker].render.draw();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -336,41 +202,7 @@ export class ControlEdition2D extends Node2D {
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/control-edition"]): void {
-		if (property) {
-			this._options[property] = this._initial[property] as never;
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = this._initial[property];
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else {
-			this._options = { ...this._initial };
-
-			const options = this.utils.omitKeys(this._initial, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this[NodeFunctionReset](property)
 	}
 
 	toObject(): TCanvasNodeOptions["2D/control-edition"] {
@@ -383,46 +215,7 @@ export class ControlEdition2D extends Node2D {
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["2D/control-edition"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[
-				properties as keyof TCanvasNodeOptions["2D/control-edition"]
-			] = value as never;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-				relative.calculate = this.processCalculate();
-
-				this[GetApp][_Worker].nodes.updateNode(
-					this.id,
-					relative,
-					this.path,
-					"path",
-					"index",
-				);
-			}
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["2D/control-edition"]] =
-					value as never;
-			}
-
-			const options = this.utils.omitKeys(properties, this._omit, [
-				"calculate",
-			]);
-			options.calculate = this.processCalculate();
-
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				options,
-				this.path,
-				"path",
-				"index",
-			);
-		}
-
-		this[GetApp][_Worker].render.draw();
+		this[NodeFunctionSet](properties, value)
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
@@ -431,31 +224,5 @@ export class ControlEdition2D extends Node2D {
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as ControlEdition2D;
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		const node = {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit, ["calculate"]),
-		};
-
-		node.options.calculate = this.processCalculate();
-
-		return node;
 	}
 }

@@ -1,29 +1,28 @@
-import type { ICalculate } from "../../../class/nodes-2D.types";
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const control_edition_2D = (
 	context: CanvasRenderingContext2D,
-	options: TCanvasNodeOptions["2D/control-edition"] & ICalculate,
+	options: TCanvasNodeOptions["2D/control-edition"],
 ) => {
-	const { calculate } = options;
+	if (options.alpha <= 0) return
 
 	context.globalCompositeOperation = "destination-over";
 
 	context.strokeStyle = options.borderColor;
 	context.lineWidth = options.borderWidth;
 
-	const scaleFactorWidth =
-		calculate.scaleFactor.width + (options.padding as number) * 2;
-	const scaleFactorHeight =
-		calculate.scaleFactor.height + (options.padding as number) * 2;
+	const widthWithPadding =
+		options.width + (options.padding as number) * 2;
+	const heightWithPadding =
+		options.height + (options.padding as number) * 2;
 
 	context.beginPath();
 
 	context.strokeRect(
-		-scaleFactorWidth / 2,
-		-scaleFactorHeight / 2,
-		scaleFactorWidth,
-		scaleFactorHeight,
+		-widthWithPadding / 2,
+		-heightWithPadding / 2,
+		widthWithPadding,
+		heightWithPadding,
 	);
 
 	if (options.showCorner) {
@@ -32,8 +31,8 @@ export const control_edition_2D = (
 		// top-left
 		context.beginPath();
 		context.arc(
-			-scaleFactorWidth / 2,
-			-scaleFactorHeight / 2,
+			-widthWithPadding / 2,
+			-heightWithPadding / 2,
 			options.cornerSize,
 			0,
 			2 * Math.PI,
@@ -42,14 +41,14 @@ export const control_edition_2D = (
 
 		// top-center
 		context.beginPath();
-		context.arc(0, -scaleFactorHeight / 2, options.cornerSize, 0, 2 * Math.PI);
+		context.arc(0, -heightWithPadding / 2, options.cornerSize, 0, 2 * Math.PI);
 		context.fill();
 
 		// top-right
 		context.beginPath();
 		context.arc(
-			scaleFactorWidth / 2,
-			-scaleFactorHeight / 2,
+			widthWithPadding / 2,
+			-heightWithPadding / 2,
 			options.cornerSize,
 			0,
 			2 * Math.PI,
@@ -58,19 +57,19 @@ export const control_edition_2D = (
 
 		// middle-left
 		context.beginPath();
-		context.arc(-scaleFactorWidth / 2, 0, options.cornerSize, 0, 2 * Math.PI);
+		context.arc(-widthWithPadding / 2, 0, options.cornerSize, 0, 2 * Math.PI);
 		context.fill();
 
 		// middle-center
 		context.beginPath();
-		context.arc(scaleFactorWidth / 2, 0, options.cornerSize, 0, 2 * Math.PI);
+		context.arc(widthWithPadding / 2, 0, options.cornerSize, 0, 2 * Math.PI);
 		context.fill();
 
 		// bottom-left
 		context.beginPath();
 		context.arc(
-			-scaleFactorWidth / 2,
-			scaleFactorHeight / 2,
+			-widthWithPadding / 2,
+			heightWithPadding / 2,
 			options.cornerSize,
 			0,
 			2 * Math.PI,
@@ -79,14 +78,14 @@ export const control_edition_2D = (
 
 		// bottom-center
 		context.beginPath();
-		context.arc(0, scaleFactorHeight / 2, options.cornerSize, 0, 2 * Math.PI);
+		context.arc(0, heightWithPadding / 2, options.cornerSize, 0, 2 * Math.PI);
 		context.fill();
 
 		// bottom-right
 		context.beginPath();
 		context.arc(
-			scaleFactorWidth / 2,
-			scaleFactorHeight / 2,
+			widthWithPadding / 2,
+			heightWithPadding / 2,
 			options.cornerSize,
 			0,
 			2 * Math.PI,

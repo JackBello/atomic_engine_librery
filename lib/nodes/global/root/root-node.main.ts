@@ -8,7 +8,7 @@ import {
 	NodeSetIndex,
 	NodeSetParent,
 } from "../../symbols";
-import { $Scenes, _Render, _Worker } from "@/app/symbols";
+import { $Scenes, _Collision, _Render, _Script, _Worker } from "@/app/symbols";
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
@@ -44,8 +44,8 @@ export default class RootNodeMainProcess {
 		validation: "hovered" | "lock",
 	) {
 		const validateTypeIntersect = {
-			"hovered": (node: GlobalNode) => node.hovered,
-			"lock": (node: GlobalNode) => !node.lock,
+			hovered: (node: GlobalNode) => node.hovered,
+			lock: (node: GlobalNode) => !node.lock,
 		};
 
 		const root = this.TOP?.$nodes.all ?? [];
@@ -126,30 +126,29 @@ export default class RootNodeMainProcess {
 
 			if (!node.visible) continue;
 
-			const calculate = node.processCalculate();
+			const calculate = node.calculate;
 
 			const globalTransform = RootNodeSubProcess.calculateTransforms(
 				{
-					x: calculate.translate.x,
-					y: calculate.translate.y,
-					scaleX: calculate.scale.x,
-					scaleY: calculate.scale.y,
-					rotation: calculate.rotation,
-					alpha: node.opacity,
+					x: node.x ?? 0,
+					y: node.y ?? 0,
+					scaleX: node.scaleX ?? 1,
+					scaleY: node.scaleY ?? 1,
+					rotation: calculate.angle ?? 0,
+					alpha: node.alpha ?? 1,
 				},
 				parentTransform,
 			);
 
-			const globalRelativePosition = RootNodeSubProcess
-				.calculatePositionNode(
-					parentRelativePosition,
-					{
-						scaleX: calculate.scale.x,
-						scaleY: calculate.scale.y,
-						x: calculate.translate.x,
-						y: calculate.translate.y,
-					},
-				);
+			const globalRelativePosition = RootNodeSubProcess.calculatePositionNode(
+				parentRelativePosition,
+				{
+					scaleX: node.scaleX ?? 1,
+					scaleY: node.scaleY ?? 1,
+					x: node.x ?? 0,
+					y: node.y ?? 0,
+				},
+			);
 
 			if (
 				RootNodeSubProcess.isNodeIntersect({
@@ -161,6 +160,7 @@ export default class RootNodeMainProcess {
 						scaleX: globalTransform.scaleX,
 						scaleY: globalTransform.scaleY,
 						rotation: globalTransform.rotation,
+						origin: calculate.origin,
 					},
 					intersectionPoint,
 				})
@@ -175,10 +175,7 @@ export default class RootNodeMainProcess {
 					rotation: parentNode?.rotation ?? 0,
 					scale: [parentNode?.scaleX ?? 1, parentNode?.scaleY ?? 1],
 					relative: {
-						position: [
-							parentRelativePosition.x,
-							parentRelativePosition.y,
-						],
+						position: [parentRelativePosition.x, parentRelativePosition.y],
 						scale: [
 							parentRelativePosition.scaleX,
 							parentRelativePosition.scaleY,
@@ -198,10 +195,7 @@ export default class RootNodeMainProcess {
 					rotation: node?.rotation ?? 0,
 					scale: [node?.scaleX ?? 1, node?.scaleY ?? 1],
 					relative: {
-						position: [
-							globalRelativePosition.x,
-							globalRelativePosition.y,
-						],
+						position: [globalRelativePosition.x, globalRelativePosition.y],
 						scale: [
 							globalRelativePosition.scaleX,
 							globalRelativePosition.scaleY,
@@ -251,11 +245,7 @@ export default class RootNodeMainProcess {
 		}
 	}
 
-	replaceNode(
-		from: string | number,
-		value: GlobalNode,
-		mode: TMode = "index",
-	) {
+	replaceNode(from: string | number, value: GlobalNode, mode: TMode = "index") {
 		const $node = this.getNode(from, mode);
 
 		if ($node === undefined) return false;
@@ -318,13 +308,9 @@ export default class RootNodeMainProcess {
 		if ($parentTo === undefined) return false;
 
 		insert === "before"
-			? $parentTo.$nodes[NodePropHandlerNodes].splice(
-				$nodeTo.index + 1,
-				0,
-				{
-					...$nodeFrom,
-				} as GlobalNode,
-			)
+			? $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, {
+				...$nodeFrom,
+			} as GlobalNode)
 			: $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, {
 				...$nodeFrom,
 			} as GlobalNode);
@@ -355,13 +341,9 @@ export default class RootNodeMainProcess {
 		if ($parentTo === undefined) return false;
 
 		insert === "before"
-			? $parentTo.$nodes[NodePropHandlerNodes].splice(
-				$nodeTo.index + 1,
-				0,
-				{
-					...$nodeFrom,
-				} as GlobalNode,
-			)
+			? $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, {
+				...$nodeFrom,
+			} as GlobalNode)
 			: $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, {
 				...$nodeFrom,
 			} as GlobalNode);
@@ -512,22 +494,16 @@ export default class RootNodeMainProcess {
 	}
 
 	deleteNodeByPath(path: string, mode: TMode = "index") {
-		this.$app[_Worker].nodes.deleteNode(path, "path", mode);
-
-		this.$app[_Worker].render.draw();
-
-		this.$app[_Render].draw = true;
-
 		const modes = {
-			"id": {
+			id: {
 				child: this.getNodeByPathId.bind(this),
 				parent: this.getParentNodeByPathId.bind(this),
 			},
-			"index": {
+			index: {
 				child: this.getNodeByPathIndex.bind(this),
 				parent: this.getParentNodeByPathIndex.bind(this),
 			},
-			"slug": {
+			slug: {
 				child: this.getNodeByPathSlug.bind(this),
 				parent: this.getParentNodeByPathSlug.bind(this),
 			},
@@ -544,6 +520,8 @@ export default class RootNodeMainProcess {
 		$parent.$nodes[NodePropHandlerNodes].splice($node.index, 1);
 
 		this._updateNodes_($parent.$nodes[NodePropHandlerNodes]);
+
+		this.$app[_Render].draw = true;
 
 		return true;
 	}

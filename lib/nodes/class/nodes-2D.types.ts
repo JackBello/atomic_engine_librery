@@ -31,12 +31,10 @@ export interface ICoords2D {
 }
 
 export interface INode2D {
-	centerScale: boolean;
-	centerRotation: boolean;
 	flipX: boolean;
 	flipY: boolean;
-	originX: TTypeOriginX;
-	originY: TTypeOriginY;
+	originX: TTypeOriginX | number;
+	originY: TTypeOriginY | number;
 	scaleX: number;
 	scaleY: number;
 	skewX: number;
@@ -58,14 +56,14 @@ export interface IBorder2D {
 export interface IRectangle2D {
 	background: string;
 	radius:
-		| number
-		| [number, number]
-		| {
-				topLeft: number;
-				topRight: number;
-				bottomLeft: number;
-				bottomRight: number;
-		  };
+	| number
+	| [number, number]
+	| {
+		topLeft: number;
+		topRight: number;
+		bottomLeft: number;
+		bottomRight: number;
+	};
 }
 
 export interface ICircle2D {
@@ -96,18 +94,18 @@ export interface IControlEdition2D {
 	cornerBorder: boolean;
 	cornerColorBorder: string;
 	showCorner:
-		| {
-				"top-left": boolean;
-				"top-center": boolean;
-				"top-right": boolean;
-				"middle-left": boolean;
-				"middle-center": boolean;
-				"middle-right": boolean;
-				"bottom-left": boolean;
-				"bottom-center": boolean;
-				"bottom-right": boolean;
-		  }
-		| boolean;
+	| {
+		"top-left": boolean;
+		"top-center": boolean;
+		"top-right": boolean;
+		"middle-left": boolean;
+		"middle-center": boolean;
+		"middle-right": boolean;
+		"bottom-left": boolean;
+		"bottom-center": boolean;
+		"bottom-right": boolean;
+	}
+	| boolean;
 }
 
 export interface ILineFlowEffect2D {
@@ -123,50 +121,50 @@ export interface IText2D {
 	fontSize: `${string}${TSize}`;
 	fontFamily: string;
 	fontStretch:
-		| "normal"
-		| "ultra-condensed"
-		| "extra-condensed"
-		| "condensed"
-		| "semi-condensed"
-		| "semi-expanded"
-		| "expanded"
-		| "extra-expanded"
-		| "ultra-expanded"
-		| TTypeGlobalFont
-		| `${string}%`;
+	| "normal"
+	| "ultra-condensed"
+	| "extra-condensed"
+	| "condensed"
+	| "semi-condensed"
+	| "semi-expanded"
+	| "expanded"
+	| "extra-expanded"
+	| "ultra-expanded"
+	| TTypeGlobalFont
+	| `${string}%`;
 	fontStyle:
-		| "normal"
-		| "italic"
-		| "oblique"
-		| `oblique ${string}deg`
-		| TTypeGlobalFont;
+	| "normal"
+	| "italic"
+	| "oblique"
+	| `oblique ${string}deg`
+	| TTypeGlobalFont;
 	fontWeight:
-		| "normal"
-		| "bold"
-		| "lighter"
-		| "bolder"
-		| 100
-		| 200
-		| 300
-		| 400
-		| 500
-		| 600
-		| 700
-		| 800
-		| 900
-		| 1000
-		| number
-		| TTypeGlobalFont;
+	| "normal"
+	| "bold"
+	| "lighter"
+	| "bolder"
+	| 100
+	| 200
+	| 300
+	| 400
+	| 500
+	| 600
+	| 700
+	| 800
+	| 900
+	| 1000
+	| number
+	| TTypeGlobalFont;
 	fontVariant: string;
 	lineHeight: `${string}${TSize}` | "normal" | TTypeGlobalFont;
-	textAlign: "start" | "end" | "left" | "right" | "center";
+	textAlign: "left" | "right" | "center";
 	textBaseline:
-		| "top"
-		| "hanging"
-		| "middle"
-		| "alphabetic"
-		| "ideographic"
-		| "bottom";
+	| "top"
+	| "hanging"
+	| "middle"
+	| "alphabetic"
+	| "ideographic"
+	| "bottom";
 	textDirection: "ltr" | "rtl" | "inherit";
 	wordSpacing: `${string}${TSize}`;
 	letterSpacing: `${string}${TSize}`;
@@ -174,23 +172,6 @@ export interface IText2D {
 }
 
 export interface ICalculate {
-	calculate: {
-		translate: {
-			x: number;
-			y: number;
-		};
-		scaleFactor: {
-			width: number;
-			height: number;
-		};
-		middleScaleFactor: {
-			width: number;
-			height: number;
-		};
-		rotation: number;
-		scale: {
-			x: number;
-			y: number;
-		};
-	};
+	origin: [number, number]
+	angle: number;
 }

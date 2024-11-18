@@ -5,7 +5,6 @@ import type {
 	IControlHierarchy,
 	IControlNode,
 	IGlobalNode,
-	INodeProcess,
 	TExportNode,
 	TTypeNodes,
 } from "./types";
@@ -15,6 +14,8 @@ import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import {
 	$ConstructorNodes,
+	$ConstructorScript,
+	NodeDestroy,
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
@@ -27,12 +28,12 @@ import {
 } from "../symbols";
 import {
 	$Scenes,
+	_Collision,
 	_Render,
 	_Script,
 	_Worker,
 	DispatchEvent,
 	ExportData,
-	ExportWorker,
 	GetApp,
 } from "@/app/symbols";
 
@@ -52,8 +53,7 @@ import { serializers } from "@/app/utils/serialize";
 
 export class GlobalNode
 	extends AbstractNode
-	implements IGlobalNode, IControlEditor, IControlNode, IControlHierarchy
-{
+	implements IGlobalNode, IControlEditor, IControlNode, IControlHierarchy {
 	protected _omit: string[] = ["name", "description"];
 	protected _add: string[] = [];
 
@@ -126,22 +126,6 @@ export class GlobalNode
 		return this._id;
 	}
 
-	set slug(value: string) {
-		this._slug = value;
-
-		if (this[GetApp][$Scenes].currentScene) {
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				{
-					slug: value,
-				},
-				this.path,
-				"path",
-				"index",
-			);
-		}
-	}
-
 	get title() {
 		return this._options.title;
 	}
@@ -150,40 +134,16 @@ export class GlobalNode
 		return this._options.description;
 	}
 
+	set slug(value: string) {
+		this._slug = value;
+	}
+
 	set title(value: string) {
 		this._options.title = value;
-
-		if (this[GetApp][$Scenes].currentScene) {
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				{
-					title: value,
-				},
-				this.path,
-				"path",
-				"index",
-			);
-		}
 	}
 
 	set description(value: string) {
 		this._options.description = value;
-
-		if (this[GetApp][$Scenes].currentScene) {
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				{
-					description: value,
-				},
-				this.path,
-				"path",
-				"index",
-			);
-
-			this[GetApp][_Worker].render.draw();
-
-			this[GetApp][_Render].draw = true;
-		}
 	}
 
 	constructor(
@@ -231,11 +191,26 @@ export class GlobalNode
 	}
 
 	destroy() {
-		this[GetApp].ROOT.deleteNodeByPath(this.path, "index");
-
 		const _destroy = this.$functions.get("_destroy");
 
-		if (_destroy) _destroy(this);
+		if (_destroy) _destroy.bind(this)();
+
+		this[DispatchEvent]("node:destroy", this);
+		this.ROOT.TOP?.[DispatchEvent]("scene:remove_node", this);
+
+		this[$ConstructorScript][NodeDestroy]();
+
+		this[GetApp][_Script].removeScript(this);
+
+		this.$attributes[NodeDestroy]();
+		this.$functions[NodeDestroy]();
+		this.$metaKeys[NodeDestroy]();
+		this.$nodes[NodeDestroy]();
+		this.$script[NodeDestroy]();
+
+		this.$components[NodeDestroy]();
+
+		this[GetApp].ROOT.deleteNodeByPath(this.path, "index");
 	}
 
 	set(
@@ -270,37 +245,15 @@ export class GlobalNode
 	}
 
 	[NodeFunctionReset](property?: TAnything) {
-		let change = {};
-
 		if (property) {
 			(this._options as TAnything)[property] = (this._initial as TAnything)[
 				property
 			];
-
-			if (!this._omit.includes(property)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[property] = (this._initial as TAnything)[property];
-
-				change = relative;
-			}
 		} else {
 			this._options = { ...this._initial };
-
-			change = this.utils.omitKeys(this._initial, this._omit);
 		}
 
 		if (this[GetApp][$Scenes].currentScene) {
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				change,
-				this.path,
-				"path",
-				"index",
-			);
-
-			this[GetApp][_Worker].render.draw();
-
 			this[GetApp][_Render].draw = true;
 		}
 	}
@@ -308,39 +261,17 @@ export class GlobalNode
 	[NodeFunctionSet](property: TAnything, value: TAnything): void;
 	[NodeFunctionSet](properties: TAnything): void;
 	[NodeFunctionSet](properties?: TAnything, value?: TAnything): void {
-		let change = {};
-
 		if (properties && typeof properties === "string" && value) {
 			(this._options as TAnything)[properties] = value;
-
-			if (!this._omit.includes(properties)) {
-				const relative: Record<string, TAnything> = {};
-
-				relative[properties] = value;
-
-				change = relative;
-			}
 		}
 
 		if (properties && typeof properties !== "object") {
 			for (const [key, value] of Object.entries(properties)) {
 				(this._options as TAnything)[key] = value;
 			}
-
-			change = this.utils.omitKeys(properties, this._omit);
 		}
 
 		if (this[GetApp][$Scenes].currentScene) {
-			this[GetApp][_Worker].nodes.updateNode(
-				this.id,
-				change,
-				this.path,
-				"path",
-				"index",
-			);
-
-			this[GetApp][_Worker].render.draw();
-
 			this[GetApp][_Render].draw = true;
 		}
 	}
@@ -367,28 +298,6 @@ export class GlobalNode
 
 	[DispatchEvent](event: string, ...args: TAnything[]): void {
 		this._events.emitEvent(event, ...args);
-	}
-
-	[ExportWorker](childNode = true): INodeProcess {
-		const nodes: INodeProcess[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportWorker](true) as INodeProcess);
-			}
-		}
-
-		return {
-			__type__: this[NodePropType],
-			__path__: this.path,
-			location: {
-				id: this.id,
-				index: this.index,
-				slug: this.slug,
-			},
-			nodes: nodes,
-			options: this.utils.omitKeys(this.toObject(), this._omit),
-		};
 	}
 
 	[ExportData](childNode = true): TExportNode<TAnything> {

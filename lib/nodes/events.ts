@@ -10,7 +10,12 @@ export type TEventNode =
 	| "node:three_nodes_add_child"
 	| "node:three_nodes_clear";
 
-export type TEventScene = "scene:preload" | "scene:ready" | "scene:finish";
+export type TEventScene =
+	| "scene:preload"
+	| "scene:ready"
+	| "scene:finish"
+	| "scene:remove_node"
+	| "scene:add_node";
 
 export type TEventNode2D =
 	| "node/2D:modified"

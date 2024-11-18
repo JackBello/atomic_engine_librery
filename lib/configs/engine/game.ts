@@ -22,5 +22,4 @@ export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsGameCore = {
 		width: 800,
 	},
 	scene: undefined,
-	renderProcess: "sub-thread",
 };

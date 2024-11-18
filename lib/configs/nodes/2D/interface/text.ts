@@ -1,18 +1,16 @@
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
-	opacity: 1,
+	alpha: 1,
 	rotation: 0,
 	cursor: "default",
 	height: 0,
 	originX: "center",
 	originY: "center",
-	centerRotation: true,
-	centerScale: true,
 	scaleX: 1,
 	scaleY: 1,
-	skewX: 1,
-	skewY: 1,
+	skewX: 0,
+	skewY: 0,
 	visible: true,
 	width: 0,
 	x: 0,

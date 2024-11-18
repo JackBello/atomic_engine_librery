@@ -1,118 +1,111 @@
-import {
-    _Collision,
-    _Input,
-    _Render,
-    _Script,
-    GetOptions,
-    SetGlobal,
-} from "@/app/symbols";
-import { EngineCore } from "../engine";
+import { _Collision, _Input, _Render, _Script, SetGlobal } from "@/app/symbols";
+import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 import { ExecuteProcess } from "./symbols";
 
 export default class FrameController {
-    private $app: EngineCore | GameCore;
+	private $app: EngineCore | GameCore;
 
-    protected _fps = 75;
-    protected _frameDuration = 1000 / this._fps;
-    protected _maxFrameSkip = 5;
+	protected _fps = 75;
+	protected _frameDuration = 1000 / this._fps;
+	protected _maxFrameSkip = 5;
 
-    protected _control = {
-        lastTime: performance.now(),
-        deltaTime: 0,
-        timestamp: 0,
-        frame: 0,
-        fps: 0,
-    };
+	protected _control = {
+		lastTime: performance.now(),
+		elapseTime: 0,
+		timestamp: 0,
+		frame: 0,
+		fps: 0,
+	};
 
-    get FPS() {
-        return this._control.fps.toFixed(0);
-    }
+	get FPS() {
+		return this._control.fps.toFixed(0);
+	}
 
-    get FRAME() {
-        return this._control.frame;
-    }
+	get FRAME() {
+		return this._control.frame;
+	}
 
-    get DELTA() {
-        return this._control.deltaTime / 1000;
-    }
+	get DELTA() {
+		return this._control.elapseTime / 1000;
+	}
 
-    constructor(app: EngineCore | GameCore) {
-        this.$app = app;
-    }
+	get ELAPSE_TIME() {
+		return this._control.elapseTime;
+	}
 
-    protected process() {
-        const isPreview = this.$app.global("mode") === "preview";
-        const isPlayingGame = this.$app.mode === "game" &&
-            this.$app.global("status") === "play";
+	constructor(app: EngineCore | GameCore) {
+		this.$app = app;
+	}
 
-        if (isPlayingGame || isPreview) {
-            this.$app[_Input][ExecuteProcess]();
+	protected process() {
+		const isPreview = this.$app.global("mode") === "preview";
+		const isPlayingGame =
+			this.$app.mode === "game" && this.$app.global("status") === "play";
 
-            this.$app[_Collision][ExecuteProcess]();
+		if (isPlayingGame || isPreview) {
+			this.$app[_Input][ExecuteProcess]();
 
-            this.$app[_Script][ExecuteProcess](
-                this._control.deltaTime / 1000,
-            );
+			this.$app[_Script][ExecuteProcess](this._control.elapseTime / 1000);
 
-            this._control.frame++;
+			this.$app[_Collision][ExecuteProcess]();
 
-            this.$app[SetGlobal]("dispatch-event", false);
-        }
+			this.$app[SetGlobal]("dispatch-event", false);
 
-        if (
-            this.$app instanceof EngineCore &&
-            this.$app[GetOptions]().renderProcess === "main-thread"
-        ) {
-            this.$app[_Render][ExecuteProcess]();
-        }
-    }
+			this._control.frame++;
+		}
+	}
 
-    protected calculateFramesPerSecond() {
-        const currentFPS = 1000 / this._control.deltaTime;
+	protected calculateFramesPerSecond() {
+		const currentFPS = 1000 / this._control.elapseTime;
 
-        this._control.fps = this._control.fps * 0.9 +
-            currentFPS * (1 - 0.9);
-    }
+		this._control.fps = this._control.fps * 0.9 + currentFPS * (1 - 0.9);
+	}
 
-    public controlUnlimitedFrame(timestamp: number) {
-        this._control.deltaTime = timestamp - this._control.lastTime;
+	public controlUnlimitedFrame(timestamp: number) {
+		this._control.elapseTime = timestamp - this._control.lastTime;
 
-        this.calculateFramesPerSecond();
+		this.calculateFramesPerSecond();
 
-        this.process();
+		this.process();
 
-        this._control.lastTime = timestamp;
-    }
+		this.$app[_Render][ExecuteProcess]();
 
-    public controlLimitedFrameWithWhile(timestamp: number) {
-        this._control.deltaTime += timestamp - this._control.lastTime;
-        let framesSkipped = 0;
+		this._control.lastTime = timestamp;
+	}
 
-        while (
-            this._control.deltaTime >= this._frameDuration &&
-            framesSkipped < this._maxFrameSkip
-        ) {
-            this.calculateFramesPerSecond();
+	public controlLimitedFrameWithWhile(timestamp: number) {
+		this._control.elapseTime += timestamp - this._control.lastTime;
+		let framesSkipped = 0;
 
-            this.process();
+		while (
+			this._control.elapseTime >= this._frameDuration &&
+			framesSkipped < this._maxFrameSkip
+		) {
+			this.calculateFramesPerSecond();
 
-            this._control.deltaTime -= this._frameDuration;
-            framesSkipped++;
-        }
+			this.process();
 
-        this._control.lastTime = timestamp;
-    }
+			this._control.elapseTime -= this._frameDuration;
+			framesSkipped++;
+		}
 
-    public controlLimitedFrameWithIf(timestamp: number) {
-        this._control.deltaTime = timestamp - this._control.lastTime;
+		this.$app[_Render][ExecuteProcess]();
 
-        if (this._control.deltaTime >= this._frameDuration) {
-            this.calculateFramesPerSecond();
+		this._control.lastTime = timestamp;
+	}
 
-            this.process();
+	public controlLimitedFrameWithIf(timestamp: number) {
+		this._control.elapseTime = timestamp - this._control.lastTime;
 
-            this._control.lastTime = timestamp;
-        }
-    }
+		if (this._control.elapseTime >= this._frameDuration) {
+			this.calculateFramesPerSecond();
+
+			this.process();
+
+			this._control.lastTime = timestamp;
+		}
+
+		this.$app[_Render][ExecuteProcess]();
+	}
 }

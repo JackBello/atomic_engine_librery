@@ -35,40 +35,22 @@ export class Render2D extends AbstractRender {
 			before: Map<string, INodeOperation | OperationNode>;
 		},
 	) {
-		if (this.thread === "sub") {
-			if (operations?.before.size) {
-				this.executeSubOperation(
-					...(operations.before as Map<string, INodeOperation>).values(),
-				);
-			}
-
-			this.executeSubDraw(root as INodeProcess);
-
-			if (operations?.after.size) {
-				this.executeSubOperation(
-					...(operations.after as Map<string, INodeOperation>).values(),
-				);
-			}
+		if (operations?.before.size) {
+			this.executeOperation(
+				...(operations.before as Map<string, OperationNode>).values(),
+			);
 		}
 
-		if (this.thread === "main") {
-			if (operations?.before.size) {
-				this.executeMainOperation(
-					...(operations.before as Map<string, OperationNode>).values(),
-				);
-			}
+		this.executeDraw(root as GlobalNode);
 
-			this.executeMainDraw(root as GlobalNode);
-
-			if (operations?.after.size) {
-				this.executeMainOperation(
-					...(operations.after as Map<string, OperationNode>).values(),
-				);
-			}
+		if (operations?.after.size) {
+			this.executeOperation(
+				...(operations.after as Map<string, OperationNode>).values(),
+			);
 		}
 	}
 
-	protected executeSubOperation(...operations: INodeOperation[]) {
+	protected executeOperation(...operations: OperationNode[]): void {
 		for (const operation of operations) {
 			handleDrawContext2D(
 				operation.__type__ as TAnything,
@@ -78,81 +60,7 @@ export class Render2D extends AbstractRender {
 		}
 	}
 
-	protected executeMainOperation(...operations: OperationNode[]): void {
-		for (const operation of operations) {
-			handleDrawContext2D(
-				operation.__type__ as TAnything,
-				operation.options,
-				this.context,
-			);
-		}
-	}
-
-	protected executeSubDraw(
-		node: INodeProcess,
-		parentTransform: {
-			x: number;
-			y: number;
-			scaleX: number;
-			scaleY: number;
-			rotation: number;
-			alpha: number;
-		} = { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0, alpha: 1 },
-	) {
-		if (node && node.__type__ === "global/scene") {
-			for (const child of node.nodes) {
-				this.executeSubDraw(child);
-			}
-		}
-
-		if (node?.options?.visible && node.__type__.startsWith("2D")) {
-			const globalTransform = RootNodeSubProcess.calculateTransforms(
-				{
-					x: node.options.calculate.translate.x,
-					y: node.options.calculate.translate.y,
-					scaleX: node.options.calculate.scale.x,
-					scaleY: node.options.calculate.scale.y,
-					rotation: node.options.calculate.rotation,
-					alpha: node.options.alpha,
-				},
-				parentTransform,
-			);
-
-			this.context.save();
-
-			this.context.globalAlpha = globalTransform.alpha;
-
-			this.context.translate(
-				node.options.calculate.translate.x * this.scaleViewport,
-				node.options.calculate.translate.y * this.scaleViewport,
-			);
-
-			if (node.options.calculate.rotation !== 0) {
-				this.context.rotate(node.options.calculate.rotation);
-			}
-
-			this.context.scale(
-				node.options.calculate.scale.x * this.scaleViewport,
-				node.options.calculate.scale.y * this.scaleViewport,
-			);
-
-			handleDrawContext2D(
-				node.__type__ as TAnything,
-				node.options,
-				this.context,
-			);
-
-			if (node.nodes.length > 0) {
-				for (const child of node.nodes) {
-					this.executeSubDraw(child, globalTransform);
-				}
-			}
-
-			this.context.restore();
-		}
-	}
-
-	protected executeMainDraw(
+	protected executeDraw(
 		node: GlobalNode,
 		parentTransform: {
 			x: number;
@@ -170,16 +78,14 @@ export class Render2D extends AbstractRender {
 
 			if (!nodeRef[NodePropType].startsWith("2D")) continue;
 
-			const calculate = nodeRef.processCalculate();
-
 			const globalTransform = RootNodeSubProcess.calculateTransforms(
 				{
-					x: calculate.translate.x,
-					y: calculate.translate.y,
-					scaleX: calculate.scale.x,
-					scaleY: calculate.scale.y,
-					rotation: calculate.rotation,
-					alpha: nodeRef.alpha,
+					x: nodeRef.x ?? 0,
+					y: nodeRef.y ?? 0,
+					scaleX: nodeRef.scaleX ?? 1,
+					scaleY: nodeRef.scaleY ?? 1,
+					rotation: nodeRef.calculate.angle ?? 0,
+					alpha: nodeRef.alpha ?? 1,
 				},
 				parentTransform,
 			);
@@ -188,25 +94,29 @@ export class Render2D extends AbstractRender {
 
 			this.context.globalAlpha = globalTransform.alpha;
 
+			// console.log(nodeRef.slug, nodeRef.originX, nodeRef.calculate);
+
+
 			this.context.translate(
-				calculate.translate.x * this.scaleViewport,
-				calculate.translate.y * this.scaleViewport,
+				(nodeRef.x - nodeRef.calculate.origin[0]) * this.scaleViewport,
+				(nodeRef.y - nodeRef.calculate.origin[1]) * this.scaleViewport,
 			);
 
-			if (calculate.rotation !== 0) {
-				this.context.rotate(calculate.rotation);
+			if (nodeRef.calculate.angle !== 0) {
+				this.context.rotate(nodeRef.calculate.angle);
 			}
 
+			this.context.transform(1, nodeRef.skewY, nodeRef.skewX, 1, 0, 0);
+
 			this.context.scale(
-				calculate.scale.x * this.scaleViewport,
-				calculate.scale.y * this.scaleViewport,
+				nodeRef.scaleX * this.scaleViewport,
+				nodeRef.scaleY * this.scaleViewport,
 			);
 
 			handleDrawContext2D(
 				nodeRef[NodePropType] as TAnything,
 				{
 					...nodeRef.toObject(),
-					calculate,
 				},
 				this.context,
 			);
@@ -214,7 +124,7 @@ export class Render2D extends AbstractRender {
 			handleComponent2D(nodeRef, this.context);
 
 			if (nodeRef.$nodes.size > 0) {
-				this.executeMainDraw(nodeRef, globalTransform);
+				this.executeDraw(nodeRef, globalTransform);
 			}
 
 			this.context.restore();

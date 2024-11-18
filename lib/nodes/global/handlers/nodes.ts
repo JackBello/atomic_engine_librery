@@ -1,15 +1,23 @@
-import type { IHandleNode, INodeProcess } from "../types";
+import type { IHandleNode } from "../types";
 import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 
-import { _Render, _Script, _Worker, ExportWorker, GetApp } from "@/app/symbols";
 import {
+	_Render,
+	_Script,
+	_Worker,
+	DispatchEvent,
+	GetApp,
+} from "@/app/symbols";
+import {
+	NodeDestroy,
 	NodePropHandlerNodes,
 	NodeSetHandlerNodes,
 	NodeSetIndex,
 	NodeSetParent,
 } from "@/nodes/symbols";
+import type { TAnything } from "@/app/types";
 
 export class HandlerNode implements IHandleNode {
 	private $node: GlobalNode;
@@ -73,18 +81,11 @@ export class HandlerNode implements IHandleNode {
 			this[NodePropHandlerNodes].push(node);
 
 			if (this.$app.scenes.currentScene) {
-				this.$app[_Worker].nodes.addNode(
-					node[ExportWorker]() as INodeProcess,
-					this.$node.path,
-					"path",
-					"index",
-				);
-
-				this.$app[_Worker].render.draw();
-
 				this.$app[_Render].draw = true;
 			}
 		}
+
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:add_node", nodes);
 	}
 
 	has(index: number): boolean {
@@ -103,10 +104,6 @@ export class HandlerNode implements IHandleNode {
 		this._updateNodes_(this[NodePropHandlerNodes]);
 
 		if (this.$app.scenes.currentScene) {
-			this.$app[_Worker].nodes.deleteNode($node.path, "path", "index");
-
-			this.$app[_Worker].render.draw();
-
 			this.$app[_Render].draw = true;
 		}
 
@@ -117,10 +114,6 @@ export class HandlerNode implements IHandleNode {
 		this[NodePropHandlerNodes] = [];
 
 		if (this.$app.scenes.currentScene) {
-			this.$app[_Worker].nodes.clearNodes(this.$node.path, "path", "index");
-
-			this.$app[_Worker].render.draw();
-
 			this.$app[_Render].draw = true;
 		}
 
@@ -142,15 +135,6 @@ export class HandlerNode implements IHandleNode {
 		this._updateNodes_(this[NodePropHandlerNodes]);
 
 		if (this.$app.scenes.currentScene) {
-			this.$app[_Worker].nodes.replaceNode(
-				node[ExportWorker]() as INodeProcess,
-				$node.path,
-				"path",
-				"index",
-			);
-
-			this.$app[_Worker].render.draw();
-
 			this.$app[_Render].draw = true;
 		}
 
@@ -191,21 +175,6 @@ export class HandlerNode implements IHandleNode {
 		this._updateNodes_(this[NodePropHandlerNodes]);
 
 		if (this.$app.scenes.currentScene) {
-			this.$app[_Worker].nodes.moveNode(
-				{
-					mode: "index",
-					search: $nodeFrom.path,
-				},
-				{
-					mode: "index",
-					search: $nodeTo.path,
-				},
-				"path",
-				"before",
-			);
-
-			this.$app[_Worker].render.draw();
-
 			this.$app[_Render].draw = true;
 		}
 
@@ -224,5 +193,10 @@ export class HandlerNode implements IHandleNode {
 
 	[NodeSetHandlerNodes](nodes: GlobalNode[]): void {
 		this[NodePropHandlerNodes] = nodes;
+	}
+
+	[NodeDestroy]() {
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

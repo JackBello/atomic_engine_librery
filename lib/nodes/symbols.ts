@@ -26,6 +26,8 @@ export const NodeSetHandlerFunctions = Symbol();
 export const NodeSetHandlerMetaKeys = Symbol();
 export const NodeSetHandlerNodes = Symbol();
 
+export const NodeDestroy = Symbol();
+
 // Specific nodes
 export const ScriptsNodeFromScene = Symbol();
 export const NodeFromObject = Symbol();

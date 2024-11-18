@@ -1,5 +1,5 @@
 import type { EngineCore } from "@/app/engine";
-import { _Worker, GetHidden } from "@/app/symbols";
+import { GetHidden } from "@/app/symbols";
 
 export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 	const config = app.plugin("pan-and-zoom")?.configs;
@@ -61,13 +61,6 @@ export const handleMouseMove = (event: MouseEvent, app: EngineCore) => {
 	config.pan.x = _.pan.x;
 	config.pan.y = _.pan.y;
 
-	app[_Worker].render.updateBeforeOperation("translate", {
-		x: config.pan.x,
-		y: config.pan.y,
-	});
-
-	app[_Worker].render.draw();
-
 	_.startCoords.x = event.clientX;
 	_.startCoords.y = event.clientY;
 };
@@ -89,10 +82,4 @@ export const handleMouseWheel = (event: WheelEvent, app: EngineCore) => {
 	_.zoom.scale = Math.max(_.zoom.min, Math.min(_.zoom.max, _.zoom.scale));
 
 	config.zoom = _.zoom.scale;
-
-	app[_Worker].render.updateBeforeOperation("scale", {
-		scale: config.zoom,
-	});
-
-	app[_Worker].render.draw();
 };
