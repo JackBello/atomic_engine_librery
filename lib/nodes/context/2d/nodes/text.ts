@@ -15,7 +15,7 @@ export const text_2D = (
 	if (options.flipY)
 		flipY_2D(context, options.width)
 
-	context.fillStyle = options.color;
+	context.fillStyle = options.fill;
 
 	context.font = `${options.fontStretch ? `${options.fontStretch} ` : ""}${options.fontVariant ? `${options.fontVariant} ` : ""
 		}${options.fontStyle ? `${options.fontStyle} ` : ""}${options.fontWeight ? `${options.fontWeight} ` : ""
@@ -28,16 +28,13 @@ export const text_2D = (
 	context.wordSpacing = options.wordSpacing;
 	context.letterSpacing = options.letterSpacing;
 
-	if (options.border) {
-		context.strokeStyle = options.borderColor;
-		context.lineWidth = options.borderWidth;
+	if (options.stroke) {
+		context.strokeStyle = options.stroke;
+		context.lineWidth = options.lineWidth;
+		context.strokeText(options.text, 0, 0);
 	}
 
-	if (options.border) {
-		context.strokeText(options.text, 0, 0);
-	} else {
-		context.fillText(options.text, 0, 0);
-	}
+	context.fillText(options.text, 0, 0);
 
 	context.closePath();
 	context.restore()

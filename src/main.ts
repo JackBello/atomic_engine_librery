@@ -101,14 +101,12 @@ lv1.emit("scene:remove_node", (node: Rectangle2D) => {
 });
 
 const borderWindow = new Rectangle2D("border-window", {
-	border: true,
-	background: "transparent",
-	borderColor: "red",
-	borderWidth: 5,
+	fill: "transparent",
+	stroke: "red",
+	lineWidth: 5,
 	width: app.size.width,
 	height: app.size.height,
-	x: app.size.width / 2,
-	y: app.size.height / 2,
+	position: `Vec2(${app.size.width / 2}, ${app.size.height / 2})`,
 	hovered: false,
 	lock: true,
 });
@@ -116,23 +114,20 @@ const borderWindow = new Rectangle2D("border-window", {
 lv1.$nodes.add(borderWindow);
 
 const circle1 = new Circle2D("ball", {
-	x: 10,
-	y: 10,
+	position: "Vec2(10, 10)",
 	radius: 80,
-	background: "green",
+	fill: "green",
 });
 
 lv1.$nodes.add(circle1);
 
 objects.player = new Rectangle2D("player", {
-	background: "black",
+	fill: "black",
 	width: 100,
 	height: 100,
-	x: 0,
-	y: 150,
+	position: "Vec2(0, 150)",
+	scale: "Vec2(1, 1)",
 	rotation: 0,
-	scaleX: 1,
-	scaleY: 1,
 });
 
 objects.player.$components.add(CollisionShapeComponent);
@@ -164,12 +159,11 @@ class MyNode extends Rectangle2D {
     $Logger.message("ready rect 1")
 
 	this.textTime = new $Nodes.Text2D("destroy time", {
-		color: "black",
+		fill: "black",
 		fontSize: "20px",
 		// text: this.destroyInterval + "seg",
 		text: "player-1",
-		x: 50,
-		y: 20,
+		position: "Vec2(50, 20)"
 	})
 
 	$Scene().$nodes.add(this.textTime);
@@ -177,9 +171,9 @@ class MyNode extends Rectangle2D {
 
   _process(delta) {
   	if ($Input.isActionPressed("move_right") && !this.isDead)
-    	this.x += this.speed * delta
+    	this.position.x += this.speed * delta
 	if ($Input.isActionPressed("move_left") && !this.isDead)
-    	this.x -= this.speed * delta
+    	this.position.x -= this.speed * delta
 
 	if (this.collision.isOnFloor()) {
 		if ($Input.isActionPressed("move_up") && !this.isDead) {
@@ -192,7 +186,7 @@ class MyNode extends Rectangle2D {
 		this.speedY += this.gravity * delta
 	}
 
-	this.y += this.speedY * delta;
+	this.position.y += this.speedY * delta;
   }
 
   _destroy() {
@@ -217,8 +211,7 @@ class MyNode extends Rectangle2D {
 const countFPS = new Text2D("countFPS", {
 	text: "FPS: 0",
 	fontSize: "40px",
-	color: "black",
-	y: 0
+	fill: "black",
 });
 
 // countFPS.setScale(3)
@@ -246,9 +239,8 @@ class MyNode extends Text2D {
 const lineFlow = new LineFlowEffect2D("effect-1", {
 	width: 300,
 	height: 300,
-	x: 50,
-	y: 50,
-	color:
+	position: "Vec2(50, 50)",
+	fill:
 		"linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)",
 	cellSize: 10,
 	spacing: 10,
@@ -283,7 +275,7 @@ class MyNode extends LineFlowEffect2D {
 const floor = new Node2D("water", {
 	height: 100,
 	width: 450,
-	y: 495,
+	position: "Vec2(0, 495)"
 });
 
 floor.centerX()
@@ -301,8 +293,7 @@ floorCollision.height = 100;
 const areaDestroy = new Node2D("area-dead", {
 	height: 100,
 	width: app.size.width,
-	x: 0,
-	y: app.size.height - 5,
+	position: `Vec2(0, ${app.size.height - 5})`,
 });
 
 areaDestroy.centerX()
@@ -372,11 +363,10 @@ buttonAddRect.addEventListener("click", async () => {
 	const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
 	const randomRect = new Rectangle2D("enemy", {
-		background: color,
+		fill: color,
 		width: 100,
 		height: 100,
-		x: 50,
-		y: 50,
+		position: "Vec2(50, 50)"
 	});
 
 	randomRect.$script.modeExecute = "none";

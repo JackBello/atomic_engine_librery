@@ -58,6 +58,8 @@ import {
 import { DEFAULT_CONFIG_ATOMIC_GAME } from "../configs/engine/game";
 
 import { serializers } from "./utils/serialize";
+import { Vector2 } from "@/nodes/vectors/vector-2";
+import { CallbackUpdateVector } from "@/nodes/symbols";
 
 export class GameCore {
 	[key: string]: TAnything;
@@ -179,8 +181,6 @@ export class GameCore {
 			Text2D,
 		});
 
-		this[_ROOT_] = new RootNodeMainProcess(this);
-
 		this[$Animation] = new AnimationService(this);
 		this[$Canvas] = new CanvasService(this);
 		this[$Scenes] = new ScenesService(this);
@@ -191,6 +191,12 @@ export class GameCore {
 		this[_Events] = new EventController(this);
 		this[_Script] = new ScriptController(this);
 		this[_Collision] = new CollisionController(this);
+
+		this[_ROOT_] = new RootNodeMainProcess(this);
+
+		Vector2[CallbackUpdateVector](() => {
+			this[_Render].draw = true
+		})
 
 		this[_Script].initHelpersScript();
 

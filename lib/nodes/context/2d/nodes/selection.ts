@@ -8,31 +8,31 @@ export const selection_2D = (
 
 	if (!options) return;
 
-	context.fillStyle = options.background;
+	context.fillStyle = options.fill;
 
-	if (options.border) {
-		context.strokeStyle = options.borderColor;
-		context.lineWidth = options.borderWidth;
+	if (options.stroke) {
+		context.strokeStyle = options.stroke;
+		context.lineWidth = options.lineWidth;
 	}
 
 	context.beginPath();
 
-	if (options.radius) {
-		if (typeof options.radius === "number") {
+	if (options.rounded) {
+		if (typeof options.rounded === "number") {
 			context.roundRect(
 				options.x,
 				options.y,
 				options.width,
 				options.height,
-				options.radius,
+				options.rounded,
 			);
-		} else if (Array.isArray(options.radius)) {
+		} else if (Array.isArray(options.rounded)) {
 			context.roundRect(
 				options.x,
 				options.y,
 				options.width,
 				options.height,
-				options.radius,
+				options.rounded,
 			);
 		} else {
 			context.roundRect(
@@ -41,10 +41,10 @@ export const selection_2D = (
 				options.width,
 				options.height,
 				[
-					options.radius.topLeft,
-					options.radius.topRight,
-					options.radius.bottomLeft,
-					options.radius.topRight,
+					options.rounded.topLeft,
+					options.rounded.topRight,
+					options.rounded.bottomLeft,
+					options.rounded.topRight,
 				],
 			);
 		}
@@ -53,7 +53,7 @@ export const selection_2D = (
 	}
 	context.fill();
 
-	options.border ? context.stroke() : 0;
+	options.stroke ? context.stroke() : 0;
 
 	context.closePath();
 };

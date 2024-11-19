@@ -7,10 +7,12 @@ import {
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
+	NodeFunctionReset,
+	NodeFunctionSet,
 	NodePropType,
 	ScriptsNodeFromScene,
 } from "../symbols";
-import { _Render, _Worker, GetApp } from "@/app/symbols";
+import { _Render, _Worker } from "@/app/symbols";
 
 import { GlobalNode } from "./global-node";
 
@@ -39,13 +41,7 @@ export class Scene extends GlobalNode {
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["global/scene"]): void {
-		if (property) {
-			this._options[property] = this._initial[property];
-		} else {
-			this._options = { ...this._initial };
-		}
-
-		this[GetApp][_Render].draw = true;
+		this[NodeFunctionReset](property);
 	}
 
 	toObject(): TCanvasNodeOptions["global/scene"] {
@@ -58,17 +54,7 @@ export class Scene extends GlobalNode {
 	): void;
 	set(properties: Partial<TCanvasNodeOptions["global/scene"]>): void;
 	set(properties?: unknown, value?: unknown): void {
-		if (properties && typeof properties === "string" && value) {
-			this._options[properties as keyof TCanvasNodeOptions["global/scene"]] =
-				value as never;
-		} else if (typeof properties !== "string" && properties) {
-			for (const [key, value] of Object.entries(properties)) {
-				this._options[key as keyof TCanvasNodeOptions["global/scene"]] =
-					value as never;
-			}
-		}
-
-		this[GetApp][_Render].draw = true;
+		this[NodeFunctionSet](properties, value);
 	}
 
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {

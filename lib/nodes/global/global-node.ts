@@ -51,14 +51,14 @@ import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "@/configs/nodes/global/node";
 import { HandlerScript } from "./handlers/script";
 import { serializers } from "@/app/utils/serialize";
 
-export class GlobalNode
+export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNodeOptions["global/node"]>
 	extends AbstractNode
 	implements IGlobalNode, IControlEditor, IControlNode, IControlHierarchy {
 	protected _omit: string[] = ["name", "description"];
 	protected _add: string[] = [];
 
-	protected _options: TCanvasNodeOptions["global/node"];
-	protected _initial: TCanvasNodeOptions["global/node"];
+	protected _options: T;
+	protected _initial: T;
 
 	protected _parent: undefined | GlobalNode;
 
@@ -154,7 +154,7 @@ export class GlobalNode
 
 		this._initial = {
 			...DEFAULT_CONFIG_PRIMITIVE_NODE,
-			...options,
+			...options as TAnything,
 		};
 		this._options = { ...this._initial };
 
@@ -186,7 +186,7 @@ export class GlobalNode
 		this[NodeFunctionReset](property);
 	}
 
-	toObject(): TCanvasNodeOptions["global/node"] {
+	toObject(): T {
 		return { ...this._options };
 	}
 

@@ -8,8 +8,8 @@ export const collision_shape = (
 
 	context.fillStyle = collisionShape.fill;
 	context.fillRect(
-		collisionShape.position[0],
-		collisionShape.position[1],
+		collisionShape.position.x,
+		collisionShape.position.y,
 		collisionShape.width,
 		collisionShape.height,
 	);

@@ -1,15 +1,17 @@
 import type { IControlCanvas, IControlEditor, ISourceNode } from "./global/types";
 
 import type {
-	IBorder2D,
 	ICircle2D,
 	IControlEdition2D,
 	ICoords2D,
+	IDraw2D,
 	ILineFlowEffect2D,
 	INode2D,
 	IRectangle2D,
+	IScale2D,
 	ISelection2D,
 	ISize2D,
+	ISkew2D,
 	IText2D,
 } from "./class/nodes-2D.types";
 
@@ -73,56 +75,82 @@ export type TCanvasNodeOptions = {
 
 	"global/abstract/canvas-node": IControlCanvas & IControlEditor;
 
-	"2D/node": IControlEditor & IControlCanvas & ICoords2D & ISize2D & INode2D;
+	"2D/node": IControlEditor &
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D;
 
 	"2D/rectangle": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		IRectangle2D &
-		IBorder2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	IRectangle2D &
+	IDraw2D;
 
 	"2D/circle": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		ICircle2D &
-		IBorder2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	ICircle2D &
+	IDraw2D;
 
 	"2D/text": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		IBorder2D &
-		IText2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	IDraw2D &
+	IText2D;
 
 	"2D/line-flow-effect": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		ILineFlowEffect2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	Pick<IDraw2D, "fill" | "lineWidth"> &
+	INode2D &
+	ILineFlowEffect2D;
 
 	"2D/selection": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		ISelection2D &
-		IRectangle2D &
-		IBorder2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	IDraw2D &
+	ISelection2D &
+	IRectangle2D;
 
 	"2D/control-edition": IControlEditor &
-		IControlCanvas &
-		ICoords2D &
-		ISize2D &
-		INode2D &
-		IControlEdition2D &
-		IRectangle2D &
-		IBorder2D;
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	IDraw2D &
+	IControlEdition2D &
+	IRectangle2D;
 
-	"2D/image": IControlEditor & IControlCanvas & ICoords2D & ISize2D & INode2D & ISourceNode<"image"> 
+	"2D/image": IControlEditor &
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	ISourceNode<"image">
 };

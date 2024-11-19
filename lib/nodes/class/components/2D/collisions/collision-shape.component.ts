@@ -1,3 +1,4 @@
+import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CollisionComponent } from "./collision.component";
 import { _Collision } from "@/app/symbols";
 
@@ -18,15 +19,15 @@ export class CollisionShapeComponent extends CollisionComponent {
 	}
 
 	get position() {
-		return this._options.transform.position;
+		return this._options.position;
 	}
 
 	get scale() {
-		return this._options.transform.scale;
+		return this._options.scale;
 	}
 
 	get rotation() {
-		return this._options.transform.rotation;
+		return this._options.rotation;
 	}
 
 	set width(value: number) {
@@ -41,16 +42,16 @@ export class CollisionShapeComponent extends CollisionComponent {
 		this._options.shape = value;
 	}
 
-	set position(value: [number, number]) {
-		this._options.transform.position = value;
+	set position(value: Vector2) {
+		this._options.position = value;
 	}
 
-	set scale(value: [number, number]) {
-		this._options.transform.scale = value;
+	set scale(value: Vector2) {
+		this._options.scale = value;
 	}
 
 	set rotation(value: number) {
-		this._options.transform.rotation = value;
+		this._options.rotation = value;
 	}
 
 	init(): void {
@@ -60,11 +61,9 @@ export class CollisionShapeComponent extends CollisionComponent {
 			disabled: false,
 			width: this.$node.width,
 			height: this.$node.height,
-			transform: {
-				position: [0, 0],
-				scale: [1, 1],
-				rotation: 0,
-			},
+			position: Vector2.zero(),
+			scale: Vector2.one(),
+			rotation: 0,
 			shape: "rectangle",
 		};
 

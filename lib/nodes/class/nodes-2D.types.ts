@@ -4,7 +4,9 @@ import type {
 	TTypeOrigin,
 	TTypeOriginX,
 	TTypeOriginY,
+	TVec2,
 } from "../global/types";
+import type { Vector2 } from "../vectors/vector-2";
 
 export interface IHandleCoords2D {
 	center(): void;
@@ -26,8 +28,15 @@ export interface ISize2D {
 }
 
 export interface ICoords2D {
-	x: number;
-	y: number;
+	position: TVec2 | Vector2
+}
+
+export interface IScale2D {
+	scale: TVec2 | Vector2
+}
+
+export interface ISkew2D {
+	skew: TVec2 | Vector2
 }
 
 export interface INode2D {
@@ -35,27 +44,17 @@ export interface INode2D {
 	flipY: boolean;
 	originX: TTypeOriginX | number;
 	originY: TTypeOriginY | number;
-	scaleX: number;
-	scaleY: number;
-	skewX: number;
-	skewY: number;
 	rotation: number;
 }
 
 export interface IDraw2D {
 	fill: string;
-	stroke: string;
-}
-
-export interface IBorder2D {
-	border: boolean;
-	borderColor: string;
-	borderWidth: number;
+	stroke?: string;
+	lineWidth: number
 }
 
 export interface IRectangle2D {
-	background: string;
-	radius:
+	rounded:
 	| number
 	| [number, number]
 	| {
@@ -67,7 +66,6 @@ export interface IRectangle2D {
 }
 
 export interface ICircle2D {
-	background: string;
 	radius: number;
 	startAngle: number;
 	endAngle: number;
@@ -80,11 +78,6 @@ export interface ISelection2D {
 	startX: number;
 	startY: number;
 	shape: "rectangle" | "circle" | "triangle" | "polygon";
-}
-
-export interface ICollisionShape2D {
-	shape: "rectangle" | "circle" | "triangle" | "polygon";
-	color: string;
 }
 
 export interface IControlEdition2D {
@@ -110,9 +103,7 @@ export interface IControlEdition2D {
 
 export interface ILineFlowEffect2D {
 	cellSize: number;
-	lineWidth: number;
 	spacing: number;
-	color: string;
 	radius: number;
 }
 
@@ -168,7 +159,6 @@ export interface IText2D {
 	textDirection: "ltr" | "rtl" | "inherit";
 	wordSpacing: `${string}${TSize}`;
 	letterSpacing: `${string}${TSize}`;
-	color: string;
 }
 
 export interface ICalculate {

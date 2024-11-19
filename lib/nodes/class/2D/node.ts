@@ -4,6 +4,7 @@ import type {
 	TTypeOrigin,
 	TTypeOriginX,
 	TTypeOriginY,
+	TVec2,
 } from "@/nodes/global/types";
 import type {
 	ICalculate,
@@ -15,6 +16,7 @@ import type { TEventNode, TEventNode2D } from "../../events";
 import type { TAnything, TFunction } from "../../../app/types";
 
 import {
+	CallbackUpdateVector,
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
@@ -27,19 +29,13 @@ import { _Render, GetApp } from "../../../app/symbols";
 import { GlobalNode } from "../../global/global-node";
 
 import { DEFAULT_CONFIG_NODE_2D } from "../../../configs/nodes/2D/node";
-import { Transform2D } from "@/nodes/transforms/transform-2D";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CanvasNode } from "@/nodes/global/class/canvas-node";
 
-export class Node2D
-	extends CanvasNode
+export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions["2D/node"]>
+	extends CanvasNode<T>
 	implements IControlNode2D, IHandleCoords2D {
 	[NodePropType]: TCanvasNodes = "2D/node";
-
-	protected _options: TCanvasNodeOptions["2D/node"];
-	protected _initial: TCanvasNodeOptions["2D/node"];
-
-	protected _transform: Transform2D;
 
 	protected _calculate: ICalculate = {
 		angle: 0,
@@ -48,12 +44,16 @@ export class Node2D
 
 	readonly NODE_NAME: TTypeNodes = "Node2D";
 
-	get x() {
-		return this._options.x;
+	get position(): Vector2 {
+		return this._options.position as Vector2
 	}
 
-	get y() {
-		return this._options.y;
+	get scale(): Vector2 {
+		return this._options.scale as Vector2
+	}
+
+	get skew(): Vector2 {
+		return this._options.skew as Vector2
 	}
 
 	get flipX() {
@@ -72,22 +72,6 @@ export class Node2D
 		return this._options.originY;
 	}
 
-	get scaleX() {
-		return this._options.scaleX;
-	}
-
-	get scaleY() {
-		return this._options.scaleY;
-	}
-
-	get skewX() {
-		return this._options.skewX;
-	}
-
-	get skewY() {
-		return this._options.skewY;
-	}
-
 	get rotation() {
 		return this._options.rotation;
 	}
@@ -96,16 +80,28 @@ export class Node2D
 		return this._calculate;
 	}
 
-	set x(value: number) {
-		this._options.x = value;
-
-		this[GetApp][_Render].draw = true;
+	set position(value: Vector2 | TVec2) {
+		if (typeof value === "string") {
+			this._options.position = Vector2.import(value)
+		} else {
+			this._options.position = value
+		}
 	}
 
-	set y(value: number) {
-		this._options.y = value;
+	set scale(value: Vector2 | TVec2) {
+		if (typeof value === "string") {
+			this._options.scale = Vector2.import(value)
+		} else {
+			this._options.scale = value
+		}
+	}
 
-		this[GetApp][_Render].draw = true;
+	set skew(value: Vector2 | TVec2) {
+		if (typeof value === "string") {
+			this._options.skew = Vector2.import(value)
+		} else {
+			this._options.skew = value
+		}
 	}
 
 	set flipX(value: boolean) {
@@ -136,30 +132,6 @@ export class Node2D
 		this[GetApp][_Render].draw = true;
 	}
 
-	set scaleX(value: number) {
-		this._options.scaleX = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set scaleY(value: number) {
-		this._options.scaleY = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set skewX(value: number) {
-		this._options.skewX = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set skewY(value: number) {
-		this._options.skewY = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
 	set rotation(value: number) {
 		this._options.rotation = value;
 
@@ -171,17 +143,26 @@ export class Node2D
 	constructor(slug: string, options?: Partial<TCanvasNodeOptions["2D/node"]>) {
 		super(slug, { ...DEFAULT_CONFIG_NODE_2D, ...options });
 
-		this._initial = { ...DEFAULT_CONFIG_NODE_2D, ...options };
-		this._options = { ...this._initial };
-
-		this._transform = new Transform2D(
-			new Vector2(this._options.x, this._options.y),
-			this._options.rotation,
-			new Vector2(this._options.scaleX, this._options.scaleY),
-		);
-
+		this.processVector()
 		this.processOrigin()
 		this.processRotation()
+	}
+
+	protected processVector() {
+		if (typeof this._initial.position === "string") {
+			this._initial.position = Vector2.import(this._initial.position)
+			this._options.position = this._initial.position
+		}
+
+		if (typeof this._initial.scale === "string") {
+			this._initial.scale = Vector2.import(this._initial.scale)
+			this._options.scale = this._initial.scale
+		}
+
+		if (typeof this._initial.skew === "string") {
+			this._initial.skew = Vector2.import(this._initial.skew)
+			this._options.skew = this._initial.skew
+		}
 	}
 
 	protected processOrigin() {
@@ -232,46 +213,46 @@ export class Node2D
 	}
 
 	setScale(scale: number): void {
-		this.scaleX = scale;
-		this.scaleY = scale;
+		this.scale.x = scale
+		this.scale.y = scale
 	}
 
 	scaleToWidth(width: number): void {
-		this.scaleX = width / this._options.width;
+		this.scale.x = width / this._options.width;
 	}
 
 	scaleToHeight(height: number): void {
-		this.scaleY = height / this._options.height;
+		this.scale.y = height / this._options.height;
 	}
 
 	setSkew(skew: number): void {
-		this.skewX = skew;
-		this.skewY = skew;
+		this.skew.x = skew;
+		this.skew.y = skew;
 	}
 
 	center(): void {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.x = (this._parent.width * this._parent.scaleX) / 2;
-			this.y = (this._parent.height * this._parent.scaleY) / 2;
+			this.position.x = (this._parent.width * this._parent.scaleX) / 2;
+			this.position.y = (this._parent.height * this._parent.scaleY) / 2;
 		} else {
-			this.x = this[GetApp].size.width / 2;
-			this.y = this[GetApp].size.height / 2;
+			this.position.x = this[GetApp].size.width / 2;
+			this.position.y = this[GetApp].size.height / 2;
 		}
 	}
 
 	centerX() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.x = (this._parent.width * this._parent.scaleX) / 2;
+			this.position.x = (this._parent.width * this._parent.scaleX) / 2;
 		} else {
-			this.x = this[GetApp].size.width / 2;
+			this.position.x = this[GetApp].size.width / 2;
 		}
 	}
 
 	centerY() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.y = (this._parent.height * this._parent.scaleY) / 2;
+			this.position.y = (this._parent.height * this._parent.scaleY) / 2;
 		} else {
-			this.y = this[GetApp].size.height / 2;
+			this.position.y = this[GetApp].size.height / 2;
 		}
 	}
 
@@ -292,7 +273,7 @@ export class Node2D
 		this[GetApp][_Render].draw = true;
 	}
 
-	toObject(): TCanvasNodeOptions["2D/node"] {
+	toObject(): T {
 		return { ...this._options };
 	}
 

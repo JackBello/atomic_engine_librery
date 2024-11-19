@@ -8,8 +8,10 @@ export const control_edition_2D = (
 
 	context.globalCompositeOperation = "destination-over";
 
-	context.strokeStyle = options.borderColor;
-	context.lineWidth = options.borderWidth;
+	if (options.stroke) {
+		context.strokeStyle = options.stroke;
+		context.lineWidth = options.lineWidth;
+	}
 
 	const widthWithPadding =
 		options.width + (options.padding as number) * 2;

@@ -1,13 +1,13 @@
 import type { TAnything } from "@/app/types";
 import type { INodeOperation, INodeProcess } from "../global/types";
-import { GlobalNode } from "@/nodes";
-import { OperationNode } from "../global/class/operation-node";
+import type { GlobalNode } from "@/nodes";
+import type { OperationNode } from "../global/class/operation-node";
+import type { Vector2 } from "../vectors/vector-2";
 
 export abstract class AbstractRender {
 	abstract scaleViewport: number;
 
 	protected abstract context: TAnything;
-	protected abstract thread: "main" | "sub";
 
 	abstract clear(): void;
 
@@ -23,10 +23,8 @@ export abstract class AbstractRender {
 	protected abstract executeDraw(
 		node: GlobalNode,
 		parentTransform: {
-			x: number;
-			y: number;
-			scaleX: number;
-			scaleY: number;
+			position: Vector2
+			scale: Vector2
 			rotation: number;
 			alpha: number;
 		},

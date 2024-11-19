@@ -7,6 +7,7 @@ import {
 } from "./events";
 import type { TAnything } from "@/app/types";
 import { ControlEdition2D, Selection2D } from "@/nodes";
+import { Vector2 } from "@/nodes/vectors/vector-2";
 
 export default class SelectionPlugin extends Plugin {
 	install(options: TAnything): void {
@@ -74,10 +75,7 @@ export default class SelectionPlugin extends Plugin {
 			node: undefined,
 			parent: undefined,
 			child: undefined,
-			startCoords: {
-				x: 0,
-				y: 0,
-			},
+			startCoords: Vector2.zero(),
 			isDragging: false,
 			nodes: {
 				selection,

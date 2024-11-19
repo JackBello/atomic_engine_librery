@@ -24,32 +24,25 @@ import { Node2D } from "../node";
 
 import { DEFAULT_CONFIG_RECTANGLE_2D } from "../../../../configs/nodes/2D/shapes/rectangle";
 
-export class Rectangle2D extends Node2D {
+export class Rectangle2D<T extends TCanvasNodeOptions["2D/rectangle"] = TCanvasNodeOptions["2D/rectangle"]> extends Node2D<T> {
 	[NodePropType]: TCanvasNodes = "2D/rectangle";
-
-	protected _options: TCanvasNodeOptions["2D/rectangle"];
-	protected _initial: TCanvasNodeOptions["2D/rectangle"];
 
 	readonly NODE_NAME: TTypeNodes = "Rectangle2D";
 
-	get background() {
-		return this._options.background;
+	get fill() {
+		return this._options.fill;
 	}
 
-	get radius() {
-		return this._options.radius;
+	get rounded() {
+		return this._options.rounded;
 	}
 
-	get border() {
-		return this._options.border;
+	get stroke() {
+		return this._options.stroke;
 	}
 
-	get borderColor() {
-		return this._options.borderColor;
-	}
-
-	get borderWidth() {
-		return this._options.borderWidth;
+	get lineWidth() {
+		return this._options.lineWidth;
 	}
 
 	get width() {
@@ -60,13 +53,13 @@ export class Rectangle2D extends Node2D {
 		return this._options.height;
 	}
 
-	set background(value: string) {
-		this._options.background = value;
+	set fill(value: string) {
+		this._options.fill = value;
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set radius(value:
+	set rounded(value:
 		| number
 		| [number, number]
 		| {
@@ -75,25 +68,19 @@ export class Rectangle2D extends Node2D {
 			bottomLeft: number;
 			bottomRight: number;
 		}) {
-		this._options.radius = value;
+		this._options.rounded = value;
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set border(value: boolean) {
-		this._options.border = value;
+	set stroke(value: string | undefined) {
+		this._options.stroke = value;
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set borderColor(value: string) {
-		this._options.borderColor = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set borderWidth(value: number) {
-		this._options.borderWidth = value;
+	set lineWidth(value: number) {
+		this._options.lineWidth = value;
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -115,9 +102,6 @@ export class Rectangle2D extends Node2D {
 		options?: Partial<TCanvasNodeOptions["2D/rectangle"]>,
 	) {
 		super(slug, { ...DEFAULT_CONFIG_RECTANGLE_2D, ...options });
-
-		this._initial = { ...DEFAULT_CONFIG_RECTANGLE_2D, ...options };
-		this._options = { ...this._initial };
 	}
 
 	clone() {
@@ -128,7 +112,7 @@ export class Rectangle2D extends Node2D {
 		this[NodeFunctionReset](property)
 	}
 
-	toObject(): TCanvasNodeOptions["2D/rectangle"] {
+	toObject(): T {
 		return { ...this._options };
 	}
 

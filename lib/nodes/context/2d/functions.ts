@@ -1,3 +1,4 @@
+import { Vector2 } from "@/nodes/vectors/vector-2";
 import type { ICoords2D, ISize2D } from "../../class/nodes-2D.types";
 
 export const validColor = (
@@ -44,7 +45,17 @@ export const restore_canvas_2D = (context: CanvasRenderingContext2D) =>
 export const translate_canvas_2D = (
 	context: CanvasRenderingContext2D,
 	options: ICoords2D,
-) => context.translate(options.x, options.y);
+) => {
+	let vec2: Vector2
+
+	if (typeof options.position === "string") {
+		vec2 = Vector2.import(options.position)
+	} else {
+		vec2 = options.position
+	}
+
+	context.translate(vec2.x, vec2.y)
+};
 
 export const scale_canvas_2D = (
 	context: CanvasRenderingContext2D,

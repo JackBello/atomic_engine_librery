@@ -22,6 +22,8 @@ import {
 import type { ComponentNode } from "./class/component-node";
 import type { HandlerScript } from "./handlers/script";
 
+export type TVec2 = `Vec2(${number}, ${number})`
+
 export type TTypeNodeGlobal = "Scene" | "GlobalNode" | "CanvasNode";
 
 export type TTypeNode2D =
@@ -124,39 +126,39 @@ export type TExportNode<O> = {
 export type TMetaKey = {
 	value: TAnything;
 	type:
-		| "string"
-		| "int"
-		| "float"
-		| "boolean"
-		| "set"
-		| "map"
-		| "object"
-		| "list";
+	| "string"
+	| "int"
+	| "float"
+	| "boolean"
+	| "set"
+	| "map"
+	| "object"
+	| "list";
 };
 
 export type TAttribute = {
 	value: TAnything;
 	group: string;
 	type:
-		| "string"
-		| "int"
-		| "float"
-		| "boolean"
-		| "set"
-		| "map"
-		| "object"
-		| "list";
+	| "string"
+	| "int"
+	| "float"
+	| "boolean"
+	| "set"
+	| "map"
+	| "object"
+	| "list";
 	input:
-		| "text"
-		| "number"
-		| "slider"
-		| "checkbox"
-		| "radio"
-		| "file"
-		| "color"
-		| "date"
-		| "time"
-		| "date-time";
+	| "text"
+	| "number"
+	| "slider"
+	| "checkbox"
+	| "radio"
+	| "file"
+	| "color"
+	| "date"
+	| "time"
+	| "date-time";
 	options: TAnything;
 };
 

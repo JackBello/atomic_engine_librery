@@ -25,24 +25,21 @@ import { GlobalNode } from "@/nodes";
 
 import { DEFAULT_CONFIG_TEXT_2D } from "../../../../../configs/nodes/2D/interface/text";
 
-export class Text2D extends Node2D {
+export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions["2D/text"]> extends Node2D<T> {
 	[NodePropType]: TCanvasNodes = "2D/text";
-
-	protected _options: TCanvasNodeOptions["2D/text"];
-	protected _initial: TCanvasNodeOptions["2D/text"];
 
 	readonly NODE_NAME: TTypeNodes = "Text2D";
 
-	get border() {
-		return this._options.border;
+	get stroke() {
+		return this._options.stroke;
 	}
 
-	get borderColor() {
-		return this._options.borderColor;
+	get lineWidth() {
+		return this._options.lineWidth;
 	}
 
-	get borderWidth() {
-		return this._options.borderWidth;
+	get fill() {
+		return this._options.fill;
 	}
 
 	get text() {
@@ -97,10 +94,6 @@ export class Text2D extends Node2D {
 		return this._options.letterSpacing;
 	}
 
-	get color() {
-		return this._options.color;
-	}
-
 	get font() {
 		return `${this._options.fontStretch ? `${this._options.fontStretch} ` : ""
 			}${this._options.fontVariant ? `${this._options.fontVariant} ` : ""}${this._options.fontStyle ? `${this._options.fontStyle} ` : ""
@@ -117,20 +110,20 @@ export class Text2D extends Node2D {
 		return this._options.height;
 	}
 
-	set border(value: boolean) {
-		this._options.border = value;
+	set stroke(value: string | undefined) {
+		this._options.stroke = value;
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set borderColor(value: string) {
-		this._options.borderColor = value;
+	set lineWidth(value: number) {
+		this._options.lineWidth = value;
 
 		this[GetApp][_Render].draw = true;
 	}
 
-	set borderWidth(value: number) {
-		this._options.borderWidth = value;
+	set fill(value: string) {
+		this._options.fill = value;
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -291,20 +284,11 @@ export class Text2D extends Node2D {
 		this[GetApp][_Render].draw = true;
 	}
 
-	set color(value: string) {
-		this._options.color = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
 	constructor(
 		slug: string,
 		options?: Partial<Omit<TCanvasNodeOptions["2D/text"], "width" | "height">>,
 	) {
 		super(slug, { ...DEFAULT_CONFIG_TEXT_2D, ...options });
-
-		this._initial = { ...DEFAULT_CONFIG_TEXT_2D, ...options };
-		this._options = this._initial;
 
 		this.processText(true);
 	}
@@ -365,7 +349,7 @@ export class Text2D extends Node2D {
 		this[GetApp][_Render].draw = true;
 	}
 
-	toObject(): TCanvasNodeOptions["2D/text"] {
+	toObject(): T {
 		return { ...this._options };
 	}
 

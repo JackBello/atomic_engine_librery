@@ -63,6 +63,8 @@ import {
 } from "@/nodes";
 
 import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
+import { Vector2 } from "@/nodes/vectors/vector-2";
+import { CallbackUpdateVector } from "@/nodes/symbols";
 
 export class EngineCore {
 	[key: string]: TAnything;
@@ -205,6 +207,10 @@ export class EngineCore {
 		this[_Distribution] = new DistributionController(this);
 
 		this[_ROOT_] = new RootNodeMainProcess(this);
+
+		Vector2[CallbackUpdateVector](() => {
+			this[_Render].draw = true
+		})
 
 		this[_Script].initHelpersScript();
 

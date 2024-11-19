@@ -6,11 +6,11 @@ export const circle_2D = (
 ) => {
     if (options.alpha <= 0) return
 
-    context.fillStyle = options.background;
+    context.fillStyle = options.fill;
 
-    if (options.border) {
-        context.strokeStyle = options.borderColor;
-        context.lineWidth = options.borderWidth;
+    if (options.stroke) {
+        context.strokeStyle = options.stroke;
+        context.lineWidth = options.lineWidth;
     }
 
     context.beginPath();
@@ -25,7 +25,7 @@ export const circle_2D = (
     );
 
     context.fill();
-    options.border ? context.stroke() : 0;
+    options.stroke ? context.stroke() : 0;
 
     context.closePath();
 };

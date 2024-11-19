@@ -1,13 +1,14 @@
 import type { EngineCore } from "@/app/engine";
 import { moveNodeByKeyboard, moveNodeByMouse } from "./functions";
 import { _Frame, GetHidden } from "@/app/symbols";
+import { Vector2 } from "@/nodes/vectors/vector-2";
 
 export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
-	const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
+	// const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
 
-	if (!panAndZoomConfig) return;
+	// if (!panAndZoomConfig) return;
 
-	if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
+	// if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
 
 	if (event.button !== 0) return;
 
@@ -17,17 +18,16 @@ export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 
 	const { left, top } = app.canvas.event.getBoundingClientRect();
 
-	const mouseCoords = {
-		x: event.clientX - left,
-		y: event.clientY - top,
-	};
+	const mouseCoords = new Vector2(event.clientX - left, event.clientY - top)
 
-	const { node, information } = app.ROOT.intersect({
-		x: (mouseCoords.x - panAndZoomConfig.pan.x) /
-			panAndZoomConfig.zoom,
-		y: (mouseCoords.y - panAndZoomConfig.pan.y) /
-			panAndZoomConfig.zoom,
-	}, "lock");
+	// const { node, information } = app.ROOT.intersect({
+	// 	x: (mouseCoords.x - panAndZoomConfig.pan.x) /
+	// 		panAndZoomConfig.zoom,
+	// 	y: (mouseCoords.y - panAndZoomConfig.pan.y) /
+	// 		panAndZoomConfig.zoom,
+	// }, "lock");
+
+	const { node, information } = app.ROOT.intersect(mouseCoords, "lock");
 
 	if (!node) {
 		_.node = undefined;
@@ -58,10 +58,12 @@ export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 
 		_.isDragging = true;
 
-		_.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
-			panAndZoomConfig.zoom;
-		_.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
-			panAndZoomConfig.zoom;
+		// _.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
+		// 	panAndZoomConfig.zoom;
+		// _.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
+		// 	panAndZoomConfig.zoom;
+
+		_.startCoords = mouseCoords
 
 		_.node = node;
 		_.parent = information.parent;
@@ -81,11 +83,11 @@ export const handleMouseDown = (event: MouseEvent, app: EngineCore) => {
 };
 
 export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
-	const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
+	// const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
 
-	if (!panAndZoomConfig) return;
+	// if (!panAndZoomConfig) return;
 
-	if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
+	// if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
 
 	if (event.button !== 0) return;
 
@@ -95,16 +97,14 @@ export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
 
 	const { left, top } = app.canvas.event.getBoundingClientRect();
 
-	const mouseCoords = {
-		x: event.clientX - left,
-		y: event.clientY - top,
-	};
+	const mouseCoords = new Vector2(event.clientX - left, event.clientY - top)
 
-	_.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
-		panAndZoomConfig.zoom;
-	_.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
-		panAndZoomConfig.zoom;
+	_.startCoords = mouseCoords
 
+	// _.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
+	// 	panAndZoomConfig.zoom;
+	// _.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
+	// 	panAndZoomConfig.zoom;
 
 	// selection.set({
 	// 	background: "",
@@ -126,30 +126,29 @@ export const handleMouseUp = (event: MouseEvent, app: EngineCore) => {
 };
 
 export const handleMouseMove = async (event: MouseEvent, app: EngineCore) => {
-	const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
+	// const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
 
-	if (!panAndZoomConfig) return;
+	// if (!panAndZoomConfig) return;
 
-	if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
+	// if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
 
 	const { left, top } = app.canvas.event.getBoundingClientRect();
 
-	const mouseCoords = {
-		x: event.clientX - left,
-		y: event.clientY - top,
-	};
+	const mouseCoords = new Vector2(event.clientX - left, event.clientY - top)
 
 	const _ = app.plugin("selection")?.[GetHidden];
 
 	if (!_) return;
 
 	if (!_.isDragging) {
-		const { node } = app.ROOT.intersect({
-			x: (mouseCoords.x - panAndZoomConfig.pan.x) /
-				panAndZoomConfig.zoom,
-			y: (mouseCoords.y - panAndZoomConfig.pan.y) /
-				panAndZoomConfig.zoom,
-		}, "hovered");
+		// const { node } = app.ROOT.intersect({
+		// 	x: (mouseCoords.x - panAndZoomConfig.pan.x) /
+		// 		panAndZoomConfig.zoom,
+		// 	y: (mouseCoords.y - panAndZoomConfig.pan.y) /
+		// 		panAndZoomConfig.zoom,
+		// }, "hovered");
+
+		const { node } = app.ROOT.intersect(mouseCoords, "hovered");
 
 		if (node) {
 			app.canvas.event.style.cursor = node.cursor === "default"
@@ -167,23 +166,23 @@ export const handleMouseMove = async (event: MouseEvent, app: EngineCore) => {
 			_.startCoords,
 			_.child.relative,
 			_.parent.relative,
-			panAndZoomConfig.pan,
-			panAndZoomConfig.zoom,
 		);
 	}
 
-	_.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
-		panAndZoomConfig.zoom;
-	_.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
-		panAndZoomConfig.zoom;
+	// _.startCoords.x = (mouseCoords.x - panAndZoomConfig.pan.x) /
+	// 	panAndZoomConfig.zoom;
+	// _.startCoords.y = (mouseCoords.y - panAndZoomConfig.pan.y) /
+	// 	panAndZoomConfig.zoom;
+
+	_.startCoords = mouseCoords
 };
 
 export const handleKeyDown = (event: KeyboardEvent, app: EngineCore) => {
-	const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
+	// const panAndZoomConfig = app.plugin("pan-and-zoom")?.configs;
 
-	if (!panAndZoomConfig) return;
+	// if (!panAndZoomConfig) return;
 
-	if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
+	// if (panAndZoomConfig && panAndZoomConfig.mode === "pan-and-zoom") return;
 
 	const _ = app.plugin("selection")?.[GetHidden];
 
@@ -197,7 +196,6 @@ export const handleKeyDown = (event: KeyboardEvent, app: EngineCore) => {
 		moveNodeByKeyboard(
 			_.node,
 			event.key,
-			panAndZoomConfig.zoom,
 		);
 	}
 };

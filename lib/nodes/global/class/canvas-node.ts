@@ -6,10 +6,7 @@ import { NodePropType } from "@/nodes/symbols";
 import { DEFAULT_CONFIG_PRIMITIVE_CANVAS_NODE } from "@/configs/nodes/global/canvas-node";
 import { _Render, GetApp } from "@/app/symbols";
 
-export abstract class CanvasNode extends GlobalNode {
-	protected _options: TCanvasNodeOptions["global/abstract/canvas-node"];
-	protected _initial: TCanvasNodeOptions["global/abstract/canvas-node"];
-
+export abstract class CanvasNode<T extends TCanvasNodeOptions["global/abstract/canvas-node"] = TCanvasNodeOptions["global/abstract/canvas-node"]> extends GlobalNode<T> {
 	[NodePropType]: TCanvasNodes = "global/abstract/canvas-node";
 
 	readonly NODE_NAME: TTypeNodes = "CanvasNode";
@@ -18,10 +15,7 @@ export abstract class CanvasNode extends GlobalNode {
 		slug: string,
 		options?: Partial<TCanvasNodeOptions["global/abstract/canvas-node"]>,
 	) {
-		super(slug, options);
-
-		this._initial = { ...DEFAULT_CONFIG_PRIMITIVE_CANVAS_NODE, ...options };
-		this._options = { ...this._initial };
+		super(slug, { ...DEFAULT_CONFIG_PRIMITIVE_CANVAS_NODE, ...options });
 	}
 
 	get visible() {

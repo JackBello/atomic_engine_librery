@@ -24,11 +24,8 @@ import { GlobalNode } from "@/nodes";
 
 import { DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D } from "../../../../configs/nodes/2D/effects/line-flow-effect";
 
-export class LineFlowEffect2D extends Node2D {
+export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"] = TCanvasNodeOptions["2D/line-flow-effect"]> extends Node2D<T> {
 	[NodePropType]: TCanvasNodes = "2D/line-flow-effect";
-
-	protected _options: TCanvasNodeOptions["2D/line-flow-effect"];
-	protected _initial: TCanvasNodeOptions["2D/line-flow-effect"];
 
 	readonly NODE_NAME: TTypeNodes = "LineFlowEffect2D";
 
@@ -44,8 +41,8 @@ export class LineFlowEffect2D extends Node2D {
 		return this._options.spacing;
 	}
 
-	get color() {
-		return this._options.color;
+	get fill() {
+		return this._options.fill;
 	}
 
 	get radius() {
@@ -78,8 +75,8 @@ export class LineFlowEffect2D extends Node2D {
 		this[GetApp][_Render].draw = true;
 	}
 
-	set color(value: string) {
-		this._options.color = value;
+	set fill(value: string) {
+		this._options.fill = value;
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -107,9 +104,6 @@ export class LineFlowEffect2D extends Node2D {
 		options?: Partial<TCanvasNodeOptions["2D/line-flow-effect"]>,
 	) {
 		super(slug, { ...DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D, ...options });
-
-		this._initial = { ...DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D, ...options };
-		this._options = { ...this._initial };
 	}
 
 	clone() {
@@ -120,7 +114,7 @@ export class LineFlowEffect2D extends Node2D {
 		this[NodeFunctionReset](property)
 	}
 
-	toObject(): TCanvasNodeOptions["2D/line-flow-effect"] {
+	toObject(): T {
 		return { ...this._options };
 	}
 
