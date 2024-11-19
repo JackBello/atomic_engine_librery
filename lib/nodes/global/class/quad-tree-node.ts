@@ -19,9 +19,10 @@ export class QuadTreeNode {
 
         if (!this.divisions) this.subdivide();
 
-        for (const quad of this.divisions) {
-            if (quad.insert(node)) return true;
-        }
+        if (this.divisions)
+            for (const quad of this.divisions) {
+                if (quad.insert(node)) return true;
+            }
 
         return false;
     }
