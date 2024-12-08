@@ -30,7 +30,6 @@ export const NodeDestroy = Symbol();
 
 // Specific nodes
 export const ScriptsNodeFromScene = Symbol();
-export const NodeFromObject = Symbol();
 
 // Vector
 export const CallbackUpdateVector = Symbol();

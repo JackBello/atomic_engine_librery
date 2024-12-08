@@ -1,7 +1,7 @@
 import type { GlobalNode } from "../global-node";
 import type { TAnything, TFunction } from "@/app/types";
 
-import { _Frame, _Input, _Script } from "@/app/symbols";
+import { $Scenes, _Frame, _Input, _Script } from "@/app/symbols";
 
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
@@ -16,7 +16,8 @@ export default class ConstructorScript {
 
 	protected _helpers = new Map();
 
-	protected _restring = `const window = undefined;
+	protected _restring = `
+	const window = undefined;
     const document = undefined;
     const alert = undefined;
     const confirm = undefined;
@@ -134,7 +135,8 @@ export default class ConstructorScript {
     const JSON = undefined;
     const atob = undefined;
     const btoa = undefined;
-    const console = undefined;`;
+    const console = undefined;
+	`;
 
 	protected CLASS = {
 		getMethodsFromClass: (instance: GlobalNode, filters: string[] = []) => {
@@ -144,7 +146,7 @@ export default class ConstructorScript {
 
 			const methods = Object.getOwnPropertyNames(prototype).filter(
 				(method) =>
-					typeof prototype[method] === "function" && method !== "constructor",
+					!Reflect.has(this.$node, method) && typeof prototype[method] === "function" && method !== "constructor",
 			);
 
 			if (filters.length > 0) {
@@ -162,31 +164,10 @@ export default class ConstructorScript {
 			return result;
 		},
 		getPropsFromClass: (instance: GlobalNode, filters: string[] = []) => {
-			const ignore = [
-				"_omit",
-				"_options",
-				"_initial",
-				"_parent",
-				"_events",
-				"_index",
-				"_slug",
-				"_id",
-				"_add",
-				"_transform",
-				"utils",
-				"NODE_NAME",
-				"$attributes",
-				"$components",
-				"$functions",
-				"$metaKeys",
-				"$nodes",
-				"$script",
-			];
-
 			const result: Record<string, TAnything> = {};
 
 			const props = Object.getOwnPropertyNames(instance).filter(
-				(prop) => !ignore.includes(prop),
+				(prop) => !Reflect.has(this.$node, prop)
 			);
 
 			if (filters.length > 0) {
@@ -267,25 +248,31 @@ export default class ConstructorScript {
 		let result = "";
 
 		if (this.$node.$script.compilation === "functions") {
-			result = `${this._restring} with(helpers) {\n\nwith (node) {\n\n${code
+			result = `${this._restring}\n with (node) {\n\n${code
 				.trim()
 				.replace(/@expose /g, "")}; ${this.REGEXP.getExpressionIntoCode(
-				code.trim(),
-			)}\n\n}\n\n}`;
+					code.trim(),
+				)}\n\n}`;
 		}
 
 		if (this.$node.$script.compilation === "class") {
-			result = `${this._restring}\n with(helpers) { ${code.trim()}
-        return new ${this.REGEXP.getNameFromClassIntoCode(code)}() }`;
+			result = `${this._restring}\n ${code.trim()}
+        return new ${this.REGEXP.getNameFromClassIntoCode(code)}()`;
 		}
 
 		return result;
 	}
 
 	protected async getExec(code: string) {
-		const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
+		const AsyncFunction = Object.getPrototypeOf(async () => { }).constructor;
 
 		const helpers = this.$app[_Script].getHelpersScript();
+		const nodes = ConstructorNodes.getNodes()
+
+		helpers.CurrentScene = this.$app[$Scenes].currentScene
+
+		const destructuringHelpers = `{ ${Object.keys(helpers).join(", ")} }`
+		const destructuringNodes = `{${Object.keys(nodes).join(", ")}}`
 
 		let execute: TFunction<TAnything>;
 		let result: {
@@ -297,18 +284,16 @@ export default class ConstructorScript {
 		};
 
 		if (this.$node.$script.compilation === "functions") {
-			execute = new AsyncFunction("node, helpers", code);
+			execute = new AsyncFunction(`node, ${destructuringHelpers}, ${destructuringNodes}`, code);
 
-			result = await execute(this.$node, helpers);
+			result = await execute(this.$node, helpers, nodes);
 		} else {
-			const extendsClass = ConstructorNodes.getNode(this.$node.NODE_NAME);
-
 			const execute = new AsyncFunction(
-				`helpers, ${this.$node.NODE_NAME}`,
+				`${destructuringHelpers}, ${destructuringNodes}`,
 				code,
 			);
 
-			result = await execute(helpers, extendsClass);
+			result = await execute(helpers, nodes);
 
 			if ("NODE_NAME" in result) {
 				result = {

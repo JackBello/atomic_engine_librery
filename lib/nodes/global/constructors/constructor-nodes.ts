@@ -16,7 +16,7 @@ export default class ConstructorNodes {
 	private static reserveNodes = [""];
 
 	static addNode(name: string, construct: TClass<GlobalNode>) {
-		if (this.reserveNodes.includes(name)) {
+		if (ConstructorNodes.reserveNodes.includes(name)) {
 			throw new Error(
 				`You can't add this node '${name}' because it is already part of the engine `,
 			);
@@ -42,17 +42,36 @@ export default class ConstructorNodes {
 	}
 
 	static hasNode(name: string) {
-		return this.nodesTypes.has(name);
+		return ConstructorNodes.nodesTypes.has(name);
 	}
 
 	static deleteNode(name: string) {
-		if (this.reserveNodes.includes(name)) {
+		if (ConstructorNodes.reserveNodes.includes(name)) {
 			throw new Error(
 				`You can't delete this node '${name}' because it is already part of the engine `,
 			);
 		}
 
-		this.nodesTypes.delete(name);
+		ConstructorNodes.nodesTypes.delete(name);
+	}
+
+	static defineProperty(name: string, property: string | symbol, value?: TAnything, options: {
+		writable: boolean,
+		enumerable: boolean,
+		configurable: boolean,
+	} = {
+			configurable: false,
+			writable: true,
+			enumerable: true
+		}) {
+		const node = ConstructorNodes.getNode(name)
+
+		if (!node) return false
+
+		return Reflect.defineProperty(node, property, {
+			value,
+			...options
+		})
 	}
 
 	public makeNode(node: TExportNode<TAnything>): GlobalNode {

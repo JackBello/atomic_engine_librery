@@ -1,10 +1,3 @@
-- add all formats export & import
-  JSON: Fácil de usar en JavaScript nativo, buen rendimiento. *LISTO
-  YAML: Más legible para configuraciones complejas, requiere js-yaml. *LISTO
-  XML: Verboso, pero bien soportado en navegadores.
-  INI: Simple y legible, requiere ini para analizar.
-  TOML: Más estructurado que INI, fácil de leer, requiere toml-js.
-
 - calcular todas las transformaciones de padre a hijo *LISTO
 
 - calcular las colisiones para luego hacer un motor de colisiones *LISTO
@@ -13,14 +6,4 @@
 
 - optimizar funciones para que sean reutilizables
 
-- calcular las transformaciones para el mouse en caso de hijos *LISTO
-
 - agregar el resto de nodos
-
-- hacer root node (GlobalNode) *LISTO
-
-- hacer motor de script *LISTO
-
-- arreglar el import del atomic engine
-
-- 

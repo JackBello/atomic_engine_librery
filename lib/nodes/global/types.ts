@@ -1,5 +1,4 @@
 import type { TAnything, TClass, TFunction } from "../../app/types";
-import type { TCanvasNodes, TCanvasOperations } from "../types";
 import type { GlobalNode } from "./global-node";
 import type { HandlerAttribute } from "./handlers/attributes";
 import type { HandlerComponent } from "./handlers/components";
@@ -164,25 +163,6 @@ export type TAttribute = {
 
 export type TMode = "id" | "index" | "slug";
 
-export interface INodeProcess {
-	__type__: TCanvasNodes;
-	__path__: string;
-	location: {
-		id: string;
-		index: number;
-		slug: string;
-	};
-	options?: Record<string, TAnything>;
-	nodes: INodeProcess[];
-}
-
-export interface INodeOperation {
-	__index__: number;
-	__type__: TCanvasNodes | TCanvasOperations;
-	__name__: string;
-	options?: Record<string, TAnything>;
-}
-
 export interface IGlobalNode {
 	get index(): number;
 	get path(): string;
@@ -308,10 +288,12 @@ export interface IHandleComponent {
 
 	toEntries(): TComponentTuple[];
 	getAll(): ComponentNode[];
+	resetAll(): void;
 	get(name: string): ComponentNode | undefined;
 	add(component: TClass<ComponentNode>): void;
 	has(name: string): boolean;
 	delete(name: string): boolean;
+	reset(name: string): void;
 	clear(): void;
 
 	[NodeSetHandlerComponents](attributes: TComponentTuple[]): void;

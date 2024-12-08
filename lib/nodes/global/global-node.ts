@@ -55,7 +55,6 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 	extends AbstractNode
 	implements IGlobalNode, IControlEditor, IControlNode, IControlHierarchy {
 	protected _omit: string[] = ["name", "description"];
-	protected _add: string[] = [];
 
 	protected _options: T;
 	protected _initial: T;
@@ -152,6 +151,8 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 	) {
 		super();
 
+		this.utils.hasApp()
+
 		this._initial = {
 			...DEFAULT_CONFIG_PRIMITIVE_NODE,
 			...options as TAnything,
@@ -201,13 +202,13 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		this[$ConstructorScript][NodeDestroy]();
 
 		this[GetApp][_Script].removeScript(this);
+		this[GetApp][_Collision].removeCollision(this)
 
 		this.$attributes[NodeDestroy]();
 		this.$functions[NodeDestroy]();
 		this.$metaKeys[NodeDestroy]();
 		this.$nodes[NodeDestroy]();
 		this.$script[NodeDestroy]();
-
 		this.$components[NodeDestroy]();
 
 		this[GetApp].ROOT.deleteNodeByPath(this.path, "index");
@@ -252,6 +253,8 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		} else {
 			this._options = { ...this._initial };
 		}
+
+		this.$components.resetAll()
 
 		if (this[GetApp][$Scenes].currentScene) {
 			this[GetApp][_Render].draw = true;

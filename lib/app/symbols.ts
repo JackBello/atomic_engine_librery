@@ -30,5 +30,6 @@ export const _Events = Symbol();
 export const _Window = Symbol();
 export const _Input = Symbol();
 export const _Script = Symbol();
+export const _Camera = Symbol()
 export const _Collision = Symbol();
 export const _Distribution = Symbol();

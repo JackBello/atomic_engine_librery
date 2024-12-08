@@ -1,7 +1,7 @@
 import type { TCanvasNodeOptions, TCanvasNodes } from "../types";
 import type { TExportNode, TTypeNodes } from "./types";
 import type { TEventNode, TEventScene } from "../events";
-import type { TAnything, TFunction } from "@/app/types";
+import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import {
 	NodeFunctionClone,
@@ -57,7 +57,7 @@ export class Scene extends GlobalNode {
 		this[NodeFunctionSet](properties, value);
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
+	static import(data: string, format: TSerialize = "JSON") {
 		return GlobalNode[NodeFunctionImport](data, format) as Scene;
 	}
 

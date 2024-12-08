@@ -1,12 +1,13 @@
 import type { TAnything, TClass, TFunction } from "@/app/types";
 import type { EngineCore } from "./engine";
-import type { GlobalNode } from "@/nodes";
-import type { INodeOperation } from "@/nodes/global/types";
+import type { GlobalNode, OperationNode } from "@/nodes";
 import { GetHidden } from "@/app/symbols";
 
 export class Plugin {
 	protected $app: EngineCore;
-	protected NAME: string;
+
+	protected NAME = "plugin";
+
 	protected HIDDEN: Record<string, TAnything>;
 	protected OPTIONS: Record<string, TAnything>;
 	protected CONFIGS: Record<string, TAnything>;
@@ -29,9 +30,8 @@ export class Plugin {
 		return [...this.NODES.values()];
 	}
 
-	constructor(app: EngineCore, name: string) {
+	constructor(app: EngineCore) {
 		this.$app = app;
-		this.NAME = name;
 		this.HIDDEN = {};
 		this.OPTIONS = {};
 		this.CONFIGS = {};
@@ -43,7 +43,7 @@ export class Plugin {
 		options;
 	}
 
-	operations(): { after: INodeOperation[]; before: INodeOperation[] } {
+	operations(): { after: OperationNode[]; before: OperationNode[] } {
 		return {
 			after: [],
 			before: [],

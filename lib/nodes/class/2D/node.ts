@@ -16,7 +16,6 @@ import type { TEventNode, TEventNode2D } from "../../events";
 import type { TAnything, TFunction } from "../../../app/types";
 
 import {
-	CallbackUpdateVector,
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
@@ -78,6 +77,14 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 
 	get calculate() {
 		return this._calculate;
+	}
+
+	get width() {
+		return this._options.width
+	}
+
+	get height() {
+		return this._options.height
 	}
 
 	set position(value: Vector2 | TVec2) {
@@ -253,6 +260,15 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 			this.position.y = (this._parent.height * this._parent.scaleY) / 2;
 		} else {
 			this.position.y = this[GetApp].size.height / 2;
+		}
+	}
+
+	getBounds() {
+		return {
+			x: this.position.x - this.calculate.origin[0],
+			y: this.position.y - this.calculate.origin[1],
+			width: this.width * this.scale.x,
+			height: this.height * this.scale.y
 		}
 	}
 

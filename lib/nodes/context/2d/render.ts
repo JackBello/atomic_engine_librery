@@ -1,11 +1,10 @@
 import type { TAnything } from "@/app/types";
 import { handleComponent2D, handleDrawContext2D } from "./handle";
 import { AbstractRender } from "../../abstract/render.abstract";
-import type { INodeOperation, INodeProcess } from "@/nodes/global/types";
 import type { GlobalNode } from "@/nodes";
 import type { OperationNode } from "@/nodes/global/class/operation-node";
 import { NodePropType } from "@/nodes/symbols";
-import RootNodeMainProcess from "@/nodes/global/root/root-node.main";
+import RootNode from "@/nodes/global/root/root-node";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 
 export class Render2D extends AbstractRender {
@@ -28,34 +27,28 @@ export class Render2D extends AbstractRender {
 	}
 
 	draw(
-		root: INodeProcess | GlobalNode,
+		root: GlobalNode,
 		operations?: {
-			after: Map<string, INodeOperation | OperationNode>;
-			before: Map<string, INodeOperation | OperationNode>;
+			after: Map<string, OperationNode>;
+			before: Map<string, OperationNode>;
 		},
 	) {
-		if (operations?.before.size) {
+		if (operations?.before.size)
 			this.executeOperation(
-				...(operations.before as Map<string, OperationNode>).values(),
+				...operations.before.values(),
 			);
-		}
 
-		this.executeDraw(root as GlobalNode);
+		this.executeDraw(root);
 
-		if (operations?.after.size) {
+		if (operations?.after.size)
 			this.executeOperation(
-				...(operations.after as Map<string, OperationNode>).values(),
+				...operations.after.values(),
 			);
-		}
 	}
 
 	protected executeOperation(...operations: OperationNode[]): void {
 		for (const operation of operations) {
-			handleDrawContext2D(
-				operation.__type__ as TAnything,
-				operation.options,
-				this.context,
-			);
+			operation.execute(this.context)
 		}
 	}
 
@@ -75,7 +68,7 @@ export class Render2D extends AbstractRender {
 
 			if (!nodeRef[NodePropType].startsWith("2D")) continue;
 
-			const accumulativeTransform = RootNodeMainProcess.calculateTransforms(
+			const accumulativeTransform = RootNode.calculateTransforms(
 				{
 					position: nodeRef.position ?? Vector2.zero(),
 					scale: nodeRef.scale ?? Vector2.one(),
@@ -105,8 +98,6 @@ export class Render2D extends AbstractRender {
 				nodeRef.scale.y * this.scaleViewport,
 			);
 
-			handleComponent2D(nodeRef, this.context);
-
 			handleDrawContext2D(
 				nodeRef[NodePropType] as TAnything,
 				{
@@ -114,6 +105,8 @@ export class Render2D extends AbstractRender {
 				},
 				this.context,
 			);
+
+			handleComponent2D(nodeRef, this.context);
 
 			if (nodeRef.$nodes.size > 0) {
 				this.executeDraw(nodeRef, accumulativeTransform);

@@ -63,11 +63,10 @@ export default class WindowController {
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <script src="https://localhost:5173/atomic-engine.iife.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-      ${
-			game.icon
+      ${game.icon
 				? `<link rel="icon" type="image/png" href="${game.icon}">`
 				: ""
-		}
+			}
       <title>${game.title ? game.title : "Atomic Engine"}</title>
       <style>
         body, html {
@@ -92,8 +91,7 @@ export default class WindowController {
               app.start()
             })(Atomic)
 
-            ${
-			game.full_screen
+            ${game.full_screen
 				? `
             if (!document.fullscreenElement) {
               app.canvas.instance.requestFullscreen();
@@ -102,13 +100,12 @@ export default class WindowController {
             }
             `
 				: ""
-		}
+			}
 
-            ${
-			game.resizable ? "" : `window.onresize = function() {
+            ${game.resizable ? "" : `window.onresize = function() {
               window.resizeTo(${game.viewport.width}, ${game.viewport.height});
             }`
-		}
+			}
           })
         </script>
     </body>

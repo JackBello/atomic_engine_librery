@@ -20,24 +20,24 @@ export const selection_2D = (
 	if (options.rounded) {
 		if (typeof options.rounded === "number") {
 			context.roundRect(
-				options.x,
-				options.y,
+				0,
+				0,
 				options.width,
 				options.height,
 				options.rounded,
 			);
 		} else if (Array.isArray(options.rounded)) {
 			context.roundRect(
-				options.x,
-				options.y,
+				0,
+				0,
 				options.width,
 				options.height,
 				options.rounded,
 			);
 		} else {
 			context.roundRect(
-				options.x,
-				options.y,
+				0,
+				0,
 				options.width,
 				options.height,
 				[
@@ -49,7 +49,7 @@ export const selection_2D = (
 			);
 		}
 	} else {
-		context.rect(options.x, options.y, options.width, options.height);
+		context.rect(0, 0, options.width, options.height);
 	}
 	context.fill();
 

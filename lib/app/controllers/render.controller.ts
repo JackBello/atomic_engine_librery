@@ -1,5 +1,5 @@
 import type { AbstractRender } from "@/nodes/abstract/render.abstract";
-import { EngineCore } from "../engine";
+import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 import type {
 	TAnything,
@@ -11,7 +11,7 @@ import type {
 } from "../types";
 import { ExecuteProcess } from "./symbols";
 import { Render2D } from "@/nodes/context/2d/render";
-import { $Canvas, $Scenes } from "../symbols";
+import { $Canvas, $Scenes, _Camera } from "../symbols";
 import type { OperationNode } from "@/nodes/global/class/operation-node";
 
 export default class RenderController {
@@ -104,13 +104,15 @@ export default class RenderController {
 		this._drawer = this._canvas.getContext(
 			this._options.context.replace("-", "") as TContextNameCanvas,
 		) as TContextObject[TContextName];
+
+		this.$app[_Camera].setContext(this._drawer as CanvasRenderingContext2D)
 	}
 
 	public setSize(width: number, height: number) {
-		if (this._canvas) {
-			this._canvas.width = width;
-			this._canvas.height = height;
-		}
+		if (!this._canvas) return
+
+		this._canvas.width = width;
+		this._canvas.height = height;
 	}
 
 	[ExecuteProcess]() {
@@ -123,27 +125,31 @@ export default class RenderController {
 
 		const _: Record<string, () => AbstractRender> = {
 			"2d": () =>
-				new Render2D(this._drawer as CanvasRenderingContext2D, "main"),
+				new Render2D(this._drawer as CanvasRenderingContext2D),
 		};
 
 		const render = _[this._options.context]();
 
-		if (render) {
-			render.scaleViewport = this.scaleViewport;
+		if (!render) return
 
-			render.clear();
+		render.scaleViewport = this.scaleViewport;
+
+		render.clear();
+
+		this.$app[_Camera].render(() => {
+			if (!this.$app[$Scenes].currentScene) return;
+
 			render.draw(this.$app[$Scenes].currentScene, {
 				after: this._operations.after,
 				before: this._operations.before,
 			});
+		})
 
+		this.$context.clearRect(0, 0, this.$context.canvas.width, this.$context.canvas.height)
+		this.$context.drawImage(
+			this._canvas,
+			0, 0);
 
-			this.$context.clearRect(0, 0, this.$context.canvas.width, this.$context.canvas.height)
-			this.$context.drawImage(
-				this._canvas,
-				0, 0);
-
-			this.draw = false;
-		}
+		this.draw = false;
 	}
 }

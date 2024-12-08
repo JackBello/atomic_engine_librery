@@ -1,6 +1,6 @@
 import { ComponentNode } from "@/nodes/global/class/component-node";
 import type { CollisionShapeComponent } from "./collision-shape.component";
-import type { GlobalNode } from "@/nodes";
+import type { GlobalNode } from "@/nodes/global/global-node";
 import { AreaComponent } from "../area.component";
 import { CharacterBodyComponent } from "../body/character-body.component";
 import { StaticBodyComponent } from "../body/static-body.component";
@@ -280,6 +280,8 @@ export class CollisionComponent extends ComponentNode {
 
 			if (touch.top) characterBody.floor = true;
 			else characterBody.floor = false;
+		} else if (characterBody && characterBody instanceof CharacterBodyComponent) {
+			characterBody.floor = false;
 		}
 	}
 
@@ -362,8 +364,7 @@ export class CollisionComponent extends ComponentNode {
 		secondCollision: CollisionShapeComponent,
 	) {
 		if (firstCollision._collider !== secondCollision.$node) {
-			firstCollision.setCollider(secondCollision.$node);
-			secondCollision.setCollider(firstCollision.$node);
+			if (firstCollision.$node === null || secondCollision.$node === null) return
 
 			firstCollision.setTouchCollider(
 				CollisionComponent.isTouch(secondCollision, firstCollision),
@@ -373,6 +374,14 @@ export class CollisionComponent extends ComponentNode {
 				CollisionComponent.isTouch(firstCollision, secondCollision),
 			);
 
+			firstCollision.setCollider(secondCollision.$node);
+			secondCollision.setCollider(firstCollision.$node);
+
+			CollisionComponent.resolveCharacterBody({
+				firstNode: firstCollision.$node,
+				secondNode: secondCollision.$node,
+			});
+
 			CollisionComponent.resolveArea(
 				{
 					firstNode: firstCollision.$node,
@@ -380,11 +389,6 @@ export class CollisionComponent extends ComponentNode {
 				},
 				"entering",
 			);
-
-			CollisionComponent.resolveCharacterBody({
-				firstNode: firstCollision.$node,
-				secondNode: secondCollision.$node,
-			});
 		}
 	}
 

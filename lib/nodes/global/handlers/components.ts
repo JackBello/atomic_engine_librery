@@ -36,6 +36,14 @@ export class HandlerComponent implements IHandleComponent {
 		return [...this[NodePropHandlerComponents].values()];
 	}
 
+	resetAll(): void {
+		if (this[NodePropHandlerComponents].size === 0) return
+
+		for (const [_, component] of this[NodePropHandlerComponents]) {
+			component.reset()
+		}
+	}
+
 	get(name: string): ComponentNode | undefined {
 		return this[NodePropHandlerComponents].get(name);
 	}
@@ -54,6 +62,14 @@ export class HandlerComponent implements IHandleComponent {
 		return this[NodePropHandlerComponents].delete(name);
 	}
 
+	reset(name: string): void {
+		const component = this.get(name)
+
+		if (!component) return
+
+		component.reset()
+	}
+
 	clear(): void {
 		this[NodePropHandlerComponents].clear();
 	}
@@ -65,7 +81,7 @@ export class HandlerComponent implements IHandleComponent {
 	[NodeDestroy]() {
 		for (const [_, component] of this[NodePropHandlerComponents]) {
 			if (component instanceof CollisionShapeComponent) {
-				this.$app[_Collision].removeCollision(component);
+				this.$app[_Collision].removeCollision(this.$node);
 			}
 
 			component[NodeDestroy]();

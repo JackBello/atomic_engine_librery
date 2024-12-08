@@ -1,4 +1,4 @@
-import type { TJoyPadActions } from "../events";
+import type { TJoyPadActions } from "../input.controller";
 import { GetIdJoyPad, UpdateJoyPad } from "../symbols";
 
 export class JoyPad {

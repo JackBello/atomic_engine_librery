@@ -3,10 +3,8 @@ import type { IOptionsGameCore } from "../../app/types";
 export const DEFAULT_CONFIG_ATOMIC_GAME: IOptionsGameCore = {
 	context: "2d",
 	dimension: "2D",
-	fps: {
-		delay: 1000,
-		velocity: 60,
-	},
+	physics_frame: 120,
+	render_frame: 60,
 	selector: "[data-canvas]",
 	background: "#000000",
 	full_screen: false,

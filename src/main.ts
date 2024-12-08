@@ -1,6 +1,4 @@
 import { EngineCore } from "../lib/";
-import pluginSelection from "@/app/plugins/selection/plugin";
-import pluginPanAndZoom from "@/app/plugins/pan-and-zoom/plugin";
 import {
 	Circle2D,
 	type GlobalNode,
@@ -14,6 +12,7 @@ import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/
 import { AreaComponent } from "@/nodes/class/components/2D/area.component";
 import { CharacterBodyComponent } from "@/nodes/class/components/2D/body/character-body.component";
 import { StaticBodyComponent } from "@/nodes/class/components/2D/body/static-body.component";
+// import { CameraComponent } from "@/nodes/class/components/2D/camera.component";
 
 const buttonAddRect = document.querySelector(
 	`[data-id="button-add-rect"]`,
@@ -40,13 +39,6 @@ const buttonToggleModeEdition = document.querySelector(
 ) as HTMLInputElement;
 
 const app = new EngineCore({
-	background: "#eeeeee",
-	context: "2d",
-	dimension: "2D",
-	fps: {
-		delay: 1000,
-		velocity: 60,
-	},
 	game: {
 		background: "#000000",
 		center: true,
@@ -62,9 +54,8 @@ const app = new EngineCore({
 	height: 600,
 	width: 600,
 	selector: "[data-canvas]",
+	analytics: true,
 });
-
-app.use("pan-and-zoom", pluginPanAndZoom).use("selection", pluginSelection);
 
 app.input.defineAction("move_left", [
 	"keyboard/arrowLeft",
@@ -111,15 +102,12 @@ const borderWindow = new Rectangle2D("border-window", {
 	lock: true,
 });
 
-lv1.$nodes.add(borderWindow);
-
 const circle1 = new Circle2D("ball", {
 	position: "Vec2(10, 10)",
 	radius: 80,
 	fill: "green",
 });
 
-lv1.$nodes.add(circle1);
 
 objects.player = new Rectangle2D("player", {
 	fill: "black",
@@ -132,19 +120,21 @@ objects.player = new Rectangle2D("player", {
 
 objects.player.$components.add(CollisionShapeComponent);
 objects.player.$components.add(CharacterBodyComponent);
+// objects.player.$components.add(CameraComponent)
 
 const rect1Collision = objects.player.$components.get(
 	"collision-shape",
 ) as CollisionShapeComponent;
 
-rect1Collision.width = 100;
-rect1Collision.height = 100;
+rect1Collision.debug = false
 
 objects.player.center();
 
 objects.player.$script.modeExecute = "none";
 
 objects.player.$script.defineScript(`
+const { add } = await $import("./math.ts")
+
 class MyNode extends Rectangle2D {
   speed = 200
   speedY = 0;
@@ -156,27 +146,26 @@ class MyNode extends Rectangle2D {
   textTime = undefined
 
   _ready() {
-    $Logger.message("ready rect 1")
+    Logger.message("ready rect 1")
 
-	this.textTime = new $Nodes.Text2D("destroy time", {
+	this.textTime = new Text2D("destroy time", {
 		fill: "black",
 		fontSize: "20px",
-		// text: this.destroyInterval + "seg",
 		text: "player-1",
 		position: "Vec2(50, 20)"
 	})
 
-	$Scene().$nodes.add(this.textTime);
+	CurrentScene.$nodes.add(this.textTime);
   }
 
   _process(delta) {
-  	if ($Input.isActionPressed("move_right") && !this.isDead)
+  	if (Input.isActionPressed("move_right") && !this.isDead)
     	this.position.x += this.speed * delta
-	if ($Input.isActionPressed("move_left") && !this.isDead)
+	if (Input.isActionPressed("move_left") && !this.isDead)
     	this.position.x -= this.speed * delta
 
 	if (this.collision.isOnFloor()) {
-		if ($Input.isActionPressed("move_up") && !this.isDead) {
+		if (Input.isActionPressed("move_up") && !this.isDead) {
 			this.speedY = -this.jump_force
 		}
 		else
@@ -190,7 +179,7 @@ class MyNode extends Rectangle2D {
   }
 
   _destroy() {
-	$Logger.info("game over")
+	Logger.info("game over")
 
 	this.textTime.text = "Game Over!"
 	this.textTime.fontSize = "50px"
@@ -227,30 +216,21 @@ const countFPS = new Text2D("countFPS", {
 
 countFPS.centerX();
 
-countFPS.$script.modeExecute = "none";
-
-countFPS.$script.defineScript(`
-class MyNode extends Text2D {
-	_process() {
-		this.text = "FPS: " + $Time.fps()
-	}
-}`);
-
 const lineFlow = new LineFlowEffect2D("effect-1", {
-	width: 300,
-	height: 300,
+	width: 400,
+	height: 400,
 	position: "Vec2(50, 50)",
 	fill:
 		"linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)",
-	cellSize: 10,
-	spacing: 10,
+	cellSize: 8,
+	spacing: 8,
 	lineWidth: 0.5,
 	rotation: 0,
 	radius: 0,
 });
 
-lineFlow.$components.add(CollisionShapeComponent);
-lineFlow.$components.add(CharacterBodyComponent);
+// lineFlow.$components.add(CollisionShapeComponent);
+// lineFlow.$components.add(CharacterBodyComponent);
 
 lineFlow.$script.modeExecute = "none";
 
@@ -261,7 +241,7 @@ class MyNode extends LineFlowEffect2D {
 			value: 0.03
 		})
 
-		$Logger.message("effect ready")
+		Logger.message("effect ready")
 	}
 
 	_process() {
@@ -272,7 +252,7 @@ class MyNode extends LineFlowEffect2D {
 }
 `);
 
-const floor = new Node2D("water", {
+const floor = new Node2D("floor", {
 	height: 100,
 	width: 450,
 	position: "Vec2(0, 495)"
@@ -282,13 +262,6 @@ floor.centerX()
 
 floor.$components.add(CollisionShapeComponent);
 floor.$components.add(StaticBodyComponent);
-
-const floorCollision = floor.$components.get(
-	"collision-shape",
-) as CollisionShapeComponent;
-
-floorCollision.width = 450;
-floorCollision.height = 100;
 
 const areaDestroy = new Node2D("area-dead", {
 	height: 100,
@@ -305,8 +278,6 @@ const AreaCollision = areaDestroy.$components.get(
 	"collision-shape",
 ) as CollisionShapeComponent;
 
-AreaCollision.width = app.size.width;
-AreaCollision.height = 100;
 AreaCollision.fill = "rgba(0,255,0,0.3)";
 
 areaDestroy.$script.modeExecute = "none";
@@ -316,14 +287,15 @@ class MyNode extends Node2D {
 	_body_entering_area(body) {
 		if (body.slug === "player")
 			body.dead()
-		$Logger.info("entered", body.slug)
+		Logger.info("entered", body.slug)
 	}
 
 	_body_leaving_area(body) {
+		Logger.info("exited", body.slug)
+
 		if (body.slug === "player" && body.delete) {
 			body.destroy()
-			$Logger.info("exited", body.slug)
-			$Logger.info($Scene().$nodes.all)
+			Logger.info(CurrentScene.$nodes.all)
 		}
 	}
 }
@@ -334,6 +306,8 @@ app.scenes.change(lv1.slug);
 
 await app.scenes.load();
 
+lv1.$nodes.add(circle1);
+lv1.$nodes.add(borderWindow);
 lv1.$nodes.add(lineFlow);
 lv1.$nodes.add(objects.player);
 lv1.$nodes.add(countFPS);
@@ -341,17 +315,16 @@ lv1.$nodes.add(floor);
 lv1.$nodes.add(areaDestroy);
 
 await objects.player.$script.executeScript();
-await countFPS.$script.executeScript();
 await lineFlow.$script.executeScript();
 await areaDestroy.$script.executeScript();
 
-// console.log(lv1.$nodes.all);
-
-if (objects.player.speed) {
+if (objects?.player?.speed) {
 	inputVelocity.value = objects.player.speed;
 
 	inputVelocity.oninput = () => {
-		objects.player.speed = Number(inputVelocity.value);
+		if (objects.player) {
+			objects.player.speed = Number(inputVelocity.value);
+		}
 	};
 }
 
@@ -377,22 +350,13 @@ class MyNode extends Rectangle2D {
 		const collider = this.collision.getCollider();
 		
   		if (collider) {
-	    	$Logger.info(collider.slug)
+	    	Logger.info(collider.slug)
 		}
 	}
 }
 `);
 
 	randomRect.$components.add(CollisionShapeComponent);
-
-	const randomRectCollision = randomRect.$components.get(
-		"collision-shape",
-	) as CollisionShapeComponent;
-
-	randomRectCollision.width = 100;
-	randomRectCollision.height = 100;
-
-	randomRectCollision.position = [-50, -50];
 
 	lv1.$nodes.add(randomRect);
 

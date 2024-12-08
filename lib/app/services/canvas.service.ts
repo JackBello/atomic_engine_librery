@@ -7,7 +7,7 @@ import { GetOptions } from "@/app/symbols";
 
 import { CanvasEditor } from "../canvas/canvas-editor";
 import { CanvasGame } from "../canvas/canvas-game";
-import { TContextName } from "../types";
+import { TAnything, TContextName, TFunction } from "../types";
 
 export default class CanvasService {
 	private $app: EngineCore | GameCore;
@@ -15,10 +15,6 @@ export default class CanvasService {
 	protected _canvas: Map<TCanvasType, AbstractCanvas> = new Map();
 	protected _main?: HTMLElement;
 	protected _event?: HTMLDivElement;
-
-	get event(): HTMLDivElement {
-		return this._event as HTMLDivElement;
-	}
 
 	get main(): HTMLElement {
 		return this._main as HTMLElement;
@@ -37,10 +33,31 @@ export default class CanvasService {
 		return canvas;
 	}
 
+	get size() {
+		let size = {
+			width: 0,
+			height: 0,
+		};
+
+		if (this.$app instanceof GameCore) {
+			size = {
+				width: this.$app[GetOptions]().viewport.width,
+				height: this.$app[GetOptions]().viewport.height,
+			};
+		} else if (this.$app instanceof EngineCore) {
+			size = {
+				width: this.$app[GetOptions]().width,
+				height: this.$app[GetOptions]().height,
+			};
+		}
+
+		return size;
+	}
+
 	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
 
-		const { width, height } = this.processSize();
+		const { width, height } = this.size;
 
 		if (this.$app.mode === "editor") {
 			this._canvas.set(
@@ -66,32 +83,12 @@ export default class CanvasService {
 		this.initLayerCanvas(this.$app[GetOptions]().selector, width, height);
 	}
 
-	protected processSize() {
-		let size = {
-			width: 0,
-			height: 0,
-		};
-
-		if (this.$app instanceof GameCore) {
-			size = {
-				width: this.$app[GetOptions]().viewport.width,
-				height: this.$app[GetOptions]().viewport.height,
-			};
-		} else if (this.$app instanceof EngineCore) {
-			size = {
-				width: this.$app[GetOptions]().width,
-				height: this.$app[GetOptions]().height,
-			};
-		}
-
-		return size;
-	}
-
 	protected initLayerCanvas(
 		selector: string | undefined,
 		width: number,
 		height: number,
 	) {
+		if (!this._event) return
 		if (this._main) return;
 
 		this._main = document.createElement("section");
@@ -114,7 +111,7 @@ export default class CanvasService {
 			);
 		}
 
-		this._main.appendChild(this.event);
+		this._main.appendChild(this._event);
 
 		if (selector) document.querySelector(selector)?.appendChild(this._main);
 		else document.body.appendChild(this._main);
@@ -154,5 +151,25 @@ export default class CanvasService {
 
 		this._main.style.width = `${width}px`;
 		this._main.style.height = `${height}px`;
+	}
+
+	setCursor(cursor: string = "default") {
+		if (!this._event) return;
+
+		this._event.style.cursor = cursor
+	}
+
+	getPosition() {
+		if (!this._event) return [0, 0];
+
+		const position = this._event.getBoundingClientRect()
+
+		return [position.left, position.top]
+	}
+
+	defineEvent(type: string, listener: TFunction, options: TAnything = {}): void {
+		if (!this._event) return;
+
+		this._event.addEventListener(type, listener, options)
 	}
 }

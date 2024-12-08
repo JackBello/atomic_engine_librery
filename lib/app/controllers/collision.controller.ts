@@ -1,26 +1,37 @@
+import { QuadTreeNode } from "@/nodes/global/class/quad-tree-node";
 import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 
 import { ExecuteProcess } from "./symbols";
 import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 import { CollisionComponent } from "@/nodes/class/components/2D/collisions/collision.component";
+import type { GlobalNode } from "@/nodes";
 
 export default class CollisionController {
 	protected $app: EngineCore | GameCore;
 
-	protected collisions: Set<CollisionShapeComponent>;
+	protected quadTree: QuadTreeNode
 
 	constructor(app: EngineCore | GameCore) {
 		this.$app = app;
-		this.collisions = new Set();
+		this.quadTree = new QuadTreeNode({
+			x: 0,
+			y: 0,
+			width: 1000 * 2,
+			height: 1000 * 2
+		})
 	}
 
-	addCollision(collision: CollisionShapeComponent) {
-		this.collisions.add(collision);
+	addCollision(node: GlobalNode) {
+		this.quadTree.insert(node);
 	}
 
-	removeCollision(collision: CollisionShapeComponent) {
-		this.collisions.delete(collision);
+	removeCollision(node: GlobalNode) {
+		this.quadTree.remove(node);
+	}
+
+	clearCollisions() {
+		this.quadTree.clear()
 	}
 
 	[ExecuteProcess]() {
@@ -29,15 +40,25 @@ export default class CollisionController {
 			secondCollision: CollisionShapeComponent;
 		}>();
 
-		for (const firstCollision of this.collisions) {
-			if (firstCollision.disabled) continue;
+		const potentialNodes = this.quadTree.retrieve({
+			x: 0,
+			y: 0,
+			width: this.$app.canvas.size.width,
+			height: this.$app.canvas.size.height
+		}) ?? []
 
-			for (const secondCollision of this.collisions) {
-				if (firstCollision.NODE === null || secondCollision.NODE === null) continue;
+		for (let i = 0; i < potentialNodes.length; i++) {
+			const firstNode = potentialNodes[i]
+			const firstCollision = firstNode.$components.get("collision-shape") as CollisionShapeComponent;
 
-				if (firstCollision.NODE.id === secondCollision.NODE.id) continue;
+			if (firstCollision.disabled) continue
+			for (let j = i + 1; j < potentialNodes.length; j++) {
+				const secondNode = potentialNodes[j]
+				const secondCollision = secondNode.$components.get("collision-shape") as CollisionShapeComponent
 
-				if (secondCollision.disabled) continue;
+				if (firstNode.id === secondNode.id) continue
+
+				if (secondCollision.disabled) continue
 
 				if (CollisionComponent.isColliding(firstCollision, secondCollision)) {
 					collisions.add({ firstCollision, secondCollision });

@@ -15,7 +15,10 @@ export type TEventScene =
 	| "scene:ready"
 	| "scene:finish"
 	| "scene:remove_node"
-	| "scene:add_node";
+	| "scene:add_node"
+	| "scene:move_node"
+	| "scene:replace_node"
+	| "scene:clear_nodes";
 
 export type TEventNode2D =
 	| "node/2D:modified"

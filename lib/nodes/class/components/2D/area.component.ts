@@ -1,4 +1,4 @@
-import type { GlobalNode } from "@/nodes";
+import type { GlobalNode } from "@/nodes/global/global-node";
 import { ComponentNode } from "@/nodes/global/class/component-node";
 
 export class AreaComponent extends ComponentNode {

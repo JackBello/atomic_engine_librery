@@ -55,5 +55,11 @@ export default abstract class AbstractNode {
 
 			return AbstractNode.CONTEXT.measureText(text);
 		},
+		hasApp: () => {
+			if (!this[GetApp])
+				throw new Error('you cannot initialize the instance of a node without first creating the instance of “EngineCore” or “GameCore”.')
+
+			return true
+		}
 	};
 }

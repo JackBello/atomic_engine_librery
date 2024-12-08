@@ -10,8 +10,11 @@ import { $Scenes, _Collision, _Render, _Script, _Worker } from "@/app/symbols";
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 import { Vector2 } from "@/nodes/vectors/vector-2";
+import type { TAnything } from "@/app/types";
 
-export default class RootNodeMainProcess {
+export default class RootNode {
+	[key: string]: TAnything
+
 	private $app: EngineCore | GameCore;
 
 	get TOP() {
@@ -36,6 +39,10 @@ export default class RootNodeMainProcess {
 				this._updateNodes_(node.$nodes.all);
 			}
 		}
+	}
+
+	defineAction(name: string, func: (root: RootNode, ...args: TAnything[]) => TAnything) {
+		this[name] = func.bind(this)
 	}
 
 	/**
@@ -86,7 +93,7 @@ export default class RootNodeMainProcess {
 		};
 	}
 
-	static invertTransform(position: Vector2, scale: Vector2, rotation: number) {
+	invertTransform(position: Vector2, scale: Vector2, rotation: number) {
 		return {
 			position: position.clone().negate().scale(scale.x || scale.y),
 			scale: scale.clone().invert(),
@@ -94,7 +101,7 @@ export default class RootNodeMainProcess {
 		};
 	}
 
-	static isNodeIntersect({
+	isNodeIntersect({
 		node,
 		intersectionPoint,
 	}: {
@@ -106,24 +113,26 @@ export default class RootNodeMainProcess {
 			rotation: number;
 			origin: [number, number]
 		};
-		intersectionPoint: Vector2;
+		intersectionPoint: [number, number];
 	}) {
 		const WIDTH = node.width * node.scale.x;
 		const HEIGHT = node.height * node.scale.y;
 		const X = node.position.x - node.origin[0];
 		const Y = node.position.y - node.origin[1];
 
-		const mouseX = intersectionPoint.x;
-		const mouseY = intersectionPoint.y;
+		const mouseX = intersectionPoint[0];
+		const mouseY = intersectionPoint[1];
 
 		return (
-			mouseX >= X && mouseX <= X + WIDTH && mouseY >= Y &&
+			mouseX >= X &&
+			mouseX <= X + WIDTH &&
+			mouseY >= Y &&
 			mouseY <= Y + HEIGHT
 		);
 	}
 
 	intersect(
-		intersectionPoint: Vector2,
+		intersectionPoint: [number, number],
 		validation: "hovered" | "lock",
 		parentTransform: {
 			position: Vector2
@@ -190,7 +199,7 @@ export default class RootNodeMainProcess {
 
 			const calculate = node.calculate;
 
-			const accumulativeTransform = RootNodeMainProcess.calculateTransforms(
+			const accumulativeTransform = RootNode.calculateTransforms(
 				{
 					position: node.position ?? Vector2.zero(),
 					scale: node.scale ?? Vector2.one(),
@@ -200,7 +209,7 @@ export default class RootNodeMainProcess {
 				parentTransform,
 			);
 
-			const accumulativeRelativePosition = RootNodeMainProcess.calculateRelativePosition(
+			const accumulativeRelativePosition = RootNode.calculateRelativePosition(
 				parentRelativePosition,
 				{
 					position: node.position ?? Vector2.zero(),
@@ -209,7 +218,7 @@ export default class RootNodeMainProcess {
 			);
 
 			if (
-				RootNodeMainProcess.isNodeIntersect({
+				this.isNodeIntersect({
 					node: {
 						position: accumulativeRelativePosition.position,
 						scale: accumulativeRelativePosition.scale,

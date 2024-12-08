@@ -11,6 +11,7 @@ import {
 	$Animation,
 	$Canvas,
 	$Scenes,
+	_Camera,
 	_Collision,
 	_Distribution,
 	_Events,
@@ -48,7 +49,7 @@ import InputController from "./controllers/input.controller";
 import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNodeMainProcess from "../nodes/global/root/root-node.main";
+import RootNode from "../nodes/global/root/root-node";
 
 import {
 	Circle2D,
@@ -65,6 +66,7 @@ import {
 import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CallbackUpdateVector } from "@/nodes/symbols";
+import { CameraController } from "./controllers/camera.controller";
 
 export class EngineCore {
 	[key: string]: TAnything;
@@ -78,7 +80,7 @@ export class EngineCore {
 
 	readonly mode: TMode = "editor";
 
-	[_ROOT_]!: RootNodeMainProcess;
+	[_ROOT_]!: RootNode;
 
 	[$Animation]!: AnimationService;
 	[$Canvas]!: CanvasService;
@@ -90,6 +92,7 @@ export class EngineCore {
 	[_Events]!: EventController;
 	[_Window]!: WindowController;
 	[_Script]!: ScriptController;
+	[_Camera]!: CameraController;
 	[_Collision]!: CollisionController;
 	[_Distribution]!: DistributionController;
 
@@ -99,7 +102,7 @@ export class EngineCore {
 				play: async () => {
 					if (this.global("mode") === "edition") {
 						if (this.global("reset")) {
-							await this[_Script].ready();
+							this[_Script].ready();
 							this._global.set("reset", false);
 						}
 
@@ -203,10 +206,13 @@ export class EngineCore {
 		this[_Events] = new EventController(this);
 		this[_Window] = new WindowController(this);
 		this[_Script] = new ScriptController(this);
+		this[_Camera] = new CameraController(this);
 		this[_Collision] = new CollisionController(this);
 		this[_Distribution] = new DistributionController(this);
 
-		this[_ROOT_] = new RootNodeMainProcess(this);
+		this[_ROOT_] = new RootNode(this);
+
+		this[$Animation].analytics()
 
 		Vector2[CallbackUpdateVector](() => {
 			this[_Render].draw = true
@@ -238,15 +244,12 @@ export class EngineCore {
 	}
 
 	use(
-		name: string,
 		plugin: TClass<Plugin>,
 		options: Record<string, TAnything> = {},
 	) {
-		this._plugins.set(name, new plugin(this, name));
+		const instance = new plugin(this);
 
-		let instance = this._plugins.get(name);
-
-		if (!instance) throw new Error("");
+		this._plugins.set(instance.name, instance);
 
 		instance.install(options);
 
@@ -275,7 +278,6 @@ export class EngineCore {
 			this[instance.name] = functionsInject;
 		}
 
-		instance = undefined;
 		functions = [];
 		operations = {
 			after: [],

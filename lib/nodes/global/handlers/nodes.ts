@@ -85,7 +85,7 @@ export class HandlerNode implements IHandleNode {
 			}
 		}
 
-		this.$node.ROOT.TOP?.[DispatchEvent]("scene:add_node", nodes);
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:add_node", ...nodes);
 	}
 
 	has(index: number): boolean {
@@ -107,6 +107,8 @@ export class HandlerNode implements IHandleNode {
 			this.$app[_Render].draw = true;
 		}
 
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:remove_node", $node);
+
 		return true;
 	}
 
@@ -116,6 +118,8 @@ export class HandlerNode implements IHandleNode {
 		if (this.$app.scenes.currentScene) {
 			this.$app[_Render].draw = true;
 		}
+
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:clear_nodes");
 
 		return true;
 	}
@@ -137,6 +141,8 @@ export class HandlerNode implements IHandleNode {
 		if (this.$app.scenes.currentScene) {
 			this.$app[_Render].draw = true;
 		}
+
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:replace_node", node, $node);
 
 		return true;
 	}
@@ -177,6 +183,8 @@ export class HandlerNode implements IHandleNode {
 		if (this.$app.scenes.currentScene) {
 			this.$app[_Render].draw = true;
 		}
+
+		this.$node.ROOT.TOP?.[DispatchEvent]("scene:move_node", { from: $nodeFrom, to: $nodeTo });
 
 		return true;
 	}

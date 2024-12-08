@@ -9,36 +9,34 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"@angular/core": "^18.2.10",
-		"@types/node": "^22.7.6",
-		"@types/react": "^18.3.12",
+		"@angular/core": "19.0.1",
+		"@types/node": "22.10.1",
+		"@types/react": "19.0.1",
+		"@types/stats.js": "^0.17.3",
 		"@types/wicg-file-system-access": "^2023.10.5",
-		"@webgpu/types": "^0.1.49",
-		"react": "^18.3.1",
-		"svelte": "^5.1.12",
-		"typescript": "^5.5.3",
-		"vite": "^5.4.1",
+		"@webgpu/types": "0.1.51",
+		"react": "19.0.0",
+		"svelte": "5.4.0",
+		"typescript": "5.7.2",
+		"vite": "6.0.2",
 		"vite-plugin-dts": "^4.3.0",
-		"vite-plugin-mkcert": "^1.17.5",
-		"vue": "^3.4.21"
+		"vite-plugin-mkcert": "1.17.6",
+		"vue": "3.5.13"
 	},
 	"dependencies": {
 		"@std/ini": "npm:@jsr/std__ini@1.0.0-rc.4",
 		"@std/toml": "npm:@jsr/std__toml@^1.0.1",
 		"@std/ulid": "npm:@jsr/std__ulid@1.0.0-rc.4",
-		"@std/yaml": "npm:@jsr/std__yaml@^1.0.5"
+		"@std/yaml": "npm:@jsr/std__yaml@^1.0.5",
+		"stats.js": "1.0.0"
 	},
-	"files": [
-		"dist"
-	],
-	"exports": {
-		".": {
-			"import": "./dist/atomic-engine.es.js",
-			"require": "./dist/atomic-engine.cjs.js",
-			"types": "./dist/index.d.ts"
-		}
-	},
+	"files": ["dist"],
 	"main": "./dist/atomic-engine.cjs.js",
 	"module": "./dist/atomic-engine.es.js",
-	"types": "./dist/index.d.ts"
+	"types": "./dist/index.d.ts",
+	"exports": {
+		"types": "./dist/index.d.ts",
+		"import": "./dist/atomic-engine.es.js",
+		"require": "./dist/atomic-engine.cjs.js"
+	}
 }

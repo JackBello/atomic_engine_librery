@@ -101,7 +101,7 @@ export class HandlerScript {
 		].executeScript(this.$node, this.$app, script);
 
 		for (const name of Object.keys(__VARS__)) {
-			if (!this.$node[name]) this.$node[name] = __VARS__[name];
+			this.$node[name] = __VARS__[name];
 		}
 
 		for (const name of Object.keys(__FUNC__)) {

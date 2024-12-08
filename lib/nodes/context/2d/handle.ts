@@ -37,9 +37,9 @@ export const handleComponent2D = (
 export const handleDrawContext2D = (
 	action:
 		| Exclude<
-				TCanvasNode2D,
-				"2D/node" | "2D/handler/collision" | "2D/handler/collision-shape"
-		  >
+			TCanvasNode2D,
+			"2D/node" | "2D/handler/collision" | "2D/handler/collision-shape"
+		>
 		| TCanvasActionsContext2D
 		| TCanvasActions,
 	options: TAnything,
@@ -47,9 +47,9 @@ export const handleDrawContext2D = (
 ) => {
 	const actions: Record<
 		| Exclude<
-				TCanvasNode2D,
-				"2D/node" | "2D/handler/collision" | "2D/handler/collision-shape"
-		  >
+			TCanvasNode2D,
+			"2D/node" | "2D/handler/collision" | "2D/handler/collision-shape"
+		>
 		| TCanvasActionsContext2D
 		| TCanvasActions,
 		TFunction
@@ -60,6 +60,7 @@ export const handleDrawContext2D = (
 		"2D/selection": selection_2D,
 		"2D/line-flow-effect": effect_line_flow_2D,
 		"2D/control-edition": control_edition_2D,
+		"2D/image": () => undefined,
 		"canvas:clear": clear_canvas_2D,
 		"canvas:rotation": clear_canvas_2D,
 		"canvas:scale": scale_canvas_2D,

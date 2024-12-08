@@ -11,6 +11,7 @@ import {
 	$Animation,
 	$Canvas,
 	$Scenes,
+	_Camera,
 	_Collision,
 	_Events,
 	_Frame,
@@ -42,7 +43,7 @@ import RenderController from "./controllers/render.controller";
 import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNodeMainProcess from "../nodes/global/root/root-node.main";
+import RootNode from "../nodes/global/root/root-node";
 
 import {
 	ControlEdition2D,
@@ -60,6 +61,7 @@ import { DEFAULT_CONFIG_ATOMIC_GAME } from "../configs/engine/game";
 import { serializers } from "./utils/serialize";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CallbackUpdateVector } from "@/nodes/symbols";
+import { CameraController } from "./controllers/camera.controller";
 
 export class GameCore {
 	[key: string]: TAnything;
@@ -72,7 +74,7 @@ export class GameCore {
 
 	readonly mode: TMode = "game";
 
-	[_ROOT_]!: RootNodeMainProcess;
+	[_ROOT_]!: RootNode;
 
 	[$Animation]!: AnimationService;
 	[$Canvas]!: CanvasService;
@@ -83,6 +85,7 @@ export class GameCore {
 	[_Input]!: InputController;
 	[_Events]!: EventController;
 	[_Script]!: ScriptController;
+	[_Camera]!: CameraController;
 	[_Collision]!: CollisionController;
 
 	get ROOT() {
@@ -101,7 +104,7 @@ export class GameCore {
 		return this[$Scenes];
 	}
 
-	get size() {
+	get viewport() {
 		return {
 			width: this._options.viewport.width,
 			height: this._options.viewport.height,
@@ -190,9 +193,10 @@ export class GameCore {
 		this[_Input] = new InputController(this);
 		this[_Events] = new EventController(this);
 		this[_Script] = new ScriptController(this);
+		this[_Camera] = new CameraController(this);
 		this[_Collision] = new CollisionController(this);
 
-		this[_ROOT_] = new RootNodeMainProcess(this);
+		this[_ROOT_] = new RootNode(this);
 
 		Vector2[CallbackUpdateVector](() => {
 			this[_Render].draw = true

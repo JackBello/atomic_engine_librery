@@ -31,9 +31,11 @@ export class ComponentNode {
 		this.init();
 	}
 
-	init() {}
+	init() { }
 
-	process() {}
+	process() { }
+
+	reset() { }
 
 	[NodeDestroy]() {
 		this.$node = null as TAnything;

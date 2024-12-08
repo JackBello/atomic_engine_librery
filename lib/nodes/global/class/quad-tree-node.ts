@@ -1,7 +1,15 @@
+import type { GlobalNode } from "../global-node";
+
 export class QuadTreeNode {
+    private map: Record<string, number> = {
+        "top-left": 0,
+        "top-right": 1,
+        "bottom-left": 2,
+        "bottom-right": 3
+    }
     private bounds: { x: number; y: number; width: number; height: number };
     private capacity: number;
-    private nodes: { x: number; y: number; width: number; height: number }[] = [];
+    private nodes: GlobalNode[] = [];
     private divisions: QuadTreeNode[] | null = null;
 
     constructor(bounds: { x: number; y: number; width: number; height: number }, capacity = 4) {
@@ -9,8 +17,31 @@ export class QuadTreeNode {
         this.capacity = capacity;
     }
 
-    insert(node: { x: number; y: number; width: number; height: number; }): boolean {
-        if (!this.intersects(this.bounds, node)) return false;
+    clear() {
+        this.nodes = []
+        this.divisions = null
+    }
+
+    remove(target: GlobalNode): boolean {
+        const index = this.nodes.findIndex((entry) => entry === target);
+
+        if (index !== -1) {
+            this.nodes.splice(index, 1);
+            return true;
+        }
+
+        if (this.divisions)
+            for (const childNode of this.divisions) {
+                if (childNode.remove(target)) {
+                    return true;
+                }
+            }
+
+        return false;
+    }
+
+    insert(node: GlobalNode): boolean {
+        if (!this.intersects(this.bounds, node.getBounds())) return false;
 
         if (this.nodes.length < this.capacity && !this.divisions) {
             this.nodes.push(node);
@@ -19,21 +50,48 @@ export class QuadTreeNode {
 
         if (!this.divisions) this.subdivide();
 
-        if (this.divisions)
-            for (const quad of this.divisions) {
-                if (quad.insert(node)) return true;
+        if (this.divisions) {
+            const divisions = this.getDivisions(node.getBounds())
+
+            // if (node.slug === "player") {
+            //     console.log(node.slug, divisions, node.getBounds());
+            // }
+
+            for (const division in divisions) {
+                if (divisions[division]) {
+                    this.divisions[this.map[division]].insert(node)
+                }
             }
+        }
 
         return false;
     }
 
-    query(range: { x: number; y: number; width: number; height: number }): { x: number; y: number; width: number; height: number }[] {
-        const results: { x: number; y: number; width: number; height: number }[] = [];
+    retrieve(area: { x: number; y: number; width: number; height: number }) {
+        const results = [...this.nodes];
+
+        if (this.divisions) {
+            const index = this.getDivision(area);
+
+            if (index !== -1) {
+                results.push(...this.divisions[index].retrieve(area));
+            } else {
+                for (const node of this.divisions) {
+                    results.push(...node.retrieve(area));
+                }
+            }
+        }
+
+        return results;
+    }
+
+    query(range: { x: number; y: number; width: number; height: number }): GlobalNode[] {
+        const results: GlobalNode[] = [];
 
         if (!this.intersects(this.bounds, range)) return results;
 
         for (const node of this.nodes) {
-            if (this.intersects(range, node)) {
+            if (this.intersects(range, node.getBounds())) {
                 results.push(node);
             }
         }
@@ -45,6 +103,44 @@ export class QuadTreeNode {
         }
 
         return results;
+    }
+
+    private getDivision(node: { x: number; y: number; width: number; height: number }): number {
+        const midX = this.bounds.x + this.bounds.width / 2;
+        const midY = this.bounds.y + this.bounds.height / 2;
+
+        const fitsTop = node.y < midY && node.y + node.height <= midY;
+        const fitsBottom = node.y >= midY;
+        const fitsLeft = node.x < midX && node.x + node.width <= midX;
+        const fitsRight = node.x >= midX;
+
+        if (fitsTop && fitsLeft) return 0;
+        if (fitsTop && fitsRight) return 1;
+        if (fitsBottom && fitsLeft) return 2;
+        if (fitsBottom && fitsRight) return 3;
+
+        return -1;
+    }
+
+    private getDivisions(node: { x: number; y: number; width: number; height: number }): Record<string, boolean> {
+        const midX = this.bounds.x + this.bounds.width / 2;
+        const midY = this.bounds.y + this.bounds.height / 2;
+
+        // const fitsTop = node.y < midY && node.y + node.height <= midY;
+        const fitsTop = node.y <= midY;
+        // const fitsBottom = node.y >= midY;
+        const fitsBottom = node.y + node.height >= midY;
+        // const fitsLeft = node.x <= midX && node.x + node.width <= midX;
+        const fitsLeft = node.x <= midX;
+        // const fitsRight = node.x >= midX;
+        const fitsRight = node.x + node.width >= midX;
+
+        return {
+            "top-left": fitsTop && fitsLeft,
+            "top-right": fitsTop && fitsRight,
+            "bottom-left": fitsBottom && fitsLeft,
+            "bottom-right": fitsBottom && fitsRight
+        };
     }
 
     private subdivide() {
@@ -62,10 +158,10 @@ export class QuadTreeNode {
 
     private intersects(a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }): boolean {
         return (
-            a.x < b.x + b.width &&
-            a.x + a.width > b.x &&
-            a.y < b.y + b.height &&
-            a.y + a.height > b.y
+            a.x + a.width >= b.x &&
+            a.x <= b.x + b.width &&
+            a.y + a.height >= b.y &&
+            a.y <= b.y + b.height
         );
     }
 }

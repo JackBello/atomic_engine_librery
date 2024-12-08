@@ -207,7 +207,7 @@ export default class EventController {
 	};
 
 	protected init() {
-		if (this.$app[$Canvas] && this.$app[$Canvas].event !== undefined) {
+		if (this.$app[$Canvas] && this.$app[$Canvas].main !== undefined) {
 			window.addEventListener("touchstart", this.touchstart);
 
 			window.addEventListener("touchmove", this.touchmove);
@@ -226,17 +226,17 @@ export default class EventController {
 				this.mousemove,
 			);
 
-			this.$app[$Canvas].event.addEventListener(
+			this.$app[$Canvas].defineEvent(
 				"mouseenter",
 				this.mouseenter,
 			);
 
-			this.$app[$Canvas].event.addEventListener(
+			this.$app[$Canvas].defineEvent(
 				"mouseleave",
 				this.mouseleave,
 			);
 
-			this.$app[$Canvas].event.addEventListener("wheel", this.wheel, {
+			this.$app[$Canvas].defineEvent("wheel", this.wheel, {
 				passive: true,
 			});
 

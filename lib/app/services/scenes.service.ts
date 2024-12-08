@@ -51,7 +51,7 @@ export default class ScenesService {
 			else throw new Error("this instance is not a scene");
 		}
 
-		this[DispatchEvent]("scenes:add", scenes);
+		this[DispatchEvent]("scenes:add", ...scenes);
 	}
 
 	delete(slug: string) {
@@ -81,27 +81,29 @@ export default class ScenesService {
 			throw new Error("No scene selected to be loaded");
 		}
 
+		this[DispatchEvent]("scenes:load", this._scene);
+
 		this._scene[DispatchEvent]("scene:preload");
 
 		await this.$app[_Script][DispatchScript]();
 
 		this._scene[DispatchEvent]("scene:ready");
+
 	}
 
 	async refresh() {
 		await this.$app[_Script][DispatchScript]();
 	}
 
-	reset(node: Scene | GlobalNode) {
-		if (node) {
-			node.reset();
+	reset(node?: Scene | GlobalNode) {
+		if (!node) return
 
-			if (node.$nodes.size > 0) {
-				for (const child of node.$nodes.all) {
-					this.reset(child);
-				}
+		node.reset();
+
+		if (node.$nodes.size > 0)
+			for (const child of node.$nodes.all) {
+				this.reset(child);
 			}
-		}
 	}
 
 	export(format: TSerialize = "JSON") {
@@ -130,7 +132,7 @@ export default class ScenesService {
 	}
 
 	[DispatchEvent](name: TEventScenes, ...args: TAnything[]) {
-		this._events.emitEvent(name, args);
+		this._events.emitEvent(name, ...args);
 	}
 
 	[ExportData]() {

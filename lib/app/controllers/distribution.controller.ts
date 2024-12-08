@@ -44,10 +44,8 @@ export default class DistributionController {
 					background: options.game.background,
 					context: options.context,
 					dimension: options.dimension,
-					fps: {
-						delay: options.fps.delay,
-						velocity: options.fps.velocity,
-					},
+					physics_frame: options.physics_frame,
+					render_frame: options.render_frame,
 					selector: options.selector,
 					viewport: {
 						height: options.game.viewport.height,

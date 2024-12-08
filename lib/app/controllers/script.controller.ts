@@ -1,7 +1,7 @@
-import type { GlobalNode, Scene } from "@/nodes";
+import type { GlobalNode } from "@/nodes";
 import type { TAnything, TFunction } from "@/app/types";
 
-import { GameCore } from "../game";
+import type { GameCore } from "../game";
 import { EngineCore } from "../engine";
 
 import {
@@ -15,8 +15,8 @@ import {
 import { NodePropType, ScriptsNodeFromScene } from "@/nodes/symbols";
 
 import EventObserver from "@/app/utils/observer";
-import ConstructorNodes from "@/nodes/global/constructors/constructor-nodes";
 import { ExecuteProcess } from "./symbols";
+import type { CameraComponent } from "@/nodes/class/components/2D/camera.component";
 
 export default class ScriptController {
 	private $app: EngineCore | GameCore;
@@ -51,7 +51,7 @@ export default class ScriptController {
 		}
 	}
 
-	public getHelpersScript() {
+	public getHelpersScript(): Record<string, TAnything> {
 		return Object.fromEntries(this._helpers);
 	}
 
@@ -63,7 +63,7 @@ export default class ScriptController {
 	}
 
 	public initHelpersScript() {
-		this._helpers.set("$Timer", {
+		this._helpers.set("Timers", {
 			timeout: (time: number, callback: TFunction) =>
 				setTimeout(callback, time),
 			interval: (time: number, callback: TFunction) =>
@@ -74,22 +74,25 @@ export default class ScriptController {
 					: clearTimeout(reference),
 		});
 
-		this._helpers.set("$Game", {
+		this._helpers.set("Game", {
 			finish: () => {
 				this.$app[SetGlobal]("status", "pause");
 			},
-			reset: () => {
-				this.$app[SetGlobal]("reset", true);
-				this.$app[$Scenes].reset(this.$app[$Scenes].currentScene as Scene);
+			restart: () => {
+				this.$app[SetGlobal]("status", "pause");
+				this.ready();
+				this.$app[$Scenes].reset(this.$app[$Scenes].currentScene);
 				this.$app[SetGlobal]("status", "play");
 			},
-			reload: () => {},
+			play: () => {
+				this.$app[SetGlobal]("status", "play");
+			},
 			pause: () => {
 				this.$app[SetGlobal]("status", "pause");
 			},
 		});
 
-		this._helpers.set("$Logger", {
+		this._helpers.set("Logger", {
 			message: (...data: TAnything[]) => {
 				console.log(...data);
 			},
@@ -104,34 +107,25 @@ export default class ScriptController {
 			},
 		});
 
-		this._helpers.set("$Window", {
-			viewport: () => {
-				let viewport = {
-					width: 0,
-					height: 0,
-				};
-
-				if (this.$app instanceof EngineCore) {
-					viewport = this.$app[GetOptions]().game.viewport;
-				} else if (this.$app instanceof GameCore) {
-					viewport = this.$app[GetOptions]().viewport;
-				}
-
-				return viewport;
-			},
+		this._helpers.set("Window", {
+			viewport: () => this.$app instanceof EngineCore ? this.$app[GetOptions]().game.viewport : this.$app[GetOptions]().viewport
 		});
 
-		this._helpers.set("$Time", {
+		this._helpers.set("Time", {
 			delta: () => this.$app[_Frame].DELTA,
 			frame: () => this.$app[_Frame].FRAME,
-			fps: () => this.$app[_Frame].FPS,
 		});
 
-		this._helpers.set("$Input", this.$app[_Input]);
+		this._helpers.set("Input", this.$app[_Input]);
 
-		this._helpers.set("$Nodes", ConstructorNodes.getNodes());
+		this._helpers.set("CurrentScene", undefined);
 
-		this._helpers.set("$Scene", () => this.$app.scenes.currentScene);
+		this._helpers.set("$import", async (path: string) => {
+			return await import(
+				/* @vite-ignore */
+				new URL(path, `${location.href}src/`).href
+			)
+		})
 	}
 
 	ready() {
@@ -180,11 +174,23 @@ export default class ScriptController {
 				_input.bind(node)(this.$app[_Input]);
 			}
 
-			if (mode && node?.visible && _process) _process.bind(node)(delta);
+			if (mode && node?.visible && _process) {
+				_process.bind(node)(delta);
+			}
 
 			if (mode && node?.[NodePropType].startsWith("2D") && _draw) {
 				_draw.bind(node)();
 			}
+
+			this.handlerComponents(node)
+		}
+	}
+
+	protected handlerComponents(node: GlobalNode) {
+		if (node.$components.has("camera")) {
+			const camera = node.$components.get("camera") as CameraComponent
+
+			camera.process();
 		}
 	}
 

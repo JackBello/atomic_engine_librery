@@ -4,10 +4,8 @@ export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	background: "#eeeeee",
 	context: "2d",
 	dimension: "2D",
-	fps: {
-		delay: 1000,
-		velocity: 60,
-	},
+	physics_frame: 120,
+	render_frame: 60,
 	game: {
 		background: "#000000",
 		full_screen: false,
@@ -23,7 +21,8 @@ export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 			width: 800,
 		},
 	},
-	height: 500,
-	width: 500,
-	selector: undefined,
+	height: 300,
+	width: 300,
+	selector: "",
+	analytics: false
 };

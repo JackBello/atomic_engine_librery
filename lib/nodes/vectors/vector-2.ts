@@ -172,7 +172,7 @@ export class Vector2 {
 	}
 
 	toString() {
-		return `(${this._array[0]}, ${this._array[1]})`
+		return `(${this._array.join(", ")})`
 	}
 
 	export() {
@@ -206,6 +206,15 @@ export class Vector2 {
 
 		out.x = a.x * b.x;
 		out.y = a.y * b.y;
+
+		return out
+	}
+
+	static divide(a: Readonly<Vector2>, b: Readonly<Vector2>) {
+		const out = Vector2.zero()
+
+		out.x = a.x / b.x;
+		out.y = a.y / b.y;
 
 		return out
 	}

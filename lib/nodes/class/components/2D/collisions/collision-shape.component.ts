@@ -93,6 +93,6 @@ export class CollisionShapeComponent extends CollisionComponent {
 				this._options.disabled = true;
 			}
 		};
-		this.$app[_Collision].addCollision(this);
+		this.$app[_Collision].addCollision(this.$node);
 	}
 }

@@ -57,16 +57,19 @@ export interface IOptionsGame {
 export interface IOptionsEngineCore extends ISize2D {
 	background: string;
 	context: TContextName;
-	selector?: string;
+	selector: string;
 	dimension: TDimension;
 	game: IOptionsGame;
-	fps: IOptionsFramePerSecond;
+	physics_frame: number
+	render_frame: number
+	analytics: boolean
 }
 
 export interface IOptionsGameCore extends IOptionsGame {
 	context: TContextName;
 	selector: string;
-	fps: IOptionsFramePerSecond;
+	physics_frame: number
+	render_frame: number
 	dimension: TDimension;
 }
 
