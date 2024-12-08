@@ -41,7 +41,7 @@ export class RootNode {
 		}
 	}
 
-	defineAction(name: string, func: (root: RootNode, ...args: TAnything[]) => TAnything) {
+	defineAction(name: string, func: (...args: TAnything[]) => TAnything) {
 		this[name] = func.bind(this)
 	}
 
