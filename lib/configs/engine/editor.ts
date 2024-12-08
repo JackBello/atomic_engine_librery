@@ -23,6 +23,6 @@ export const DEFAULT_CONFIG_ATOMIC_ENGINE: IOptionsEngineCore = {
 	},
 	height: 300,
 	width: 300,
-	selector: "",
+	selector: undefined,
 	analytics: false
 };

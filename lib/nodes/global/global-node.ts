@@ -318,7 +318,7 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 			attributes: this.$attributes.toEntries(),
 			metaKeys: this.$metaKeys.toEntries(),
 			type: this.NODE_NAME,
-			script: this._script,
+			script: this.$script.source ?? 'NULL',
 			path: this.path,
 			index: this.index,
 			nodes,

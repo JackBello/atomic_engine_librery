@@ -46,10 +46,10 @@ import RenderController from "./controllers/render.controller";
 import FrameController from "./controllers/frame.controller";
 import InputController from "./controllers/input.controller";
 
-import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
+import { ConstructorNodes } from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNode from "../nodes/global/root/root-node";
+import { RootNode } from "../nodes/global/root/root-node";
 
 import {
 	Circle2D,
@@ -237,10 +237,30 @@ export class EngineCore {
 		this._options.height = height;
 
 		this[$Canvas].setSize(width, height);
-
 		this[_Render].setSize(width, height);
 
 		return this;
+	}
+
+	setSelector(selector: string) {
+		this._options.selector = selector
+
+		this[$Canvas] = new CanvasService(this);
+		this[_Render] = new RenderController(this);
+		this[_Events] = new EventController(this);
+
+		this[$Animation].analytics()
+
+		this[_Render].load({
+			context: this._options.context,
+			dimension: this._options.dimension,
+			mode: this.mode,
+		});
+		this[_Render].init(this._options.width, this._options.height);
+
+		this.setSize(this._options.width, this._options.height);
+
+		return this
 	}
 
 	use(

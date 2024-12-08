@@ -13,7 +13,7 @@ import type {
 } from "../nodes-2D.types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type { TEventNode, TEventNode2D } from "../../events";
-import type { TAnything, TFunction } from "../../../app/types";
+import type { TAnything, TFunction, TSerialize } from "../../../app/types";
 
 import {
 	NodeFunctionClone,
@@ -23,13 +23,14 @@ import {
 	NodeFunctionSet,
 	NodePropType,
 } from "../../symbols";
-import { _Render, GetApp } from "../../../app/symbols";
+import { _Render, ExportData, GetApp } from "../../../app/symbols";
 
 import { GlobalNode } from "../../global/global-node";
 
 import { DEFAULT_CONFIG_NODE_2D } from "../../../configs/nodes/2D/node";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CanvasNode } from "@/nodes/global/class/canvas-node";
+import { serializers } from "@/app/utils/serialize";
 
 export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions["2D/node"]>
 	extends CanvasNode<T>
@@ -304,11 +305,47 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		this[GetApp][_Render].draw = true;
 	}
 
+	export(format: TSerialize = "JSON"): string {
+		return serializers[format].stringify(this[ExportData]());
+	}
+
 	static import(data: string, format: "JSON" | "YAML" = "JSON") {
 		return GlobalNode[NodeFunctionImport](data, format) as Node2D;
 	}
 
 	static make(structure: TExportNode<TAnything>) {
 		return GlobalNode[NodeFunctionMake](structure) as Node2D;
+	}
+
+	[ExportData](childNode = true): TExportNode<TAnything> {
+		const nodes: TExportNode<TAnything>[] = [];
+
+		if (childNode && this.$nodes.size) {
+			for (const node of this.$nodes.all) {
+				nodes.push(node[ExportData](childNode));
+			}
+		}
+
+		const options = this.toObject()
+
+		if (options.position instanceof Vector2)
+			options.position = options.position.export() as TVec2
+		if (options.scale instanceof Vector2)
+			options.scale = options.scale.export() as TVec2
+		if (options.skew instanceof Vector2)
+			options.skew = options.skew.export() as TVec2
+
+		return {
+			id: this.id,
+			slug: this.slug,
+			attributes: this.$attributes.toEntries(),
+			metaKeys: this.$metaKeys.toEntries(),
+			type: this.NODE_NAME,
+			script: this.$script.source ?? 'NULL',
+			path: this.path,
+			index: this.index,
+			nodes,
+			options,
+		};
 	}
 }

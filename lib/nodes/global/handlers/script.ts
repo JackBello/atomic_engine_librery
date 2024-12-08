@@ -15,6 +15,10 @@ export class HandlerScript {
 
 	protected _script: string | URL | null = null;
 
+	get source() {
+		return this._script
+	}
+
 	modeExecute: "auto" | "none" = "auto";
 	compilation: "class" | "functions" = "class";
 

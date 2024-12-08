@@ -57,7 +57,7 @@ export interface IOptionsGame {
 export interface IOptionsEngineCore extends ISize2D {
 	background: string;
 	context: TContextName;
-	selector: string;
+	selector?: string;
 	dimension: TDimension;
 	game: IOptionsGame;
 	physics_frame: number

@@ -15,7 +15,7 @@ export const DEFAULT_CONFIG_CIRCLE_2D: TCanvasNodeOptions["2D/circle"] = {
     visible: true,
     width: 100,
     fill: "black",
-    stroke: undefined,
+    stroke: "",
     lineWidth: 0,
     radius: 30,
     flipX: false,

@@ -11,7 +11,7 @@ import {
 	NodeSetParent,
 } from "../../symbols";
 
-export default class ConstructorNodes {
+export class ConstructorNodes {
 	private static nodesTypes: Map<string, TClass<GlobalNode>> = new Map();
 	private static reserveNodes = [""];
 
@@ -68,7 +68,7 @@ export default class ConstructorNodes {
 
 		if (!node) return false
 
-		return Reflect.defineProperty(node, property, {
+		return Reflect.defineProperty(node.prototype, property, {
 			value,
 			...options
 		})
@@ -86,7 +86,7 @@ export default class ConstructorNodes {
 		instance[NodeSetIndex](node.index);
 		instance[NodeSetId](node.id);
 
-		if (node.script) {
+		if (node.script && node.script !== "NULL") {
 			instance.$script.defineScript(node.script);
 		}
 
@@ -122,7 +122,7 @@ export default class ConstructorNodes {
 			instance[NodeSetIndex](node.index);
 			instance[NodeSetId](node.id);
 
-			if (node.script) {
+			if (node.script && node.script !== "NULL") {
 				instance.$script.defineScript(node.script);
 			}
 

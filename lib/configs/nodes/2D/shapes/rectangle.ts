@@ -15,7 +15,7 @@ export const DEFAULT_CONFIG_RECTANGLE_2D: TCanvasNodeOptions["2D/rectangle"] = {
 	visible: true,
 	width: 100,
 	fill: "black",
-	stroke: undefined,
+	stroke: "",
 	lineWidth: 0,
 	rounded: 0,
 	flipX: false,

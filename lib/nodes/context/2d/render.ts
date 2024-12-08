@@ -4,7 +4,7 @@ import { AbstractRender } from "../../abstract/render.abstract";
 import type { GlobalNode } from "@/nodes";
 import type { OperationNode } from "@/nodes/global/class/operation-node";
 import { NodePropType } from "@/nodes/symbols";
-import RootNode from "@/nodes/global/root/root-node";
+import { RootNode } from "@/nodes/global/root/root-node";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 
 export class Render2D extends AbstractRender {

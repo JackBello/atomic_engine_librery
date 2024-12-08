@@ -6,7 +6,7 @@ import { $Scenes, _Frame, _Input, _Script } from "@/app/symbols";
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
-import ConstructorNodes from "./constructor-nodes";
+import { ConstructorNodes } from "./constructor-nodes";
 import { NodeDestroy } from "@/nodes/symbols";
 
 export default class ConstructorScript {

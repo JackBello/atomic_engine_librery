@@ -7,8 +7,6 @@ export * from "./nodes/global/class/component-node"
 export * from "./nodes/global/global-node";
 export * from "./nodes/global/scene";
 
-export * from "./nodes/global/constructors/constructor-nodes"
-
 export * from "./nodes/vectors/vector-2"
 export * from "./nodes/vectors/vector-3"
 export * from "./nodes/vectors/vector-4"
@@ -30,3 +28,7 @@ export * from "./nodes/class/2D/effects/line-flow-effect";
 
 export * from "./nodes/class/2D/edition/selection";
 export * from "./nodes/class/2D/edition/control-edition";
+
+export * from "./nodes/global/constructors/constructor-nodes"
+
+export * from "./nodes/global/root/root-node"

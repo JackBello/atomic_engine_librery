@@ -7,7 +7,7 @@ import { GetOptions } from "@/app/symbols";
 
 import { CanvasEditor } from "../canvas/canvas-editor";
 import { CanvasGame } from "../canvas/canvas-game";
-import { TAnything, TContextName, TFunction } from "../types";
+import type { TAnything, TContextName, TFunction } from "../types";
 
 export default class CanvasService {
 	private $app: EngineCore | GameCore;
@@ -114,7 +114,6 @@ export default class CanvasService {
 		this._main.appendChild(this._event);
 
 		if (selector) document.querySelector(selector)?.appendChild(this._main);
-		else document.body.appendChild(this._main);
 	}
 
 	protected initLayerEvent(width: number, height: number) {
@@ -153,7 +152,7 @@ export default class CanvasService {
 		this._main.style.height = `${height}px`;
 	}
 
-	setCursor(cursor: string = "default") {
+	setCursor(cursor = "default") {
 		if (!this._event) return;
 
 		this._event.style.cursor = cursor

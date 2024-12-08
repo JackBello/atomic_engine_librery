@@ -12,7 +12,7 @@ import type { GameCore } from "@/app/game";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import type { TAnything } from "@/app/types";
 
-export default class RootNode {
+export class RootNode {
 	[key: string]: TAnything
 
 	private $app: EngineCore | GameCore;
@@ -93,7 +93,7 @@ export default class RootNode {
 		};
 	}
 
-	invertTransform(position: Vector2, scale: Vector2, rotation: number) {
+	static invertTransform(position: Vector2, scale: Vector2, rotation: number) {
 		return {
 			position: position.clone().negate().scale(scale.x || scale.y),
 			scale: scale.clone().invert(),
@@ -101,7 +101,7 @@ export default class RootNode {
 		};
 	}
 
-	isNodeIntersect({
+	static isNodeIntersect({
 		node,
 		intersectionPoint,
 	}: {
@@ -129,159 +129,6 @@ export default class RootNode {
 			mouseY >= Y &&
 			mouseY <= Y + HEIGHT
 		);
-	}
-
-	intersect(
-		intersectionPoint: [number, number],
-		validation: "hovered" | "lock",
-		parentTransform: {
-			position: Vector2
-			scale: Vector2
-			rotation: number;
-			alpha: number;
-		} = { position: Vector2.zero(), scale: Vector2.one(), rotation: 0, alpha: 1 },
-		parentRelativePosition: {
-			position: Vector2
-			scale: Vector2
-		} = { position: Vector2.zero(), scale: Vector2.one() },
-		nodes: GlobalNode[] = this.TOP?.$nodes.all ?? []
-	) {
-		const validateTypeIntersect = {
-			hovered: (node: GlobalNode) => node.hovered,
-			lock: (node: GlobalNode) => !node.lock,
-		};
-
-		let selectNode: undefined | GlobalNode;
-
-		const information = {
-			parent: {
-				transform: {
-					alpha: 1,
-					rotation: 0,
-					position: Vector2.zero(),
-					scale: Vector2.one(),
-				},
-				relative: {
-					position: Vector2.zero(),
-					scale: Vector2.one(),
-				},
-				alpha: 1,
-				rotation: 0,
-				position: Vector2.zero(),
-				scale: Vector2.one(),
-			},
-			child: {
-				transform: {
-					alpha: 1,
-					rotation: 0,
-					position: Vector2.zero(),
-					scale: Vector2.one(),
-				},
-				relative: {
-					position: Vector2.zero(),
-					scale: Vector2.one(),
-				},
-				alpha: 1,
-				rotation: 0,
-				position: Vector2.zero(),
-				scale: Vector2.one(),
-			},
-		};
-
-		let isIntersect = false;
-
-		for (let index = nodes.length - 1; index >= 0; index--) {
-			const node = nodes[index];
-
-			const validate = validateTypeIntersect[validation];
-
-			if (!node.visible) continue;
-
-			const calculate = node.calculate;
-
-			const accumulativeTransform = RootNode.calculateTransforms(
-				{
-					position: node.position ?? Vector2.zero(),
-					scale: node.scale ?? Vector2.one(),
-					rotation: node.calculate.angle ?? 0,
-					alpha: node.alpha ?? 1,
-				},
-				parentTransform,
-			);
-
-			const accumulativeRelativePosition = RootNode.calculateRelativePosition(
-				parentRelativePosition,
-				{
-					position: node.position ?? Vector2.zero(),
-					scale: node.scale ?? Vector2.one(),
-				},
-			);
-
-			if (
-				this.isNodeIntersect({
-					node: {
-						position: accumulativeRelativePosition.position,
-						scale: accumulativeRelativePosition.scale,
-						width: node.width,
-						height: node.height,
-						rotation: accumulativeTransform.rotation,
-						origin: calculate.origin,
-					},
-					intersectionPoint,
-				})
-			) {
-				isIntersect = true;
-			}
-
-			if (isIntersect && validate(node)) {
-				information.parent = {
-					alpha: node.parent?.alpha ?? 1,
-					position: node.parent?.position ?? Vector2.zero(),
-					rotation: node.parent?.rotation ?? 0,
-					scale: node.parent?.scale ?? Vector2.one(),
-					relative: {
-						position: parentRelativePosition.position,
-						scale: parentRelativePosition.scale,
-					},
-					transform: {
-						alpha: parentTransform.alpha,
-						position: parentTransform.position,
-						rotation: parentTransform.rotation,
-						scale: parentTransform.scale,
-					},
-				};
-
-				information.child = {
-					alpha: node?.alpha ?? 1,
-					position: node?.position ?? Vector2.zero(),
-					rotation: node?.rotation ?? 0,
-					scale: node?.scale ?? Vector2.one(),
-					relative: {
-						position: accumulativeRelativePosition.position,
-						scale: accumulativeRelativePosition.scale,
-					},
-					transform: {
-						alpha: accumulativeTransform.alpha,
-						position: accumulativeTransform.position,
-						rotation: accumulativeTransform.rotation,
-						scale: accumulativeTransform.scale,
-					},
-				};
-
-				selectNode = node;
-
-				break;
-			}
-
-			if (node.$nodes.size > 0) {
-				this.intersect(intersectionPoint, validation, accumulativeTransform, accumulativeRelativePosition, node.$nodes.all)
-			}
-		}
-
-		return {
-			node: selectNode,
-			information,
-		};
 	}
 
 	traverse(callback: (node: GlobalNode) => void) {

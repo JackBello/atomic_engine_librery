@@ -5,7 +5,7 @@ import type { EngineCore } from "@/app/engine";
 import { GetApp, SetApp } from "@/app/symbols";
 import { $ConstructorNodes, $ConstructorScript } from "../symbols";
 
-import ConstructorNodes from "../global/constructors/constructor-nodes";
+import { ConstructorNodes } from "../global/constructors/constructor-nodes";
 import ConstructorScript from "../global/constructors/constructor-script";
 
 export default abstract class AbstractNode {

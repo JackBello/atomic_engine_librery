@@ -24,7 +24,7 @@ export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
 	text: "",
 	textAlign: "left",
 	fill: "black",
-	stroke: undefined,
+	stroke: "",
 	lineWidth: 0,
 	wordSpacing: "0px",
 	letterSpacing: "0px",

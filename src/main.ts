@@ -53,7 +53,7 @@ const app = new EngineCore({
 	},
 	height: 600,
 	width: 600,
-	selector: "[data-canvas]",
+	// selector: "[data-canvas]",
 	analytics: true,
 });
 
@@ -80,6 +80,8 @@ app.input.defineAction("move_down", [
 	"keyboard/keyS",
 	"joyPad/crossDown",
 ]);
+
+app.setSelector("[data-canvas]")
 
 const objects: Record<string, null | GlobalNode> = {
 	player: null,

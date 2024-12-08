@@ -40,10 +40,10 @@ import InputController from "./controllers/input.controller";
 import EventController from "./controllers/event.controller";
 import RenderController from "./controllers/render.controller";
 
-import ConstructorNodes from "../nodes/global/constructors/constructor-nodes";
+import { ConstructorNodes } from "../nodes/global/constructors/constructor-nodes";
 
 import AbstractNode from "../nodes/abstract/node.abstract";
-import RootNode from "../nodes/global/root/root-node";
+import { RootNode } from "../nodes/global/root/root-node";
 
 import {
 	ControlEdition2D,
