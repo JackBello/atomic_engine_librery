@@ -176,13 +176,13 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 	protected processOrigin() {
 		const originXNumber: Record<TTypeOriginX, number> = {
 			left: 1,
-			center: 0.5,
+			center: .5,
 			right: 0,
 		}
 
 		const originYNumber: Record<TTypeOriginY, number> = {
 			top: 1,
-			center: 0.5,
+			center: .5,
 			bottom: 0
 		}
 
