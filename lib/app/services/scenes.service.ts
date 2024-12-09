@@ -5,6 +5,7 @@ import type { IControlEditor, TExportNode } from "@/nodes/global/types";
 import type { TEventScenes } from "./events";
 
 import {
+	_Render,
 	_Script,
 	_Worker,
 	DispatchEvent,
@@ -59,6 +60,8 @@ export default class ScenesService {
 
 		if (slug === this.currentScene?.slug) this._scene = undefined;
 
+		this.$app[_Render].draw = true
+
 		this[DispatchEvent]("scenes:delete", slug);
 	}
 
@@ -84,6 +87,8 @@ export default class ScenesService {
 		this[DispatchEvent]("scenes:load", this._scene);
 
 		this._scene[DispatchEvent]("scene:preload");
+
+		this.$app[_Render].draw = true
 
 		await this.$app[_Script][DispatchScript]();
 
