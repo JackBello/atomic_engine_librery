@@ -1,7 +1,7 @@
 import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 
-import { $Canvas, _Input, DispatchEvent, SetGlobal } from "@/app/symbols";
+import { $Canvas, _Input, DispatchEvent, GetOptions, SetGlobal } from "@/app/symbols";
 import { AccessorJoyPads, HandleEventInput } from "./symbols";
 
 export default class EventController {
@@ -207,7 +207,7 @@ export default class EventController {
 	};
 
 	protected init() {
-		if (this.$app[$Canvas] && this.$app[$Canvas].main !== undefined) {
+		if (this.$app[$Canvas] && this.$app[$Canvas].main !== undefined && this.$app[GetOptions]().selector !== undefined) {
 			window.addEventListener("touchstart", this.touchstart);
 
 			window.addEventListener("touchmove", this.touchmove);
