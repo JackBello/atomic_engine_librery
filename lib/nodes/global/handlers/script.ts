@@ -100,6 +100,8 @@ export class HandlerScript {
 
 		this.$app[_Script].addScript(this.$node);
 
+		if (this.$app[_Script].existScript(this.$node) && this.$app.global("refresh-script") === true) return
+
 		const { __FUNC__, __VARS__ } = await this.$node[
 			$ConstructorScript
 		].executeScript(this.$node, this.$app, script);

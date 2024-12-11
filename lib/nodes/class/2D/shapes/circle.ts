@@ -124,15 +124,15 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 
 	protected processOrigin() {
 		const originXNumber: Record<TTypeOriginX, number> = {
-			left: 0.45,
+			left: .5,
 			center: 0,
-			right: -0.45,
+			right: -.5,
 		}
 
 		const originYNumber: Record<TTypeOriginY, number> = {
-			top: 0.45,
+			top: .5,
 			center: 0,
-			bottom: -0.45
+			bottom: -.5
 		}
 
 		if (typeof this._options.originX === "string") {

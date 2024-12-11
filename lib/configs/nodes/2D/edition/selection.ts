@@ -2,8 +2,8 @@ import type { TCanvasNodeOptions } from "@/nodes/types";
 
 export const DEFAULT_CONFIG_SELECTION_2D: TCanvasNodeOptions["2D/selection"] = {
 	alpha: 1,
-	fill: "#000",
-	stroke: "#eee",
+	fill: "#000000",
+	stroke: "#eeeeee",
 	lineWidth: 1,
 	cursor: "default",
 	description: "",

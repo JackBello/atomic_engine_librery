@@ -3,12 +3,12 @@ import type { TCanvasNodeOptions } from "@/nodes/types";
 export const DEFAULT_CONFIG_CONTROL_EDITION_2D: TCanvasNodeOptions["2D/control-edition"] =
 {
 	alpha: 1,
-	fill: "#fff",
-	stroke: "#eee",
+	fill: "#ffffff",
+	stroke: "#eeeeee",
 	lineWidth: 1,
 	cornerBorder: true,
-	cornerColor: "blue",
-	cornerColorBorder: "red",
+	cornerColor: "#0000ff",
+	cornerColorBorder: "#ff0000",
 	cornerSize: 2,
 	cursor: "default",
 	description: "",

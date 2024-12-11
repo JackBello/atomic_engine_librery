@@ -171,6 +171,7 @@ export class GameCore {
 		this._global.set("status", "play"); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
 		this._global.set("scale-viewport", 1);
 		this._global.set("dispatch-event", false);
+		this._global.set("refresh-script", false);
 
 		AbstractNode[SetApp](this);
 		ConstructorNodes.addNodes({

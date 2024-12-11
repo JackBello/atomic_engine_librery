@@ -23,7 +23,7 @@ export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
 	textDirection: "ltr",
 	text: "Atomic Engine",
 	textAlign: "left",
-	fill: "black",
+	fill: "#000000",
 	stroke: "",
 	lineWidth: 0,
 	wordSpacing: "0px",

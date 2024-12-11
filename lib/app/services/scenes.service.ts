@@ -12,6 +12,7 @@ import {
 	DispatchScript,
 	ExportData,
 	ReloadApp,
+	SetGlobal,
 } from "../symbols";
 
 import { type GlobalNode, Scene } from "@/nodes";
@@ -97,7 +98,9 @@ export default class ScenesService {
 	}
 
 	async refresh() {
+		this.$app[SetGlobal]("refresh-script", true)
 		await this.$app[_Script][DispatchScript]();
+		this.$app[SetGlobal]("refresh-script", false)
 	}
 
 	reset(node?: Scene | GlobalNode) {

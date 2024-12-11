@@ -181,6 +181,7 @@ export class EngineCore {
 		this._global.set("scale-viewport", 1);
 		this._global.set("reset", true);
 		this._global.set("dispatch-event", false);
+		this._global.set("refresh-script", false);
 
 		AbstractNode[SetApp](this);
 
