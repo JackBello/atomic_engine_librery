@@ -41,7 +41,7 @@ export class QuadTreeNode {
     }
 
     insert(node: GlobalNode): boolean {
-        if (!this.intersects(this.bounds, node.getBounds())) return false;
+        if (!this.intersects(this.bounds, node.getBounds(), node.NODE_NAME)) return false;
 
         if (this.nodes.length < this.capacity && !this.divisions) {
             this.nodes.push(node);
@@ -52,10 +52,6 @@ export class QuadTreeNode {
 
         if (this.divisions) {
             const divisions = this.getDivisions(node.getBounds())
-
-            // if (node.slug === "player") {
-            //     console.log(node.slug, divisions, node.getBounds());
-            // }
 
             for (const division in divisions) {
                 if (divisions[division]) {
@@ -91,7 +87,7 @@ export class QuadTreeNode {
         if (!this.intersects(this.bounds, range)) return results;
 
         for (const node of this.nodes) {
-            if (this.intersects(range, node.getBounds())) {
+            if (this.intersects(range, node.getBounds(), node.NODE_NAME)) {
                 results.push(node);
             }
         }
@@ -126,13 +122,9 @@ export class QuadTreeNode {
         const midX = this.bounds.x + this.bounds.width / 2;
         const midY = this.bounds.y + this.bounds.height / 2;
 
-        // const fitsTop = node.y < midY && node.y + node.height <= midY;
         const fitsTop = node.y <= midY;
-        // const fitsBottom = node.y >= midY;
         const fitsBottom = node.y + node.height >= midY;
-        // const fitsLeft = node.x <= midX && node.x + node.width <= midX;
         const fitsLeft = node.x <= midX;
-        // const fitsRight = node.x >= midX;
         const fitsRight = node.x + node.width >= midX;
 
         return {
@@ -156,12 +148,28 @@ export class QuadTreeNode {
         ];
     }
 
-    private intersects(a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }): boolean {
+    private intersects(intersection: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }, type?: string): boolean {
+        if (type && type === "Rectangle2D") return (
+            intersection.x + intersection.width >= b.x &&
+            intersection.x <= b.x + b.width &&
+            intersection.y + intersection.height >= b.y &&
+            intersection.y <= b.y + b.height
+        );
+
+        if (type && type === "Circle2D") {
+            return (
+                intersection.x + intersection.width >= (b.x - b.width / 2) &&
+                intersection.x <= (b.x - b.width / 2) + b.width &&
+                intersection.y + intersection.height >= (b.y - b.height / 2) &&
+                intersection.y <= (b.y - b.height / 2) + b.height
+            );
+        }
+
         return (
-            a.x + a.width >= b.x &&
-            a.x <= b.x + b.width &&
-            a.y + a.height >= b.y &&
-            a.y <= b.y + b.height
+            intersection.x + intersection.width >= b.x &&
+            intersection.x <= b.x + b.width &&
+            intersection.y + intersection.height >= b.y &&
+            intersection.y <= b.y + b.height
         );
     }
 }
