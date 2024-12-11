@@ -101,36 +101,6 @@ export class RootNode {
 		};
 	}
 
-	static isNodeIntersect({
-		node,
-		intersectionPoint,
-	}: {
-		node: {
-			position: Vector2
-			scale: Vector2
-			width: number;
-			height: number;
-			rotation: number;
-			origin: [number, number]
-		};
-		intersectionPoint: [number, number];
-	}) {
-		const WIDTH = node.width * node.scale.x;
-		const HEIGHT = node.height * node.scale.y;
-		const X = node.position.x - node.origin[0];
-		const Y = node.position.y - node.origin[1];
-
-		const mouseX = intersectionPoint[0];
-		const mouseY = intersectionPoint[1];
-
-		return (
-			mouseX >= X &&
-			mouseX <= X + WIDTH &&
-			mouseY >= Y &&
-			mouseY <= Y + HEIGHT
-		);
-	}
-
 	traverse(callback: (node: GlobalNode) => void) {
 		if (!this.TOP) return;
 
