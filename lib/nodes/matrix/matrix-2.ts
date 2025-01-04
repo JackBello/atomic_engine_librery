@@ -1,9 +1,12 @@
-import { Transform2D } from "../transforms/transform-2D";
+import { BaseAppAbstract } from "../abstract/base.abstract";
+import type { Transform2D } from "../transforms/transform-2D";
 
-export class Matrix2D {
+export class Matrix2D extends BaseAppAbstract {
     protected _array: Float32Array;
 
     constructor(a = 1, b = 0, c = 0, d = 1, e = 0, f = 0) {
+        super()
+
         this._array = new Float32Array(6);
 
         this._array[0] = a;

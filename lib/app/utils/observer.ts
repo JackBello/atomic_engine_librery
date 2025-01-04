@@ -40,14 +40,4 @@ export default class EventObserver {
 			callback(...args);
 		}
 	}
-
-	public emitEventWithBind(
-		event: string,
-		bind: TAnything,
-		...args: TAnything[]
-	) {
-		for (const callback of this._eventListeners[event]) {
-			callback.bind(bind)(...args);
-		}
-	}
 }

@@ -26,10 +26,11 @@ export const NodeSetHandlerFunctions = Symbol();
 export const NodeSetHandlerMetaKeys = Symbol();
 export const NodeSetHandlerNodes = Symbol();
 
+export const NodeSetScript = Symbol();
+
 export const NodeDestroy = Symbol();
 
 // Specific nodes
+export const PreloadResourcesFromScene = Symbol();
 export const ScriptsNodeFromScene = Symbol();
-
-// Vector
-export const CallbackUpdateVector = Symbol();
+export const CalculateNode2D = Symbol();

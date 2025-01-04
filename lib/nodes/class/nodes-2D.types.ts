@@ -1,4 +1,8 @@
+import type { IResourceSpriteSheet } from "@/app/services/types";
 import type {
+	MapFormatSource,
+	MapTypeSource,
+	SourceType,
 	TSize,
 	TTypeGlobalFont,
 	TTypeOrigin,
@@ -45,6 +49,24 @@ export interface INode2D {
 	originX: TTypeOriginX | number;
 	originY: TTypeOriginY | number;
 	rotation: number;
+}
+
+export interface IImage2D {
+	smoothing: boolean
+	smoothingQuality: "low" | "medium" | "high"
+}
+
+export interface ISource<T extends SourceType> {
+	element: MapTypeSource[T]
+	format: MapFormatSource[T]
+	type: T
+	loaded: boolean
+}
+
+export interface ISprite2D {
+	frame: number
+	frameCoords: TVec2 | Vector2
+	settings: Omit<IResourceSpriteSheet, 'loaded' | 'origin' | 'source'>
 }
 
 export interface IDraw2D {
@@ -147,7 +169,6 @@ export interface IText2D {
 	| number
 	| TTypeGlobalFont;
 	fontVariant: string;
-	lineHeight: `${string}${TSize}` | "normal" | TTypeGlobalFont;
 	textAlign: "left" | "right" | "center";
 	textBaseline:
 	| "top"
@@ -157,8 +178,6 @@ export interface IText2D {
 	| "ideographic"
 	| "bottom";
 	textDirection: "ltr" | "rtl" | "inherit";
-	wordSpacing: `${string}${TSize}`;
-	letterSpacing: `${string}${TSize}`;
 }
 
 export interface ICalculate {

@@ -38,8 +38,8 @@ export const rectangle_2D = (
 				[
 					options.rounded.topLeft,
 					options.rounded.topRight,
+					options.rounded.bottomRight,
 					options.rounded.bottomLeft,
-					options.rounded.topRight,
 				],
 			);
 	} else {

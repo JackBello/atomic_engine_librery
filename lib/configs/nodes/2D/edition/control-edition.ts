@@ -30,4 +30,5 @@ export const DEFAULT_CONFIG_CONTROL_EDITION_2D: TCanvasNodeOptions["2D/control-e
 	title: "",
 	visible: true,
 	hovered: true,
+	compositeOperation: "source-over"
 };

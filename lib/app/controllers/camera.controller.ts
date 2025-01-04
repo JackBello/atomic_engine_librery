@@ -2,7 +2,7 @@ import type { CameraComponent } from "@/nodes/class/components/2D/camera.compone
 import type { GameCore } from "../game";
 import type { EngineCore } from "../engine";
 
-export class CameraController {
+export default class CameraController {
     protected $app: EngineCore | GameCore;
     protected cameras: Set<CameraComponent>
     protected context!: CanvasRenderingContext2D;

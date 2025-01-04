@@ -1,5 +1,5 @@
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
-import type { TAnything, TFunction } from "@/app/types";
+import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import type { TEventNode, TEventNode2D, TEventSelection } from "@/nodes/events";
 import type {
@@ -175,8 +175,8 @@ export class Selection2D<T extends TCanvasNodeOptions["2D/selection"] = TCanvasN
 		this[DispatchEvent]("selection2D:nodes", [...this._selectedNodes]);
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Selection2D;
+	async clone(): Promise<Selection2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	emit(
@@ -191,7 +191,7 @@ export class Selection2D<T extends TCanvasNodeOptions["2D/selection"] = TCanvasN
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		return { ...super.toObject() };
 	}
 
 	set(
@@ -203,11 +203,11 @@ export class Selection2D<T extends TCanvasNodeOptions["2D/selection"] = TCanvasN
 		this[NodeFunctionSet](properties, value)
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Selection2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Selection2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Selection2D;
+	static async make(structure: TExportNode<TAnything>): Promise<Selection2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

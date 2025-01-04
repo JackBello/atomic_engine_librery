@@ -20,8 +20,9 @@ import {
 } from "../symbols";
 import type { ComponentNode } from "./class/component-node";
 import type { HandlerScript } from "./handlers/script";
+import type { ResourceImage } from "@/app/services/resources/image.resource";
 
-export type TVec2 = `Vec2(${number}, ${number})`
+export type TVec2 = `Vec2(${number}, ${number})`;
 
 export type TTypeNodeGlobal = "Scene" | "GlobalNode" | "CanvasNode";
 
@@ -35,7 +36,8 @@ export type TTypeNode2D =
 	| "ControlEdition2D"
 	| "Collision2D"
 	| "CollisionShape2D"
-	| "Image2D";
+	| "Image2D"
+	| "Sprite2D";
 
 export type TTypeNode3D = "Cube3D" | "Sphere3D";
 
@@ -109,6 +111,8 @@ export type TMetaKeyTuple = [string, TMetaKey];
 
 export type TComponentTuple = [string, ComponentNode];
 
+export type TAddonTuple = [string, TAnything]
+
 export type TExportNode<O> = {
 	id: string;
 	slug: string;
@@ -119,7 +123,9 @@ export type TExportNode<O> = {
 	nodes: TExportNode<TAnything>[];
 	path: string;
 	index: number;
+	wrap: boolean;
 	options: O;
+	addons: TAddonTuple[];
 };
 
 export type TMetaKey = {
@@ -137,16 +143,9 @@ export type TMetaKey = {
 
 export type TAttribute = {
 	value: TAnything;
-	group: string;
-	type:
-	| "string"
-	| "int"
-	| "float"
-	| "boolean"
-	| "set"
-	| "map"
-	| "object"
-	| "list";
+	group?: string;
+	label: string;
+	type: "string" | "int" | "float" | "boolean" | "set" | "map" | "object" | "list" | "color" | "file" | "resource";
 	input:
 	| "text"
 	| "number"
@@ -158,7 +157,7 @@ export type TAttribute = {
 	| "date"
 	| "time"
 	| "date-time";
-	options: TAnything;
+	options?: Record<string, TAnything>;
 };
 
 export type TMode = "id" | "index" | "slug";
@@ -184,25 +183,62 @@ export interface IControlCanvas {
 	cursor: TCursorOptions;
 	hovered: boolean;
 	alpha: number;
+	compositeOperation:
+	| "source-over"
+	| "source-in"
+	| "source-out"
+	| "source-atop"
+	| "destination-over"
+	| "destination-in"
+	| "destination-out"
+	| "destination-atop"
+	| "lighter"
+	| "copy"
+	| "xor"
+	| "multiply"
+	| "screen"
+	| "overlay"
+	| "darken"
+	| "lighten"
+	| "color-dodge"
+	| "color-burn"
+	| "hard-light"
+	| "soft-light"
+	| "difference"
+	| "exclusion"
+	| "hue"
+	| "saturation"
+	| "color"
+	| "luminosity";
 }
 
-export type ImageFormat = "png" | "jpg" | "svg" | "avif" | "webp" | "gif"
-export type AudioFormat = "mp3" | "waw"
-export type VideoFormat = "mp4" | "avi" | "mkv"
+export type ImageFormat = "png" | "jpg" | "svg" | "avif" | "webp" | "gif";
+export type AudioFormat = "mp3" | "waw";
+export type VideoFormat = "mp4" | "avi" | "mkv";
+export type EngineFormat = "js" | "ts" | "json" | "xml" | "html" | "css" | "object" | "scene";
 
 export type MapFormatSource = {
-	"image": ImageFormat
-	"audio": AudioFormat
-	"video": VideoFormat
-}
-export type SourceType = "image" | "audio" | "video"
+	image: ImageFormat;
+	audio: AudioFormat;
+	video: VideoFormat;
+	engine: EngineFormat
+};
 
-export interface ISourceNode<T extends SourceType> {
-	type: T
-	format: MapFormatSource[T]
-	source: string | URL
-	origin: "same-origin" | "anonymous" | "cross-origin"
-}
+export type MapTypeSource = {
+	image: HTMLImageElement;
+	audio: HTMLAudioElement;
+	video: HTMLVideoElement;
+	engine: string
+};
+
+export type MapTypeResource = {
+	image: ResourceImage;
+	audio: TAnything;
+	video: TAnything;
+	engine: TAnything;
+};
+
+export type SourceType = "image" | "audio" | "video" | "engine";
 
 export interface IControlNode {
 	readonly $attributes: HandlerAttribute;
@@ -261,10 +297,9 @@ export interface IHandleAttribute {
 	toEntries(): TAttributeTuple[];
 	getAll(): TAttribute[];
 	get(name: string): TAttribute | undefined;
-	add(name: string, options: TAttribute): void;
+	add(name: string, options: TAttribute): boolean;
+	change(name: string, options: TAttribute): boolean;
 	has(name: string): boolean;
-	delete(name: string): boolean;
-	clear(): void;
 
 	[NodeSetHandlerAttributes](attributes: TAttributeTuple[]): void;
 }

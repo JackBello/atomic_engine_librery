@@ -25,4 +25,5 @@ export const DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D: TCanvasNodeOptions["2D/line-flo
 	flipX: false,
 	flipY: false,
 	hovered: true,
+	compositeOperation: "source-over"
 };

@@ -1,4 +1,4 @@
-import type { TAnything } from "@/app/types";
+import type { TAnything, TSerialize } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
 	TExportNode,
@@ -104,8 +104,8 @@ export class Rectangle2D<T extends TCanvasNodeOptions["2D/rectangle"] = TCanvasN
 		super(slug, { ...DEFAULT_CONFIG_RECTANGLE_2D, ...options });
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Rectangle2D;
+	async clone(): Promise<Rectangle2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/rectangle"]): void {
@@ -113,7 +113,7 @@ export class Rectangle2D<T extends TCanvasNodeOptions["2D/rectangle"] = TCanvasN
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		return { ...super.toObject() };
 	}
 
 	set(
@@ -127,11 +127,11 @@ export class Rectangle2D<T extends TCanvasNodeOptions["2D/rectangle"] = TCanvasN
 		this[GetApp][_Render].draw = true;
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Rectangle2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Rectangle2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Rectangle2D;
+	static async make(structure: TExportNode<TAnything>): Promise<Rectangle2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

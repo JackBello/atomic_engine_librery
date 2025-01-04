@@ -1,0 +1,36 @@
+id = "000000000CS3TT8WW5P70D2KN8"
+slug = "raton"
+attributes = []
+metaKeys = []
+type = "Image2D"
+script = "NULL"
+path = "0"
+index = 0
+nodes = []
+addons = [
+    [
+        "resource/ResourceImage",
+        { id = "000000000CS3TT8WW5P70D2KN7", slug = "raton", type = "resource", name_class = "ResourceImage", options = { source = "https://img.freepik.com/vector-gratis/raton-alegre-trozo-queso_1308-164654.jpg", origin = "anonymous", loaded = false } }
+    ]
+]
+
+
+[options]
+description = ""
+title = ""
+cursor = "default"
+hovered = true
+lock = false
+selectable = true
+visible = true
+alpha = 1
+rotation = 0
+height = 100
+originX = "center"
+originY = "center"
+position = "Vec2(300, 100)"
+scale = "Vec2(0.5, 0.5)"
+skew = "Vec2(0, 0)"
+width = 100
+flipX = false
+flipY = false

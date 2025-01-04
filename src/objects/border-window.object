@@ -1,0 +1,34 @@
+id = "000000000C6FCVCM3Q32Q4Q5P8"
+slug = "border-window"
+attributes = []
+metaKeys = []
+type = "Rectangle2D"
+script = "NULL"
+path = "0"
+index = 0
+nodes = []
+addons = []
+
+[options]
+description = ""
+title = ""
+cursor = "default"
+hovered = false
+lock = true
+selectable = true
+visible = true
+alpha = 1
+rotation = 0
+height = 600
+originX = "center"
+originY = "center"
+position = "Vec2(300, 300)"
+scale = "Vec2(1, 1)"
+skew = "Vec2(0, 0)"
+width = 600
+flipX = false
+flipY = false
+fill = "transparent"
+stroke = "red"
+lineWidth = 5
+rounded = 0

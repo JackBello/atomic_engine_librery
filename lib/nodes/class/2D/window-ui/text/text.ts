@@ -1,9 +1,11 @@
-import type { TAnything } from "@/app/types";
+import type { TAnything, TSerialize } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
 	TExportNode,
 	TTypeGlobalFont,
 	TTypeNodes,
+	TTypeOriginX,
+	TTypeOriginY,
 } from "@/nodes/global/types";
 
 import {
@@ -23,7 +25,7 @@ import {
 import { Node2D } from "../../node";
 import { GlobalNode } from "@/nodes";
 
-import { DEFAULT_CONFIG_TEXT_2D } from "../../../../../configs/nodes/2D/interface/text";
+import { DEFAULT_CONFIG_TEXT_2D } from "../../../../../configs/nodes/2D/window-ui/text/text";
 
 export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions["2D/text"]> extends Node2D<T> {
 	[NodePropType]: TCanvasNodes = "2D/text";
@@ -70,10 +72,6 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		return this._options.fontVariant;
 	}
 
-	get lineHeight() {
-		return this._options.lineHeight;
-	}
-
 	get textAlign() {
 		return this._options.textAlign;
 	}
@@ -86,20 +84,8 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		return this._options.textDirection;
 	}
 
-	get wordSpacing() {
-		return this._options.wordSpacing;
-	}
-
-	get letterSpacing() {
-		return this._options.letterSpacing;
-	}
-
 	get font() {
-		return `${this._options.fontStretch ? `${this._options.fontStretch} ` : ""
-			}${this._options.fontVariant ? `${this._options.fontVariant} ` : ""}${this._options.fontStyle ? `${this._options.fontStyle} ` : ""
-			}${this._options.fontWeight ? `${this._options.fontWeight} ` : ""}${this._options.fontSize ? `${this._options.fontSize} ` : ""
-			}${this._options.lineHeight ? `${this._options.lineHeight} ` : ""}${this._options.fontFamily ? this._options.fontFamily : ""
-			}`;
+		return `${this._options.fontStyle} ${this._options.fontVariant} ${this._options.fontWeight} ${this._options.fontSize} ${this._options.fontFamily}`
 	}
 
 	get width() {
@@ -108,6 +94,10 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 
 	get height() {
 		return this._options.height;
+	}
+
+	get origin() {
+		return super.calculateOrigin()
 	}
 
 	set stroke(value: string | undefined) {
@@ -214,26 +204,10 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		this[GetApp][_Render].draw = true;
 	}
 
-	set lineHeight(value:
-		| `${string}px`
-		| `${string}em`
-		| `${string}pc`
-		| `${string}cm`
-		| `${string}rem`
-		| `${string}pt`
-		| `${string}inch`
-		| `${string}%`
-		| "normal"
-		| TTypeGlobalFont) {
-		this._options.lineHeight = value;
-
-		this.processText();
-
-		this[GetApp][_Render].draw = true;
-	}
-
 	set textAlign(value: "center" | "left" | "right") {
 		this._options.textAlign = value;
+
+		this.processText();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -245,7 +219,9 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		| "middle"
 		| "alphabetic"
 		| "ideographic") {
-		this._options.textBaseline = value;
+		this._options.textBaseline = value
+
+		this.processText();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -253,33 +229,7 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 	set textDirection(value: "inherit" | "ltr" | "rtl") {
 		this._options.textDirection = value;
 
-		this[GetApp][_Render].draw = true;
-	}
-
-	set wordSpacing(value:
-		| `${string}px`
-		| `${string}em`
-		| `${string}pc`
-		| `${string}cm`
-		| `${string}rem`
-		| `${string}pt`
-		| `${string}inch`
-		| `${string}%`) {
-		this._options.wordSpacing = value;
-
-		this[GetApp][_Render].draw = true;
-	}
-
-	set letterSpacing(value:
-		| `${string}px`
-		| `${string}em`
-		| `${string}pc`
-		| `${string}cm`
-		| `${string}rem`
-		| `${string}pt`
-		| `${string}inch`
-		| `${string}%`) {
-		this._options.letterSpacing = value;
+		this.processText();
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -293,8 +243,67 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		this.processText(true);
 	}
 
+	protected calculateOrigin(): [number, number] {
+		const metrics = this.utils.infoText(this._options.text, `${this._options.fontStyle} ${this._options.fontVariant} ${this._options.fontWeight} ${this._options.fontSize} ${this._options.fontFamily}`);
+
+		const width = Math.floor(
+			Math.abs(metrics.actualBoundingBoxLeft) +
+			Math.abs(metrics.actualBoundingBoxRight),
+		);
+
+		const ascent = Math.abs(metrics.actualBoundingBoxAscent)
+		const descent = Math.abs(metrics.actualBoundingBoxDescent)
+
+		const originXWithTextAlign: Record<"center" | "left" | "right", number> = {
+			"left": width,
+			"center": 0,
+			"right": -width
+		}
+
+		const originYWithTextBaseline: Record<"top" | "bottom" | "hanging" | "middle" | "alphabetic" | "ideographic", number> = {
+			"top": -ascent,
+			"middle": 0,
+			"bottom": descent,
+			"alphabetic": descent - ascent,
+			"hanging": -ascent,
+			"ideographic": descent
+		}
+
+		const originXNumber: Record<TTypeOriginX, number> = {
+			left: 1,
+			center: .5,
+			right: 0,
+		}
+
+		const originYNumber: Record<TTypeOriginY, number> = {
+			top: 0,
+			center: .5,
+			bottom: 1
+		}
+
+		const originXTextAlign = originXWithTextAlign[this.textAlign]
+		const originYTextBaseline = originYWithTextBaseline[this.textBaseline]
+
+		let originX = 0
+		let originY = 0
+
+		if (typeof this._options.originX === "string") {
+			originX = originXTextAlign * originXNumber[this._options.originX]
+		} else {
+			originX = originXTextAlign * this._options.originX
+		}
+
+		if (typeof this._options.originY === "string") {
+			originY = originYTextBaseline * originYNumber[this._options.originY]
+		} else {
+			originY = originYTextBaseline * this._options.originY
+		}
+
+		return [originX, originY]
+	}
+
 	protected processText(changeInit = false) {
-		const metrics = this.utils.infoText(this._options.text, this.font);
+		const metrics = this.utils.infoText(this._options.text, `${this._options.fontStyle} ${this._options.fontVariant} ${this._options.fontWeight} ${this._options.fontSize} ${this._options.fontFamily}`);
 
 		const width = Math.floor(
 			Math.abs(metrics.actualBoundingBoxLeft) +
@@ -305,9 +314,6 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 			Math.abs(metrics.actualBoundingBoxDescent),
 		);
 
-		const ascent = Math.abs(metrics.actualBoundingBoxAscent)
-		const descent = Math.abs(metrics.actualBoundingBoxDescent)
-
 		if (changeInit) {
 			this._initial.width = width;
 			this._initial.height = height;
@@ -317,28 +323,32 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		this._options.height = height;
 
 		this.processOrigin()
-
-		const originXWithTextAlign: Record<"center" | "left" | "right", number> = {
-			"left": width / 2,
-			"center": 0,
-			"right": -width / 2
-		}
-
-		const originXWithTextBaseline: Record<"top" | "bottom" | "hanging" | "middle" | "alphabetic" | "ideographic", number> = {
-			"top": -ascent / 2,
-			"middle": 0,
-			"bottom": descent / 2,
-			"alphabetic": descent / 2 - ascent / 2,
-			"hanging": -ascent / 2,
-			"ideographic": descent / 2
-		}
-
-		this._calculate.origin[0] = originXWithTextAlign[this.textAlign]
-		this._calculate.origin[1] = originXWithTextBaseline[this.textBaseline]
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Text2D;
+	getBounds() {
+		const [originX, originY] = super.calculateOrigin()
+
+		if (this.parent && this.parent instanceof Node2D) {
+			const parentBounds = this.parent.getBounds()
+
+			return {
+				x: parentBounds.x + this.position.x - Math.abs(originX * this.scale.x),
+				y: parentBounds.y + this.position.y - Math.abs(originY * this.scale.y),
+				width: Math.abs(this.width * this.scale.x),
+				height: Math.abs(this.height * this.scale.y)
+			}
+		}
+
+		return {
+			x: this.position.x - Math.abs(originX * this.scale.x),
+			y: this.position.y - Math.abs(originY * this.scale.y),
+			width: Math.abs(this.width * this.scale.x),
+			height: Math.abs(this.height * this.scale.y)
+		}
+	}
+
+	async clone(): Promise<Text2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/text"]): void {
@@ -350,7 +360,7 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		return { ...super.toObject() };
 	}
 
 	set(property: keyof TCanvasNodeOptions["2D/text"], value: TAnything): void;
@@ -363,11 +373,11 @@ export class Text2D<T extends TCanvasNodeOptions["2D/text"] = TCanvasNodeOptions
 		this[GetApp][_Render].draw = true;
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Text2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Text2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Text2D;
+	static async make(structure: TExportNode<TAnything>): Promise<Text2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

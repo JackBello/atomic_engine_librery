@@ -41,7 +41,7 @@ export class QuadTreeNode {
     }
 
     insert(node: GlobalNode): boolean {
-        if (!this.intersects(this.bounds, node.getBounds(), node.NODE_NAME)) return false;
+        if (!this.intersects(this.bounds, node.getBounds())) return false;
 
         if (this.nodes.length < this.capacity && !this.divisions) {
             this.nodes.push(node);
@@ -87,7 +87,7 @@ export class QuadTreeNode {
         if (!this.intersects(this.bounds, range)) return results;
 
         for (const node of this.nodes) {
-            if (this.intersects(range, node.getBounds(), node.NODE_NAME)) {
+            if (this.intersects(range, node.getBounds())) {
                 results.push(node);
             }
         }
@@ -148,23 +148,7 @@ export class QuadTreeNode {
         ];
     }
 
-    private intersects(intersection: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }, type?: string): boolean {
-        if (type && type === "Rectangle2D") return (
-            intersection.x + intersection.width >= b.x &&
-            intersection.x <= b.x + b.width &&
-            intersection.y + intersection.height >= b.y &&
-            intersection.y <= b.y + b.height
-        );
-
-        if (type && type === "Circle2D") {
-            return (
-                intersection.x + intersection.width >= (b.x - b.width / 2) &&
-                intersection.x <= (b.x - b.width / 2) + b.width &&
-                intersection.y + intersection.height >= (b.y - b.height / 2) &&
-                intersection.y <= (b.y - b.height / 2) + b.height
-            );
-        }
-
+    private intersects(intersection: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }): boolean {
         return (
             intersection.x + intersection.width >= b.x &&
             intersection.x <= b.x + b.width &&

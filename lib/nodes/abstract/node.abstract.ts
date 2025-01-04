@@ -1,32 +1,21 @@
 import type { TAnything } from "@/app/types";
-import type { GameCore } from "@/app/game";
-import type { EngineCore } from "@/app/engine";
 
-import { GetApp, SetApp } from "@/app/symbols";
+import { GetApp } from "@/app/symbols";
 import { $ConstructorNodes, $ConstructorScript } from "../symbols";
 
 import { ConstructorNodes } from "../global/constructors/constructor-nodes";
 import ConstructorScript from "../global/constructors/constructor-script";
+import { BaseAppAbstract } from "./base.abstract";
 
-export default abstract class AbstractNode {
+export default abstract class AbstractNode extends BaseAppAbstract {
 	[key: string | symbol]: TAnything;
 
 	private static CONTEXT = document.createElement("canvas").getContext(
 		"2d",
 	) as CanvasRenderingContext2D;
 
-	private static APP: EngineCore | GameCore;
-
 	static [$ConstructorNodes] = new ConstructorNodes();
 	[$ConstructorScript] = new ConstructorScript();
-
-	get [GetApp]() {
-		return AbstractNode.APP;
-	}
-
-	static [SetApp](app: EngineCore | GameCore): void {
-		AbstractNode.APP = app;
-	}
 
 	protected readonly utils = {
 		omitKeys(

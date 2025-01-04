@@ -38,20 +38,24 @@ export class HandlerAttribute implements IHandleAttribute {
 		return this[NodePropHandlerAttributes].get(name);
 	}
 
-	add(name: string, options: TAttribute): void {
+	add(name: string, options: TAttribute): boolean {
+		if (this.has(name)) return false
+
 		this[NodePropHandlerAttributes].set(name, options);
+
+		return true
+	}
+
+	change(name: string, options: TAttribute): boolean {
+		if (!this.has(name)) return false
+
+		this[NodePropHandlerAttributes].set(name, options);
+
+		return true
 	}
 
 	has(name: string): boolean {
 		return this[NodePropHandlerAttributes].has(name);
-	}
-
-	delete(name: string): boolean {
-		return this[NodePropHandlerAttributes].delete(name);
-	}
-
-	clear(): void {
-		this[NodePropHandlerAttributes].clear();
 	}
 
 	[NodeSetHandlerAttributes](attributes: TAttributeTuple[]): void {

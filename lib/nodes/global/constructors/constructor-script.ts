@@ -7,16 +7,14 @@ import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
 import { ConstructorNodes } from "./constructor-nodes";
-import { NodeDestroy } from "@/nodes/symbols";
+import { NodeDestroy, NodePropHandlerAttributes } from "@/nodes/symbols";
 
 export default class ConstructorScript {
-	private $node!: GlobalNode;
-	private $app!: EngineCore | GameCore;
-	private $script!: string | URL;
+    private $node!: GlobalNode;
+    private $app!: EngineCore | GameCore;
+    private $script!: string | URL;
 
-	protected _helpers = new Map();
-
-	protected _restring = `
+    protected _restring = `
 	const window = undefined;
     const document = undefined;
     const alert = undefined;
@@ -138,188 +136,141 @@ export default class ConstructorScript {
     const console = undefined;
 	`;
 
-	protected CLASS = {
-		getMethodsFromClass: (instance: GlobalNode, filters: string[] = []) => {
-			const result: Record<string, TFunction> = {};
+    protected CLASS = {
+        getMethodsFromClass: (instance: GlobalNode, filters: string[] = []) => {
+            const result: Record<string, TFunction> = {};
 
-			const prototype = Object.getPrototypeOf(instance);
+            const prototype = Object.getPrototypeOf(instance);
 
-			const methods = Object.getOwnPropertyNames(prototype).filter(
-				(method) =>
-					!Reflect.has(this.$node, method) && typeof prototype[method] === "function" && method !== "constructor",
-			);
+            const methods = Object.getOwnPropertyNames(prototype).filter(
+                (method) =>
+                    !Reflect.has(this.$node, method) && typeof prototype[method] === "function" && method !== "constructor",
+            );
 
-			if (filters.length > 0) {
-				for (const method of methods) {
-					if (filters.includes(method)) {
-						result[method] = instance[method];
-					}
-				}
-			} else {
-				for (const method of methods) {
-					result[method] = instance[method];
-				}
-			}
+            if (filters.length > 0) {
+                for (const method of methods) {
+                    if (filters.includes(method)) {
+                        result[method] = instance[method];
+                    }
+                }
+            } else {
+                for (const method of methods) {
+                    result[method] = instance[method];
+                }
+            }
 
-			return result;
-		},
-		getPropsFromClass: (instance: GlobalNode, filters: string[] = []) => {
-			const result: Record<string, TAnything> = {};
+            return result;
+        },
+        getPropsFromClass: (instance: GlobalNode, filters: string[] = []) => {
+            const result: Record<string, TAnything> = {};
 
-			const props = Object.getOwnPropertyNames(instance).filter(
-				(prop) => !Reflect.has(this.$node, prop)
-			);
+            const props = Object.getOwnPropertyNames(instance).filter(
+                (prop) => !Reflect.has(this.$node, prop)
+            );
 
-			if (filters.length > 0) {
-				for (const prop of props) {
-					if (filters.includes(prop) && typeof instance[prop] === "function") {
-						result[prop] = instance[prop];
-					}
-					if (filters.includes(prop) && typeof instance[prop] !== "function") {
-						result[prop] = instance[prop];
-					}
-				}
-			} else {
-				for (const prop of props) {
-					if (typeof instance[prop] === "function") {
-						result[prop] = instance[prop];
-					}
+            if (filters.length > 0) {
+                for (const prop of props) {
+                    if (filters.includes(prop) && typeof instance[prop] === "function") {
+                        result[prop] = instance[prop];
+                    }
+                    if (filters.includes(prop) && typeof instance[prop] !== "function") {
+                        result[prop] = instance[prop];
+                    }
+                }
+            } else {
+                for (const prop of props) {
+                    if (typeof instance[prop] === "function") {
+                        result[prop] = instance[prop];
+                    }
 
-					result[prop] = instance[prop];
-				}
-			}
+                    result[prop] = instance[prop];
+                }
+            }
 
-			return result;
-		},
-	};
+            return result;
+        },
+    };
 
-	protected REGEXP = {
-		getNameFromClassIntoCode(code: string) {
-			const match = code.match(/class\s+(\w+)/);
+    protected REGEXP = {
+        getNameFromClassIntoCode(code: string) {
+            const match = code.match(/class\s+(\w+)/);
 
-			return match ? match[1] : null;
-		},
-		getExpressionIntoCode(code: string) {
-			const noSingleLineComments = code.replace(/\/\/.*$/gm, "");
+            return match ? match[1] : null;
+        }
+    };
 
-			const noComments = noSingleLineComments.replace(/\/\*[\s\S]*?\*\//g, "");
+    protected async getCode() {
+        const script = this.$script;
 
-			const functionPattern =
-				/@expose\s+(function\s+([a-zA-Z0-9_$]+)|([a-zA-Z0-9_$]+)\s*=\s*function|([a-zA-Z0-9_$]+)\s*=\s*\([^)]*\)\s*=>|var\s+([a-zA-Z0-9_$]+)\s*=|let\s+([a-zA-Z0-9_$]+)\s*=|const\s+([a-zA-Z0-9_$]+)\s*=)|\bfunction\s+(_[a-zA-Z0-9_$]+)|\b(_[a-zA-Z0-9_$]+)\s*=\s*function|\b(_[a-zA-Z0-9_$]+)\s*=\s*\([^)]*\)\s*=>|\b(var|let|const)\s+(_[a-zA-Z0-9_$]+)\s*=/g;
+        if (!script) return "";
 
-			let propVars = "__VARS__: {";
-			let propFunc = "__FUNC__: {";
-			let match = functionPattern.exec(noComments);
+        let code = "";
 
-			while (match !== null) {
-				if (match[8]) {
-					propFunc = `${propFunc + match[8]},`;
-				} else if (match[7]) {
-					propVars = `${propVars + match[7]},`;
-				} else if (match[2]) {
-					propFunc = `${propFunc + match[2]},`;
-				}
+        if (script instanceof URL) {
+            code = await this.$app.getResolver("script")(script) as string;
+        } else if (URL.canParse(script)) {
+            code = await this.$app.getResolver("script")(new URL(script)) as string;
+        } else {
+            code = script;
+        }
 
-				match = functionPattern.exec(noComments);
-			}
+        let result = "";
 
-			propVars = `${propVars}}`;
-			propFunc = `${propFunc}}`;
-
-			return `\n\nreturn {${propVars},${propFunc}}`;
-		},
-	};
-
-	protected async getCode() {
-		const script = this.$script;
-
-		if (!script) return "";
-
-		let code = "";
-
-		if (typeof script === "string" && URL.canParse(script)) {
-			code = await (await fetch(script)).text();
-		} else if (typeof script === "string" && !URL.canParse(script)) {
-			code = script;
-		} else if (script instanceof URL) {
-			code = await (await fetch(script)).text();
-		}
-
-		let result = "";
-
-		if (this.$node.$script.compilation === "functions") {
-			result = `${this._restring}\n with (node) {\n\n${code
-				.trim()
-				.replace(/@expose /g, "")}; ${this.REGEXP.getExpressionIntoCode(
-					code.trim(),
-				)}\n\n}`;
-		}
-
-		if (this.$node.$script.compilation === "class") {
-			result = `${this._restring}\n ${code.trim()}
+        result = `${this._restring}\n ${code.trim()}
         return new ${this.REGEXP.getNameFromClassIntoCode(code)}()`;
-		}
 
-		return result;
-	}
+        return result;
+    }
 
-	protected async getExec(code: string) {
-		const AsyncFunction = Object.getPrototypeOf(async () => { }).constructor;
+    protected async getExec(code: string) {
+        const AsyncFunction = Object.getPrototypeOf(async () => { }).constructor;
 
-		const helpers = this.$app[_Script].getHelpersScript();
-		const nodes = ConstructorNodes.getNodes()
+        const helpers = this.$app[_Script].getHelpers();
+        const nodes = ConstructorNodes.getNodes()
 
-		helpers.CurrentScene = this.$app[$Scenes].currentScene
+        helpers.CurrentScene = this.$app[$Scenes].currentScene
 
-		const destructuringHelpers = `{ ${Object.keys(helpers).join(", ")} }`
-		const destructuringNodes = `{${Object.keys(nodes).join(", ")}}`
+        const destructuringHelpers = `{ ${Object.keys(helpers).join(", ")} }`
+        const destructuringNodes = `{${Object.keys(nodes).join(", ")}}`
 
-		let execute: TFunction<TAnything>;
-		let result: {
-			__FUNC__: Record<string, TFunction>;
-			__VARS__: Record<string, TAnything>;
-		} = {
-			__FUNC__: {},
-			__VARS__: {},
-		};
+        const execute: TFunction<TAnything> = new AsyncFunction(
+            `${destructuringHelpers}, ${destructuringNodes}`,
+            code,
+        );
 
-		if (this.$node.$script.compilation === "functions") {
-			execute = new AsyncFunction(`node, ${destructuringHelpers}, ${destructuringNodes}`, code);
+        const responseClass = await execute(helpers, nodes);
 
-			result = await execute(this.$node, helpers, nodes);
-		} else {
-			const execute = new AsyncFunction(
-				`${destructuringHelpers}, ${destructuringNodes}`,
-				code,
-			);
+        this.$node.$attributes[NodePropHandlerAttributes].clear()
 
-			result = await execute(helpers, nodes);
+        if ("_preload" in responseClass) {
+            await responseClass._preload.bind(this.$node)()
+        }
 
-			if ("NODE_NAME" in result) {
-				result = {
-					__FUNC__: this.CLASS.getMethodsFromClass(result as TAnything),
-					__VARS__: this.CLASS.getPropsFromClass(result as TAnything),
-				};
-			}
-		}
+        const result: {
+            __FUNC__: Record<string, TFunction>;
+            __VARS__: Record<string, TAnything>;
+        } = {
+            __FUNC__: this.CLASS.getMethodsFromClass(responseClass),
+            __VARS__: this.CLASS.getPropsFromClass(responseClass),
+        };
 
-		return result;
-	}
+        return result;
+    }
 
-	public async executeScript(
-		node: GlobalNode,
-		app: EngineCore | GameCore,
-		script: string | URL,
-	) {
-		this.$app = app;
-		this.$node = node;
-		this.$script = script;
+    public async executeScript(
+        node: GlobalNode,
+        app: EngineCore | GameCore,
+        script: string | URL,
+    ) {
+        this.$app = app;
+        this.$node = node;
+        this.$script = script;
 
-		return await this.getExec(await this.getCode());
-	}
+        return await this.getExec(await this.getCode());
+    }
 
-	[NodeDestroy]() {
-		this.$app = null as TAnything;
-		this.$node = null as TAnything;
-	}
+    [NodeDestroy]() {
+        this.$app = null as TAnything;
+        this.$node = null as TAnything;
+    }
 }

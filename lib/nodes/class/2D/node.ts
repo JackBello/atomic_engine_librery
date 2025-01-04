@@ -16,6 +16,7 @@ import type { TEventNode, TEventNode2D } from "../../events";
 import type { TAnything, TFunction, TSerialize } from "../../../app/types";
 
 import {
+	CalculateNode2D,
 	NodeFunctionClone,
 	NodeFunctionImport,
 	NodeFunctionMake,
@@ -23,24 +24,23 @@ import {
 	NodeFunctionSet,
 	NodePropType,
 } from "../../symbols";
-import { _Render, ExportData, GetApp } from "../../../app/symbols";
+import { _Render, GetApp } from "../../../app/symbols";
 
 import { GlobalNode } from "../../global/global-node";
 
 import { DEFAULT_CONFIG_NODE_2D } from "../../../configs/nodes/2D/node";
 import { Vector2 } from "@/nodes/vectors/vector-2";
 import { CanvasNode } from "@/nodes/global/class/canvas-node";
-import { serializers } from "@/app/utils/serialize";
 
 export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions["2D/node"]>
 	extends CanvasNode<T>
 	implements IControlNode2D, IHandleCoords2D {
 	[NodePropType]: TCanvasNodes = "2D/node";
 
-	protected _calculate: ICalculate = {
+	[CalculateNode2D]: ICalculate = {
 		angle: 0,
 		origin: [0, 0]
-	};
+	}
 
 	readonly NODE_NAME: TTypeNodes = "Node2D";
 
@@ -72,12 +72,12 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		return this._options.originY;
 	}
 
-	get rotation() {
-		return this._options.rotation;
+	get origin() {
+		return this[CalculateNode2D].origin
 	}
 
-	get calculate() {
-		return this._calculate;
+	get rotation() {
+		return this._options.rotation;
 	}
 
 	get width() {
@@ -94,6 +94,8 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		} else {
 			this._options.position = value
 		}
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set scale(value: Vector2 | TVec2) {
@@ -102,6 +104,8 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		} else {
 			this._options.scale = value
 		}
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set skew(value: Vector2 | TVec2) {
@@ -110,16 +114,28 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		} else {
 			this._options.skew = value
 		}
+
+		this[GetApp][_Render].draw = true;
 	}
 
 	set flipX(value: boolean) {
 		this._options.flipX = value;
+
+		if (value)
+			this.scale.x = -Math.abs(this.scale.x)
+		else
+			this.scale.x = Math.abs(this.scale.x)
 
 		this[GetApp][_Render].draw = true;
 	}
 
 	set flipY(value: boolean) {
 		this._options.flipY = value;
+
+		if (value)
+			this.scale.y = -Math.abs(this.scale.y)
+		else
+			this.scale.y = Math.abs(this.scale.y)
 
 		this[GetApp][_Render].draw = true;
 	}
@@ -156,6 +172,37 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		this.processRotation()
 	}
 
+	protected calculateOrigin(): [number, number] {
+		const originXNumber: Record<TTypeOriginX, number> = {
+			left: 1,
+			center: .5,
+			right: 0,
+		}
+
+		const originYNumber: Record<TTypeOriginY, number> = {
+			top: 1,
+			center: .5,
+			bottom: 0
+		}
+
+		let originX = 0
+		let originY = 0
+
+		if (typeof this._options.originX === "string") {
+			originX = this._options.width * originXNumber[this._options.originX]
+		} else {
+			originX = this._options.width * this._options.originX
+		}
+
+		if (typeof this._options.originY === "string") {
+			originY = this._options.height * originYNumber[this._options.originY]
+		} else {
+			originY = this._options.height * this._options.originY
+		}
+
+		return [originX, originY]
+	}
+
 	protected processVector() {
 		if (typeof this._initial.position === "string") {
 			this._initial.position = Vector2.import(this._initial.position)
@@ -174,33 +221,11 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 	}
 
 	protected processOrigin() {
-		const originXNumber: Record<TTypeOriginX, number> = {
-			left: 1,
-			center: .5,
-			right: 0,
-		}
-
-		const originYNumber: Record<TTypeOriginY, number> = {
-			top: 1,
-			center: .5,
-			bottom: 0
-		}
-
-		if (typeof this._options.originX === "string") {
-			this._calculate.origin[0] = this._options.width * originXNumber[this._options.originX]
-		} else {
-			this._calculate.origin[0] = this._options.width * this._options.originX
-		}
-
-		if (typeof this._options.originY === "string") {
-			this._calculate.origin[1] = this._options.height * originYNumber[this._options.originY]
-		} else {
-			this._calculate.origin[1] = this._options.height * this._options.originY
-		}
+		this[CalculateNode2D].origin = this.calculateOrigin()
 	}
 
 	protected processRotation() {
-		this._calculate.angle = (this._options.rotation * Math.PI) / 180;
+		this[CalculateNode2D].angle = (this._options.rotation * Math.PI) / 180;
 	}
 
 	setOrigin(origin: TTypeOrigin | number): void {
@@ -240,8 +265,8 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 
 	center(): void {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.position.x = (this._parent.width * this._parent.scaleX) / 2;
-			this.position.y = (this._parent.height * this._parent.scaleY) / 2;
+			this.position.x = (this._parent.width * this._parent.scale.x) / 2;
+			this.position.y = (this._parent.height * this._parent.scale.y) / 2;
 		} else {
 			this.position.x = this[GetApp].size.width / 2;
 			this.position.y = this[GetApp].size.height / 2;
@@ -250,7 +275,7 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 
 	centerX() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.position.x = (this._parent.width * this._parent.scaleX) / 2;
+			this.position.x = (this._parent.width * this._parent.scale.x) / 2;
 		} else {
 			this.position.x = this[GetApp].size.width / 2;
 		}
@@ -258,23 +283,34 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 
 	centerY() {
 		if (this._parent && this._parent instanceof Node2D) {
-			this.position.y = (this._parent.height * this._parent.scaleY) / 2;
+			this.position.y = (this._parent.height * this._parent.scale.y) / 2;
 		} else {
 			this.position.y = this[GetApp].size.height / 2;
 		}
 	}
 
-	getBounds() {
+	getBounds(): { x: number; y: number; width: number; height: number } {
+		if (this.parent && this.parent instanceof Node2D) {
+			const parentBounds = this.parent.getBounds();
+
+			return {
+				x: parentBounds.x + this.position.x - Math.abs(this[CalculateNode2D].origin[0] * this.scale.x),
+				y: parentBounds.y + this.position.y - Math.abs(this[CalculateNode2D].origin[1] * this.scale.y),
+				width: Math.abs(this.width * this.scale.x),
+				height: Math.abs(this.height * this.scale.y)
+			}
+		}
+
 		return {
-			x: this.position.x - this.calculate.origin[0],
-			y: this.position.y - this.calculate.origin[1],
-			width: this.width * this.scale.x,
-			height: this.height * this.scale.y
+			x: this.position.x - Math.abs(this[CalculateNode2D].origin[0] * this.scale.x),
+			y: this.position.y - Math.abs(this[CalculateNode2D].origin[1] * this.scale.y),
+			width: Math.abs(this.width * this.scale.x),
+			height: Math.abs(this.height * this.scale.y)
 		}
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Node2D;
+	async clone(): Promise<Node2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	emit(event: TEventNode | TEventNode2D, callback: TFunction): void {
@@ -291,7 +327,13 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		const options = { ...this._options };
+
+		options.position = this.position.export() as TVec2
+		options.scale = this.scale.export() as TVec2
+		options.skew = this.skew.export() as TVec2
+
+		return options
 	}
 
 	set(property: keyof TCanvasNodeOptions["2D/node"], value: TAnything): void;
@@ -305,47 +347,11 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		this[GetApp][_Render].draw = true;
 	}
 
-	export(format: TSerialize = "JSON"): string {
-		return serializers[format].stringify(this[ExportData]());
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Node2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Node2D;
-	}
-
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Node2D;
-	}
-
-	[ExportData](childNode = true): TExportNode<TAnything> {
-		const nodes: TExportNode<TAnything>[] = [];
-
-		if (childNode && this.$nodes.size) {
-			for (const node of this.$nodes.all) {
-				nodes.push(node[ExportData](childNode));
-			}
-		}
-
-		const options = this.toObject()
-
-		if (options.position instanceof Vector2)
-			options.position = options.position.export() as TVec2
-		if (options.scale instanceof Vector2)
-			options.scale = options.scale.export() as TVec2
-		if (options.skew instanceof Vector2)
-			options.skew = options.skew.export() as TVec2
-
-		return {
-			id: this.id,
-			slug: this.slug,
-			attributes: this.$attributes.toEntries(),
-			metaKeys: this.$metaKeys.toEntries(),
-			type: this.NODE_NAME,
-			script: this.$script.source ?? 'NULL',
-			path: this.path,
-			index: this.index,
-			nodes,
-			options,
-		};
+	static async make(structure: TExportNode<TAnything>): Promise<Node2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

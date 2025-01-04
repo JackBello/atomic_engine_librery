@@ -1,10 +1,14 @@
-export class Vector4 {
+import { BaseAppAbstract } from "../abstract/base.abstract";
+
+export class Vector4 extends BaseAppAbstract {
 	public x: number;
 	public y: number;
 	public z: number;
 	public w: number;
 
 	constructor(x = 0, y = 0, z = 0, w = 1) {
+		super()
+
 		this.x = x;
 		this.y = y;
 		this.z = z;

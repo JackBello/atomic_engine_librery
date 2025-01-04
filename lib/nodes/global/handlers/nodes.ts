@@ -175,7 +175,7 @@ export class HandlerNode implements IHandleNode {
 		if ($nodeFrom === undefined) return false;
 		if ($nodeTo === undefined) return false;
 
-		this[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, $nodeFrom.clone());
+		this[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, $nodeFrom);
 		this[NodePropHandlerNodes].splice($nodeFrom.index, 1);
 
 		this._updateNodes_(this[NodePropHandlerNodes]);

@@ -1,4 +1,4 @@
-import type { TAnything } from "@/app/types";
+import type { TAnything, TSerialize } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
 	TExportNode,
@@ -180,8 +180,8 @@ export class ControlEdition2D<T extends TCanvasNodeOptions["2D/control-edition"]
 		super(slug, { ...DEFAULT_CONFIG_CONTROL_EDITION_2D, ...options });
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as ControlEdition2D;
+	async clone(): Promise<ControlEdition2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/control-edition"]): void {
@@ -189,7 +189,7 @@ export class ControlEdition2D<T extends TCanvasNodeOptions["2D/control-edition"]
 	}
 
 	toObject(): T {
-		return this._options;
+		return { ...super.toObject() };
 	}
 
 	set(
@@ -201,11 +201,11 @@ export class ControlEdition2D<T extends TCanvasNodeOptions["2D/control-edition"]
 		this[NodeFunctionSet](properties, value)
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as ControlEdition2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<ControlEdition2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as ControlEdition2D;
+	static async make(structure: TExportNode<TAnything>): Promise<ControlEdition2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

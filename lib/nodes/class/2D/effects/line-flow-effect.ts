@@ -1,4 +1,4 @@
-import type { TAnything } from "@/app/types";
+import type { TAnything, TSerialize } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
 	TExportNode,
@@ -106,8 +106,8 @@ export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"
 		super(slug, { ...DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D, ...options });
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as LineFlowEffect2D;
+	async clone(): Promise<LineFlowEffect2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/line-flow-effect"]): void {
@@ -115,7 +115,7 @@ export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		return { ...super.toObject() };
 	}
 
 	set(
@@ -127,11 +127,11 @@ export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"
 		this[NodeFunctionSet](properties, value)
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as LineFlowEffect2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<LineFlowEffect2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as LineFlowEffect2D;
+	static async make(structure: TExportNode<TAnything>): Promise<LineFlowEffect2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

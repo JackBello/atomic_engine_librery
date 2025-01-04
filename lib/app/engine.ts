@@ -45,28 +45,35 @@ import ScriptController from "./controllers/script.controller";
 import RenderController from "./controllers/render.controller";
 import FrameController from "./controllers/frame.controller";
 import InputController from "./controllers/input.controller";
+import CameraController from "./controllers/camera.controller";
 
 import { ConstructorNodes } from "../nodes/global/constructors/constructor-nodes";
 
-import AbstractNode from "../nodes/abstract/node.abstract";
 import { RootNode } from "../nodes/global/root/root-node";
+
+import { BaseAppAbstract } from "@/nodes/abstract/base.abstract";
 
 import {
 	Circle2D,
 	ControlEdition2D,
 	GlobalNode,
+	Image2D,
 	LineFlowEffect2D,
+	Matrix2D,
 	Node2D,
 	Rectangle2D,
 	Scene,
 	Selection2D,
+	Sprite2D,
 	Text2D,
+	Transform2D,
+	Transform3D,
+	Vector2,
+	Vector3,
+	Vector4,
 } from "@/nodes";
 
 import { DEFAULT_CONFIG_ATOMIC_ENGINE } from "../configs/engine/editor";
-import { Vector2 } from "@/nodes/vectors/vector-2";
-import { CallbackUpdateVector } from "@/nodes/symbols";
-import { CameraController } from "./controllers/camera.controller";
 
 export class EngineCore {
 	[key: string]: TAnything;
@@ -77,6 +84,19 @@ export class EngineCore {
 	protected _plugins: Map<string, Plugin> = new Map();
 	protected _global: Map<string, TAnything> = new Map();
 	protected _events: EventObserver = new EventObserver();
+	protected _resolvers: {
+		script: (url: string | URL) => Promise<string>;
+		worker: TFunction;
+		resources: TFunction;
+	} = {
+			script: async (url: string | URL) => {
+				const path = url instanceof URL ? url : new URL(url);
+
+				return (await fetch(path)).text()
+			},
+			worker: () => { },
+			resources: () => { },
+		}
 
 	readonly mode: TMode = "editor";
 
@@ -182,19 +202,31 @@ export class EngineCore {
 		this._global.set("reset", true);
 		this._global.set("dispatch-event", false);
 		this._global.set("refresh-script", false);
+		this._global.set("base-url", `${location.href}src/`)
 
-		AbstractNode[SetApp](this);
+		BaseAppAbstract[SetApp](this);
+
+		ConstructorNodes.addHelpers({
+			Vector2,
+			Vector3,
+			Vector4,
+			Matrix2D,
+			Transform2D,
+			Transform3D
+		})
 
 		ConstructorNodes.addNodes({
 			GlobalNode,
 			ControlEdition2D,
 			LineFlowEffect2D,
 			Node2D,
+			Image2D,
 			Rectangle2D,
 			Scene,
 			Selection2D,
 			Text2D,
 			Circle2D,
+			Sprite2D
 		});
 
 		this[$Animation] = new AnimationService(this);
@@ -215,11 +247,7 @@ export class EngineCore {
 
 		this[$Animation].analytics()
 
-		Vector2[CallbackUpdateVector](() => {
-			this[_Render].draw = true
-		})
-
-		this[_Script].initHelpersScript();
+		this[_Script].initHelpers();
 
 		this[_Render].load({
 			context: this._options.context,
@@ -233,12 +261,18 @@ export class EngineCore {
 		this[$Animation].play();
 	}
 
+	setBaseUrlProject(base: string) {
+		this._global.set("base-url", base)
+	}
+
 	setSize(width: number, height: number) {
 		this._options.width = width;
 		this._options.height = height;
 
 		this[$Canvas].setSize(width, height);
 		this[_Render].setSize(width, height);
+
+		this[_Render].draw = true
 
 		return this;
 	}
@@ -320,6 +354,14 @@ export class EngineCore {
 
 	global(name: string) {
 		return this._global.get(name);
+	}
+
+	resolver(name: "script" | "worker" | "resources", callback: TAnything) {
+		this._resolvers[name] = callback;
+	}
+
+	getResolver(name: "script" | "worker" | "resources") {
+		return this._resolvers[name];
 	}
 
 	helpers() {

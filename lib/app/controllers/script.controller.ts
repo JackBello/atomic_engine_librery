@@ -1,5 +1,5 @@
-import type { GlobalNode } from "@/nodes";
-import type { TAnything, TFunction } from "@/app/types";
+import { GlobalNode } from "@/nodes";
+import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import type { GameCore } from "../game";
 import { EngineCore } from "../engine";
@@ -51,18 +51,35 @@ export default class ScriptController {
 		}
 	}
 
-	public getHelpersScript(): Record<string, TAnything> {
+	public existHelper(name: string) {
+		return this._helpers.has(name)
+	}
+
+	public getHelpers(): Record<string, TAnything> {
 		return Object.fromEntries(this._helpers);
 	}
 
-	public setHelperScript(name: string, helper: TAnything) {
+	public addHelper(name: string, helper: TAnything) {
+		if (this.existHelper(name)) throw new Error("You cannot add an existing helper")
+
 		this._helpers.set(
-			`$${name.charAt(0).toLowerCase()}${name.slice(1)}`,
+			name,
 			helper,
 		);
 	}
 
-	public initHelpersScript() {
+	public modifyHelper(name: string, helper: TAnything, force = false) {
+		const defaultHelpers = "Timers,Game,Logger,Window,Time,Input,CurrentScene,$import,preload"
+
+		if (defaultHelpers.includes(name) && force) throw new Error("You cannot modify the helpers that are defective unless you pass the last parameter as true")
+
+		this._helpers.set(
+			name,
+			helper,
+		);
+	}
+
+	public initHelpers() {
 		this._helpers.set("Timers", {
 			timeout: (time: number, callback: TFunction) =>
 				setTimeout(callback, time),
@@ -108,7 +125,8 @@ export default class ScriptController {
 		});
 
 		this._helpers.set("Window", {
-			viewport: () => this.$app instanceof EngineCore ? this.$app[GetOptions]().game.viewport : this.$app[GetOptions]().viewport
+			viewport: () => this.$app instanceof EngineCore ? this.$app[GetOptions]().game.viewport : this.$app[GetOptions]().viewport,
+			size: () => this.$app instanceof EngineCore ? this.$app.size : this.$app.viewport
 		});
 
 		this._helpers.set("Time", {
@@ -123,8 +141,27 @@ export default class ScriptController {
 		this._helpers.set("$import", async (path: string) => {
 			return await import(
 				/* @vite-ignore */
-				new URL(path, `${location.href}src/`).href
+				new URL(path, `${this.$app.global("base-url")}`).href
 			)
+		})
+
+		this._helpers.set("preload", async (path: string, format: TSerialize = "TOML") => {
+			const response = await fetch(`${this.$app.global("base-url")}${path}`)
+
+			if (!response.ok)
+				throw new Error("this resource not found")
+
+			const text = await response.text()
+
+			const node = await GlobalNode.import(text, format)
+
+			if (node.$script.source) {
+				node.$script.modeExecute = "none"
+
+				await node.$script.executeScript()
+			}
+
+			return node
 		})
 	}
 
@@ -146,14 +183,19 @@ export default class ScriptController {
 		const app = this.$app;
 
 		for (const node of this._scripts.values()) {
+			if (node.NODE_NAME === "Scene" && this.$app.scenes.currentScene?.id !== node.id) continue
+
+			if (!this.$app.ROOT.hasNodeByPath(node.getPath("id"), "id")) continue
+
 			const _ready = node.$functions.get("_ready");
 
 			if (
 				(app.mode === "editor" || app.mode === "game") &&
-				node &&
-				node?.visible &&
+				node.visible &&
 				_ready
 			) {
+				_ready.bind(node)();
+			} else if ((app.mode === "editor" || app.mode === "game") && node.NODE_NAME === "Scene" && _ready) {
 				_ready.bind(node)();
 			}
 		}
@@ -166,15 +208,22 @@ export default class ScriptController {
 			this.$app.global("mode") === "preview" || this.$app.mode === "game";
 
 		for (const node of this._scripts.values()) {
+			if (node.NODE_NAME === "Scene" && this.$app.scenes.currentScene?.id !== node.id) continue
+
+			if (!this.$app.ROOT.hasNodeByPath(node.getPath("id"), "id")) continue
+
 			const _draw = node.$functions.get("_draw");
 			const _process = node.$functions.get("_process");
+			const _process_physics = node.$functions.get("_process_physics");
 			const _input = node.$functions.get("_input");
 
 			if (mode && this.$app.global("dispatch-event") && _input) {
 				_input.bind(node)(this.$app[_Input]);
 			}
 
-			if (mode && node?.visible && _process) {
+			if (mode && node?.visible && _process_physics) {
+				_process_physics.bind(node)(delta);
+			} else if (mode && node?.visible && _process) {
 				_process.bind(node)(delta);
 			}
 
@@ -204,7 +253,7 @@ export default class ScriptController {
 		if (scriptsDispatch.size === 0) return;
 
 		for (const node of scriptsDispatch.values()) {
-			await node[DispatchScript](node.script);
+			await node.$script[DispatchScript](node.$script.source);
 		}
 
 		scriptsDispatch.clear();

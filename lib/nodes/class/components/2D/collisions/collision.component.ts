@@ -63,22 +63,34 @@ export class CollisionComponent extends ComponentNode {
 				secondCollision: CollisionShapeComponent,
 			) => {
 				const firstCollisionWidth =
-					firstCollision.width * firstCollision.scale.x;
+					Math.abs(firstCollision.width * firstCollision.$node.scale.x);
 				const firstCollisionHeight =
-					firstCollision.height * firstCollision.scale.y;
-				const firstCollisionX =
-					firstCollision.position.x + firstCollision.$node.position.x - firstCollision.$node.calculate.origin[0];
-				const firstCollisionY =
-					firstCollision.position.y + firstCollision.$node.position.y - firstCollision.$node.calculate.origin[1];
+					Math.abs(firstCollision.height * firstCollision.$node.scale.y);
+				let firstCollisionX = firstCollision.$node.position.x - (firstCollision.$node.origin[0] * firstCollision.$node.scale.x);
+				if (firstCollision.$node.scale.x < 0) {
+					firstCollisionX += firstCollision.width * firstCollision.$node.scale.x;
+				}
+				firstCollisionX = (firstCollision.position.x * firstCollision.$node.scale.x) + firstCollisionX;
+				let firstCollisionY = firstCollision.$node.position.y - (firstCollision.$node.origin[1] * firstCollision.$node.scale.y);
+				if (firstCollision.$node.scale.y < 0) {
+					firstCollisionY += firstCollision.height * firstCollision.$node.scale.y;
+				}
+				firstCollisionY = (firstCollision.position.y * firstCollision.$node.scale.y) + firstCollisionY;
 
 				const secondCollisionWidth =
-					secondCollision.width * secondCollision.scale.x;
+					Math.abs(secondCollision.width * secondCollision.$node.scale.x);
 				const secondCollisionHeight =
-					secondCollision.height * secondCollision.scale.y;
-				const secondCollisionX =
-					secondCollision.position.x + secondCollision.$node.position.x - secondCollision.$node.calculate.origin[0];
-				const secondCollisionY =
-					secondCollision.position.y + secondCollision.$node.position.y - secondCollision.$node.calculate.origin[1];
+					Math.abs(secondCollision.height * secondCollision.$node.scale.y);
+				let secondCollisionX = secondCollision.$node.position.x - (secondCollision.$node.origin[0] * secondCollision.$node.scale.x);
+				if (secondCollision.$node.scale.x < 0) {
+					secondCollisionX += secondCollision.width * secondCollision.$node.scale.x;
+				}
+				secondCollisionX = (secondCollision.position.x * secondCollision.$node.scale.x) + secondCollisionX;
+				let secondCollisionY = secondCollision.$node.position.y - (secondCollision.$node.origin[1] * secondCollision.$node.scale.y);
+				if (secondCollision.$node.scale.y < 0) {
+					secondCollisionY += secondCollision.height * secondCollision.$node.scale.y;
+				}
+				secondCollisionY = (secondCollision.position.y * secondCollision.$node.scale.y) + secondCollisionY;
 
 				return (
 					firstCollisionX < secondCollisionX + secondCollisionWidth &&
@@ -133,22 +145,34 @@ export class CollisionComponent extends ComponentNode {
 				secondCollision: CollisionShapeComponent,
 			) => {
 				const firstCollisionWidth =
-					firstCollision.width * firstCollision.scale.x;
+					Math.abs(firstCollision.width * firstCollision.$node.scale.x);
 				const firstCollisionHeight =
-					firstCollision.height * firstCollision.scale.y;
-				const firstCollisionX =
-					firstCollision.position.x + firstCollision.$node.position.x - firstCollision.$node.calculate.origin[0];
-				const firstCollisionY =
-					firstCollision.position.y + firstCollision.$node.position.y - firstCollision.$node.calculate.origin[1];
+					Math.abs(firstCollision.height * firstCollision.$node.scale.y);
+				let firstCollisionX = firstCollision.$node.position.x - (firstCollision.$node.origin[0] * firstCollision.$node.scale.x);
+				if (firstCollision.$node.scale.x < 0) {
+					firstCollisionX += firstCollision.width * firstCollision.$node.scale.x;
+				}
+				firstCollisionX = (firstCollision.position.x * firstCollision.$node.scale.x) + firstCollisionX;
+				let firstCollisionY = firstCollision.$node.position.y - (firstCollision.$node.origin[1] * firstCollision.$node.scale.y);
+				if (firstCollision.$node.scale.y < 0) {
+					firstCollisionY += firstCollision.height * firstCollision.$node.scale.y;
+				}
+				firstCollisionY = (firstCollision.position.y * firstCollision.$node.scale.y) + firstCollisionY;
 
 				const secondCollisionWidth =
-					secondCollision.width * secondCollision.scale.x;
+					Math.abs(secondCollision.width * secondCollision.$node.scale.x);
 				const secondCollisionHeight =
-					secondCollision.height * secondCollision.scale.y;
-				const secondCollisionX =
-					secondCollision.position.x + secondCollision.$node.position.x - secondCollision.$node.calculate.origin[0];
-				const secondCollisionY =
-					secondCollision.position.y + secondCollision.$node.position.y - secondCollision.$node.calculate.origin[1];
+					Math.abs(secondCollision.height * secondCollision.$node.scale.y);
+				let secondCollisionX = secondCollision.$node.position.x - (secondCollision.$node.origin[0] * secondCollision.$node.scale.x);
+				if (secondCollision.$node.scale.x < 0) {
+					secondCollisionX += secondCollision.width * secondCollision.$node.scale.x;
+				}
+				secondCollisionX = (secondCollision.position.x * secondCollision.$node.scale.x) + secondCollisionX;
+				let secondCollisionY = secondCollision.$node.position.y - (secondCollision.$node.origin[1] * secondCollision.$node.scale.y);
+				if (secondCollision.$node.scale.y < 0) {
+					secondCollisionY += secondCollision.height * secondCollision.$node.scale.y;
+				}
+				secondCollisionY = (secondCollision.position.y * secondCollision.$node.scale.y) + secondCollisionY;
 
 				const collisionInfo = {
 					top: false,
@@ -267,8 +291,11 @@ export class CollisionComponent extends ComponentNode {
 	}: { firstNode: GlobalNode; secondNode: GlobalNode }) {
 		if (firstNode === null || secondNode === null) return;
 
-		const characterBody = firstNode.$components.get("character-body");
-		const staticBody = secondNode.$components.get("static-body");
+		let characterBody = firstNode.$components.get("character-body");
+		let staticBody = secondNode.$components.get("static-body");
+
+		if (!characterBody) characterBody = secondNode.$components.get("character-body");
+		if (!staticBody) staticBody = firstNode.$components.get("static-body");
 
 		if (
 			characterBody &&
@@ -295,7 +322,7 @@ export class CollisionComponent extends ComponentNode {
 		const checkCollision = CollisionComponent.typeCollisions[typeCollision];
 
 		if (checkCollision) {
-			return checkCollision(firstCollision, secondCollision);
+			return checkCollision(firstCollision, secondCollision)
 		}
 
 		return false;

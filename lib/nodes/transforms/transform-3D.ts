@@ -1,6 +1,7 @@
+import { BaseAppAbstract } from "../abstract/base.abstract";
 import { Vector3 } from "../vectors/vector-3";
 
-export class Transform3D {
+export class Transform3D extends BaseAppAbstract {
 	public position: Vector3;
 	public rotation: Vector3;
 	public scale: Vector3;
@@ -10,6 +11,8 @@ export class Transform3D {
 		rotation = new Vector3(),
 		scale = new Vector3(1, 1, 1),
 	) {
+		super()
+
 		this.position = position;
 		this.rotation = rotation;
 		this.scale = scale;

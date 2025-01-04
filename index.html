@@ -16,7 +16,6 @@
 
     [data-canvas] section {
       box-sizing: border-box;
-      border: solid 1px black;
     }
 
     * {
@@ -38,20 +37,22 @@
   <input type="button" value="Upload Folder" data-id="uploadDirectory">
   <input type="button" value="Save File" data-id="saveFileTest"> -->
 
-  <label>
-    Speed
-    <input type="number" data-id="inputVelocity">
-  </label>
-
-  <input type="button" value="Add Rect" data-id="button-add-rect">
-
-  <input type="button" value="Play Preview" data-id="button-play-preview">
-  <input type="button" value="Stop Preview" data-id="button-stop-preview">
-  <input type="button" value="Pause Preview" data-id="button-pause-preview">
-
-  <input type="button" value="toggle (selection / pan and zoom)" data-id="buttonToggleModeEdition" />
-
   <div data-canvas></div>
+
+  <section>
+    <label>
+      Speed
+      <input type="number" data-id="inputVelocity">
+    </label>
+
+    <input type="button" value="Add Rect" data-id="button-add-rect">
+
+    <input type="button" value="Play Preview" data-id="button-play-preview">
+    <input type="button" value="Stop Preview" data-id="button-stop-preview">
+    <input type="button" value="Pause Preview" data-id="button-pause-preview">
+
+    <input type="button" value="toggle (selection / pan and zoom)" data-id="buttonToggleModeEdition" />
+  </section>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

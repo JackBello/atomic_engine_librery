@@ -62,14 +62,9 @@ export const scale_canvas_2D = (
 	options: { scale: number },
 ) => context.scale(options.scale, options.scale);
 
-export const flipX_2D = (context: CanvasRenderingContext2D, around: number) => {
-	context.translate(around / 2, 0)
-	context.scale(-1, 1)
-	context.translate(around / 2, 0)
-}
-
-export const flipY_2D = (context: CanvasRenderingContext2D, around: number) => {
-	context.translate(0, around / 2)
-	context.scale(1, -1)
-	context.translate(0, around / 2)
+export const rotation_canvas_2D = (
+	context: CanvasRenderingContext2D,
+	options: number
+) => {
+	context.rotate(options)
 }

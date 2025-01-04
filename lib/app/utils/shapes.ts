@@ -66,3 +66,8 @@ export function isInsidePolygon(x: number, y: number, node: Node2D) {
 	}
 	return inside;
 }
+
+
+export const convertOffsetRectangleToCircle = (offset: number) => -(offset - 0.5);
+
+export const convertOffsetCircleToRectangle = (offset: number) => 0.5 - offset;

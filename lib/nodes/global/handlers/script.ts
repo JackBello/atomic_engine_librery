@@ -4,6 +4,7 @@ import type { GlobalNode } from "../global-node";
 import {
 	$ConstructorScript,
 	NodeDestroy,
+	NodeSetScript,
 	ScriptsNodeFromScene,
 } from "@/nodes/symbols";
 import { _Script, DispatchScript, GetApp } from "@/app/symbols";
@@ -20,7 +21,6 @@ export class HandlerScript {
 	}
 
 	modeExecute: "auto" | "none" = "auto";
-	compilation: "class" | "functions" = "class";
 
 	constructor($node: GlobalNode) {
 		this.$node = $node;
@@ -44,15 +44,15 @@ export class HandlerScript {
 	}
 
 	protected addScriptToQueue() {
-		if (!this.$app.ROOT.TOP) {
+		if (!this.$node.TOP) {
 			throw new Error(
 				"You cannot define an auto script without having added the node to a scene",
 			);
 		}
 
-		if (!this.$app.ROOT.TOP[ScriptsNodeFromScene].has(this.$node)) return;
+		if (this.$node.TOP[ScriptsNodeFromScene].has(this.$node)) return;
 
-		this.$app.ROOT.TOP[ScriptsNodeFromScene].add(this.$node);
+		this.$node.TOP[ScriptsNodeFromScene].add(this.$node);
 	}
 
 	removeScript() {
@@ -68,7 +68,17 @@ export class HandlerScript {
 	}
 
 	defineScript(script: string | URL): void {
-		this._script = script;
+		let abstract: URL | string;
+
+		if (URL.canParse(script)) {
+			abstract = new URL(script);
+		} else if (script instanceof URL) {
+			abstract = script;
+		} else {
+			abstract = script;
+		}
+
+		this._script = abstract;
 
 		if (this.modeExecute === "auto") {
 			this.addScriptToQueue();
@@ -114,6 +124,10 @@ export class HandlerScript {
 			if (!name.startsWith("_")) this.$node[name] = __FUNC__[name];
 			this.$node.$functions.add(name, __FUNC__[name]);
 		}
+	}
+
+	[NodeSetScript](script: string | URL | null) {
+		this._script = script;
 	}
 
 	[NodeDestroy]() {

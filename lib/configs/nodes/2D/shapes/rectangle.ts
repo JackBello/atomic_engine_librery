@@ -23,4 +23,5 @@ export const DEFAULT_CONFIG_RECTANGLE_2D: TCanvasNodeOptions["2D/rectangle"] = {
 	lock: false,
 	selectable: true,
 	hovered: true,
+	compositeOperation: "source-over"
 };

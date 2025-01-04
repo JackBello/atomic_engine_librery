@@ -116,7 +116,6 @@ export default class RenderController {
 	}
 
 	[ExecuteProcess]() {
-		if (!this.$app[$Scenes].currentScene) return;
 		if (!this._options.mode) return;
 		if (!this._options.context) return;
 		if (!this._canvas) return;
@@ -139,10 +138,7 @@ export default class RenderController {
 		this.$app[_Camera].render(() => {
 			if (!this.$app[$Scenes].currentScene) return;
 
-			render.draw(this.$app[$Scenes].currentScene, {
-				after: this._operations.after,
-				before: this._operations.before,
-			});
+			render.draw(this.$app[$Scenes].currentScene);
 		})
 
 		this.$context.clearRect(0, 0, this.$context.canvas.width, this.$context.canvas.height)

@@ -13,7 +13,7 @@ export default class DistributionController {
 		this.$app = app;
 	}
 
-	import(data: string, format: TSerialize = "JSON") {
+	async import(data: string, format: TSerialize = "JSON") {
 		const structure = serializers[format].parse(data);
 
 		this.$app[SetOptions](structure.options);
@@ -21,7 +21,7 @@ export default class DistributionController {
 		const scenes: Scene[] = [];
 
 		for (const scene of structure.scenes) {
-			scenes.push(Scene.make(scene));
+			scenes.push(await Scene.make(scene));
 		}
 
 		this.$app[$Scenes].add(...scenes);

@@ -50,11 +50,15 @@ import AbstractNode from "../abstract/node.abstract";
 import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "@/configs/nodes/global/node";
 import { HandlerScript } from "./handlers/script";
 import { serializers } from "@/app/utils/serialize";
+import type { Scene } from "./scene";
 
 export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNodeOptions["global/node"]>
 	extends AbstractNode
 	implements IGlobalNode, IControlEditor, IControlNode, IControlHierarchy {
-	protected _omit: string[] = ["name", "description"];
+	protected static _top: Scene | undefined;
+	protected _omit: string[] = [];
+	protected _addons: Map<string, TAnything> = new Map()
+	protected _wrap = false;
 
 	protected _options: T;
 	protected _initial: T;
@@ -78,8 +82,16 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 	readonly $nodes: HandlerNode;
 	readonly $script: HandlerScript;
 
+	get TOP() {
+		return GlobalNode._top;
+	}
+
 	get ROOT() {
 		return this[GetApp].ROOT;
+	}
+
+	get wrap() {
+		return this._wrap;
 	}
 
 	get parent(): GlobalNode | undefined {
@@ -133,6 +145,10 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		return this._options.description;
 	}
 
+	set wrap(value: boolean) {
+		this._wrap = value;
+	}
+
 	set slug(value: string) {
 		this._slug = value;
 	}
@@ -175,8 +191,18 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		this.$script = new HandlerScript(this);
 	}
 
-	clone(): GlobalNode {
-		return this[NodeFunctionClone]();
+	getPath(type: "id" | "slug" | "index" = "index") {
+		if (type === "id")
+			return `${this.parent ? `${this.parent.id}/` : ''}${this._id}`;
+
+		if (type === "slug")
+			return `${this.parent ? `${this.parent.slug}/` : ''}${this._slug}`;
+
+		return `${this.parent ? `${this.parent.index}/` : ''}${this._index}`;
+	}
+
+	async clone(): Promise<GlobalNode> {
+		return await this[NodeFunctionClone]();
 	}
 
 	emit(event: TEventNode, callback: TFunction): void {
@@ -227,22 +253,22 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		return serializers[format].stringify(this[ExportData]());
 	}
 
-	static import(data: string, format: TSerialize = "JSON"): GlobalNode {
-		return GlobalNode[NodeFunctionImport](data, format);
+	static async import(data: string, format: TSerialize = "JSON"): Promise<GlobalNode> {
+		return await GlobalNode[NodeFunctionImport](data, format);
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as GlobalNode;
+	static async make(structure: TExportNode<TAnything>) {
+		return await GlobalNode[NodeFunctionMake](structure) as GlobalNode;
 	}
 
-	static [NodeFunctionMake](structure: TExportNode<TAnything>) {
-		return GlobalNode[$ConstructorNodes].makeNode(structure);
+	static async [NodeFunctionMake](structure: TExportNode<TAnything>) {
+		return await GlobalNode[$ConstructorNodes].makeNode(structure);
 	}
 
-	static [NodeFunctionImport](data: string, format: TSerialize) {
+	static async [NodeFunctionImport](data: string, format: TSerialize) {
 		const structure: TExportNode<TAnything> = serializers[format].parse(data);
 
-		return GlobalNode[$ConstructorNodes].makeNode(structure);
+		return await GlobalNode[$ConstructorNodes].makeNode(structure);
 	}
 
 	[NodeFunctionReset](property?: TAnything) {
@@ -279,8 +305,8 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 		}
 	}
 
-	[NodeFunctionClone]() {
-		const node = GlobalNode[$ConstructorNodes].makeNode(this[ExportData](true));
+	async [NodeFunctionClone]() {
+		const node = await GlobalNode[$ConstructorNodes].makeNode(this[ExportData](true));
 
 		node[NodeSetId](stdUlid.ulid(12));
 
@@ -312,17 +338,27 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 			}
 		}
 
+		let script = "NULL";
+
+		if (this.$script.source instanceof URL) {
+			script = this.$script.source.href
+		} else if (this.$script.source) {
+			script = this.$script.source
+		}
+
 		return {
 			id: this.id,
 			slug: this.slug,
 			attributes: this.$attributes.toEntries(),
 			metaKeys: this.$metaKeys.toEntries(),
 			type: this.NODE_NAME,
-			script: this.$script.source ?? 'NULL',
+			script: script,
 			path: this.path,
 			index: this.index,
+			wrap: this.wrap,
 			nodes,
-			options: this.toObject(),
+			options: this.utils.omitKeys(this.toObject(), this._omit),
+			addons: [...this._addons.entries()].map(([key, value]) => ([key, value[ExportData]()])),
 		};
 	}
 }

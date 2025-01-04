@@ -20,13 +20,6 @@ export const control_edition_2D = (
 
 	context.beginPath();
 
-	context.strokeRect(
-		-widthWithPadding / 2,
-		-heightWithPadding / 2,
-		widthWithPadding,
-		heightWithPadding,
-	);
-
 	if (options.showCorner) {
 		context.fillStyle = options.cornerColor;
 
@@ -94,6 +87,13 @@ export const control_edition_2D = (
 		);
 		context.fill();
 	}
+
+	context.strokeRect(
+		-widthWithPadding / 2,
+		-heightWithPadding / 2,
+		widthWithPadding,
+		heightWithPadding,
+	);
 
 	context.closePath();
 };

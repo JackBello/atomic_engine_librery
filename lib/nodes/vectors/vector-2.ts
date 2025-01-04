@@ -1,9 +1,7 @@
+import { _Render, GetApp } from "@/symbols";
+import { BaseAppAbstract } from "../abstract/base.abstract";
 import type { TVec2 } from "../global/types";
-import { CallbackUpdateVector } from "../symbols";
-
-export class Vector2 {
-	protected static _callback: () => void = () => null;
-
+export class Vector2 extends BaseAppAbstract {
 	protected _array: Float32Array;
 
 	get x() {
@@ -25,25 +23,25 @@ export class Vector2 {
 	set x(value: number) {
 		this._array[0] = value;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 	}
 
 	set y(value: number) {
 		this._array[1] = value;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 	}
 
 	set r(value: number) {
 		this._array[0] = value;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 	}
 
 	set g(value: number) {
 		this._array[1] = value;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 	}
 
 	get magnitude() {
@@ -59,28 +57,26 @@ export class Vector2 {
 	}
 
 	constructor(x: number, y: number) {
+		super()
+
 		this._array = new Float32Array(2);
 
 		this._array[0] = x;
 		this._array[1] = y;
 	}
 
-	static [CallbackUpdateVector](callback: () => void) {
-		Vector2._callback = callback
-	}
-
 	set(x: number, y: number) {
 		this._array[0] = x;
 		this._array[1] = y;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 	}
 
 	add(vector: Readonly<Vector2>) {
 		this._array[0] += vector.x;
 		this._array[1] += vector.y;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -89,7 +85,7 @@ export class Vector2 {
 		this._array[0] -= vector.x;
 		this._array[1] -= vector.y;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -98,7 +94,7 @@ export class Vector2 {
 		this._array[0] *= vector.x;
 		this._array[1] *= vector.y;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -107,7 +103,7 @@ export class Vector2 {
 		this._array[0] /= vector.x;
 		this._array[1] /= vector.y;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -116,7 +112,7 @@ export class Vector2 {
 		this._array[0] *= scala;
 		this._array[1] *= scala;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -125,7 +121,7 @@ export class Vector2 {
 		this._array[0] *= -1;
 		this._array[1] *= -1;
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -134,7 +130,7 @@ export class Vector2 {
 		this._array[0] = 1.0 / this._array[0];
 		this._array[1] = 1.0 / this._array[1];
 
-		Vector2._callback()
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}
@@ -142,6 +138,8 @@ export class Vector2 {
 	abs(): Vector2 {
 		this._array[0] = Math.abs(this._array[0]);
 		this._array[1] = Math.abs(this._array[1]);
+
+		this[GetApp][_Render].draw = true
 
 		return this;
 	}

@@ -26,4 +26,5 @@ export const DEFAULT_CONFIG_CIRCLE_2D: TCanvasNodeOptions["2D/circle"] = {
     counterclockwise: false,
     startAngle: 0,
     endAngle: Math.PI * 2,
+    compositeOperation: "source-over"
 };

@@ -19,6 +19,7 @@ import { type GlobalNode, Scene } from "@/nodes";
 
 import EventObserver from "../utils/observer";
 import { serializers } from "../utils/serialize";
+import { PreloadResourcesFromScene } from "@/nodes/symbols";
 
 export default class ScenesService {
 	private $app: EngineCore | GameCore;
@@ -85,6 +86,8 @@ export default class ScenesService {
 			throw new Error("No scene selected to be loaded");
 		}
 
+		await this._scene[PreloadResourcesFromScene]()
+
 		this[DispatchEvent]("scenes:load", this._scene);
 
 		this._scene[DispatchEvent]("scene:preload");
@@ -120,7 +123,7 @@ export default class ScenesService {
 		return serializers[format].stringify(this[ExportData]());
 	}
 
-	import(data: string, format: TSerialize = "JSON") {
+	async import(data: string, format: TSerialize = "JSON") {
 		this[DispatchEvent]("scenes:import");
 
 		const scenes: [string, Scene][] = [];
@@ -129,7 +132,7 @@ export default class ScenesService {
 			.parse(data);
 
 		for (const structure of structures) {
-			scenes.push([structure.slug, Scene.make(structure)]);
+			scenes.push([structure.slug, await Scene.make(structure)]);
 		}
 
 		this._scenes = new Map(scenes);

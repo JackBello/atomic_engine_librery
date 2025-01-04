@@ -28,4 +28,5 @@ export const DEFAULT_CONFIG_SELECTION_2D: TCanvasNodeOptions["2D/selection"] = {
 	title: "",
 	visible: true,
 	hovered: true,
+	compositeOperation: "source-over"
 };

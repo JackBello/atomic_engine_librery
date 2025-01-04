@@ -1,0 +1,35 @@
+id = "000000000C46R0HXM4RCDN64W0"
+slug = "effect-1"
+attributes = []
+metaKeys = []
+type = "LineFlowEffect2D"
+script = "\nclass MyNode extends LineFlowEffect2D {\n\t_ready() {\n\t\tthis.$attributes.add(\"vr\", {\n\t\t\tvalue: 0.03\n\t\t})\n\n\t\tLogger.message(\"effect ready\")\n\t}\n\n\t_process() {\n\t\tif (this.radius > 5 || this.radius < -5) this.$attributes.get(\"vr\").value *= -1\n\n\t\tthis.radius += this.$attributes.get(\"vr\").value\n\t}\n}\n"
+path = "0"
+index = 0
+nodes = []
+addons = []
+
+[options]
+description = ""
+title = ""
+cursor = "default"
+hovered = true
+lock = false
+selectable = true
+visible = true
+alpha = 1
+rotation = 0
+height = 400
+originX = "center"
+originY = "center"
+position = "Vec2(50, 50)"
+scale = "Vec2(1, 1)"
+skew = "Vec2(0, 0)"
+width = 400
+flipX = false
+flipY = false
+cellSize = 8
+lineWidth = 0.5
+spacing = 8
+radius = 0
+fill = "linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)"

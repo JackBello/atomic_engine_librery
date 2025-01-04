@@ -1,18 +1,16 @@
-import { EngineCore } from "../lib/";
+import { EngineCore, ResourceSpriteSheet } from "../lib/";
 import {
-	Circle2D,
 	type GlobalNode,
-	LineFlowEffect2D,
 	Node2D,
 	Rectangle2D,
 	Scene,
-	Text2D,
+	Sprite2D
 } from "../lib/nodes";
 import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 import { AreaComponent } from "@/nodes/class/components/2D/area.component";
 import { CharacterBodyComponent } from "@/nodes/class/components/2D/body/character-body.component";
 import { StaticBodyComponent } from "@/nodes/class/components/2D/body/static-body.component";
-// import { CameraComponent } from "@/nodes/class/components/2D/camera.component";
+import { CameraComponent } from "@/nodes/class/components/2D/camera.component";
 
 const buttonAddRect = document.querySelector(
 	`[data-id="button-add-rect"]`,
@@ -53,7 +51,7 @@ const app = new EngineCore({
 	},
 	height: 600,
 	width: 600,
-	// selector: "[data-canvas]",
+	selector: "[data-canvas]",
 	analytics: true,
 });
 
@@ -81,35 +79,41 @@ app.input.defineAction("move_down", [
 	"joyPad/crossDown",
 ]);
 
-app.setSelector("[data-canvas]")
-
 const objects: Record<string, null | GlobalNode> = {
 	player: null,
 };
 
 const lv1 = new Scene("lv-1");
 
+lv1.$script.modeExecute = "none"
+
+lv1.$script.defineScript(`
+	class MyScene extends Scene {
+		async _preload() {
+			let borderWindow = await preload("/objects/border-window.object")
+			let ball = await preload("/objects/ball.object")
+			let counterFPS = await preload("/objects/countFPS.object")
+			let effect1 = await preload("/objects/effect-1.object")
+			let raton = await preload("/objects/raton.object")
+
+			CurrentScene.$nodes.add(borderWindow);
+			CurrentScene.$nodes.add(ball);
+			CurrentScene.$nodes.add(counterFPS);
+			CurrentScene.$nodes.add(effect1);
+			CurrentScene.$nodes.add(raton);
+
+			borderWindow = undefined
+			ball = undefined
+			counterFPS = undefined
+			effect1 = undefined
+			raton = undefined
+		}		
+	}
+`)
+
 lv1.emit("scene:remove_node", (node: Rectangle2D) => {
 	objects[node.slug] = null;
 });
-
-const borderWindow = new Rectangle2D("border-window", {
-	fill: "transparent",
-	stroke: "red",
-	lineWidth: 5,
-	width: app.size.width,
-	height: app.size.height,
-	position: `Vec2(${app.size.width / 2}, ${app.size.height / 2})`,
-	hovered: false,
-	lock: true,
-});
-
-const circle1 = new Circle2D("ball", {
-	position: "Vec2(10, 10)",
-	radius: 80,
-	fill: "green",
-});
-
 
 objects.player = new Rectangle2D("player", {
 	fill: "black",
@@ -118,19 +122,22 @@ objects.player = new Rectangle2D("player", {
 	position: "Vec2(0, 150)",
 	scale: "Vec2(1, 1)",
 	rotation: 0,
+	alpha: 0.1
 });
 
-objects.player.$components.add(CollisionShapeComponent);
-objects.player.$components.add(CharacterBodyComponent);
+// objects.player.$components.add(CollisionShapeComponent);
+// objects.player.$components.add(CharacterBodyComponent);
 // objects.player.$components.add(CameraComponent)
 
-const rect1Collision = objects.player.$components.get(
-	"collision-shape",
-) as CollisionShapeComponent;
+// const rect1Collision = objects.player.$components.get(
+// 	"collision-shape",
+// ) as CollisionShapeComponent;
 
-rect1Collision.debug = false
+// rect1Collision.debug = false
 
-objects.player.center();
+objects.player.centerY();
+
+objects.player.position.x = 100
 
 objects.player.$script.modeExecute = "none";
 
@@ -199,61 +206,6 @@ class MyNode extends Rectangle2D {
   }
 }`);
 
-const countFPS = new Text2D("countFPS", {
-	text: "FPS: 0",
-	fontSize: "40px",
-	fill: "black",
-});
-
-// countFPS.setScale(3)
-
-// const test = new Text2D("test", {
-// 	text: "test",
-// 	fontSize: "20px",
-// 	color: "red",
-// 	y: 20
-// })
-
-// countFPS.$nodes.add(test)
-
-countFPS.centerX();
-
-const lineFlow = new LineFlowEffect2D("effect-1", {
-	width: 400,
-	height: 400,
-	position: "Vec2(50, 50)",
-	fill:
-		"linear-gradient(0.1 #ff5c33, 0.2 #ff66b3, 0.4 #ccccff, 0.6 #b3ffff, 0.8 #80ff80, 0.9 #ffff33)",
-	cellSize: 8,
-	spacing: 8,
-	lineWidth: 0.5,
-	rotation: 0,
-	radius: 0,
-});
-
-// lineFlow.$components.add(CollisionShapeComponent);
-// lineFlow.$components.add(CharacterBodyComponent);
-
-lineFlow.$script.modeExecute = "none";
-
-lineFlow.$script.defineScript(`
-class MyNode extends LineFlowEffect2D {
-	_ready() {
-		this.$attributes.add("vr", {
-			value: 0.03
-		})
-
-		Logger.message("effect ready")
-	}
-
-	_process() {
-		if (this.radius > 5 || this.radius < -5) this.$attributes.get("vr").value *= -1
-
-		this.radius += this.$attributes.get("vr").value
-	}
-}
-`);
-
 const floor = new Node2D("floor", {
 	height: 100,
 	width: 450,
@@ -287,7 +239,7 @@ areaDestroy.$script.modeExecute = "none";
 areaDestroy.$script.defineScript(`
 class MyNode extends Node2D {
 	_body_entering_area(body) {
-		if (body.slug === "player")
+		if (body.slug === "alien")
 			body.dead()
 		Logger.info("entered", body.slug)
 	}
@@ -295,7 +247,7 @@ class MyNode extends Node2D {
 	_body_leaving_area(body) {
 		Logger.info("exited", body.slug)
 
-		if (body.slug === "player" && body.delete) {
+		if (body.slug === "alien" && body.delete) {
 			body.destroy()
 			Logger.info(CurrentScene.$nodes.all)
 		}
@@ -303,22 +255,131 @@ class MyNode extends Node2D {
 }
 `);
 
+const spriteAlien = new ResourceSpriteSheet("link", {
+	source: "https://localhost:5173/src/link.png",
+	origin: "anonymous",
+	border: [0, 0],
+	grid: [4, 3],
+	width: 16,
+	height: 18,
+	spacing: [0, 0]
+})
+
+await spriteAlien.load()
+
+const alien = new Sprite2D("alien", {
+	width: 16,
+	height: 18,
+	frame: 0,
+	position: "Vec2(0, 500)",
+}, spriteAlien)
+
+alien.$components.add(CameraComponent)
+alien.$components.add(CollisionShapeComponent);
+alien.$components.add(CharacterBodyComponent);
+
+const alienCollision = alien.$components.get(
+	"collision-shape",
+) as CollisionShapeComponent;
+
+alienCollision.debug = true
+alienCollision.width = 7
+alienCollision.position.x = 5
+
+alien.frameCoords.x = 0
+alien.frameCoords.y = 2
+alien.center()
+alien.setScale(6)
+alien.$script.modeExecute = "none"
+
+alien.$script.defineScript(`
+class MyNode extends Sprite2D {
+  speed = 200
+  speedY = 0;
+  jump_force = 300
+  gravity = 800
+  isDead = false
+  delete = false;
+  framesMove = [0, 1, 0, 2]
+  step = 0
+
+  animation(delta) {
+  	const maxFrame = Time.frame() % 15
+
+	if (maxFrame >= 14) {
+		this.step += 1;
+	}
+
+	if (this.step >= this.framesMove.length) {
+		this.step = 0
+	}
+  }
+
+  _process(delta) {
+	const touch = this.collision.getTouch()
+
+	this.animation(delta)
+
+	this.frame = 0
+
+  	if (!touch.right && Input.isActionPressed("move_right") && !this.isDead) {
+		this.frame = this.framesMove[this.step]
+		this.flipX = true;
+    	this.position.x += this.speed * delta
+	}
+	if (!touch.left && Input.isActionPressed("move_left") && !this.isDead) {
+		this.frame = this.framesMove[this.step]
+		this.flipX = false;
+    	this.position.x -= this.speed * delta
+	}
+	
+	if (this.collision.isOnFloor()) {
+		if (Input.isActionPressed("move_up") && !this.isDead) {
+			this.speedY = -this.jump_force
+		}
+		else {
+			this.speedY = 0
+		}
+	}
+	else {
+		this.speedY += this.gravity * delta
+	}
+
+	this.position.y += this.speedY * delta;
+  }
+
+  dead() {
+  	if (!this.isDead) {
+		this.frame = 0
+		this.coords.x = 0 
+		this.coords.y = 0 
+		this.speedY = -500
+		this.isDead = true;
+		
+	}
+	else {
+		this.delete = true
+	}
+  }
+}`)
+
 app.scenes.add(lv1);
 app.scenes.change(lv1.slug);
 
 await app.scenes.load();
 
-lv1.$nodes.add(circle1);
-lv1.$nodes.add(borderWindow);
-lv1.$nodes.add(lineFlow);
-lv1.$nodes.add(objects.player);
-lv1.$nodes.add(countFPS);
+await lv1.$script.executeScript()
+
+// lv1.$nodes.add(objects.player);
 lv1.$nodes.add(floor);
 lv1.$nodes.add(areaDestroy);
+lv1.$nodes.add(alien);
 
-await objects.player.$script.executeScript();
-await lineFlow.$script.executeScript();
+await alien.$script.executeScript()
+// await objects.player.$script.executeScript();
 await areaDestroy.$script.executeScript();
+
+// console.log(lv1.export("TOML"));
 
 if (objects?.player?.speed) {
 	inputVelocity.value = objects.player.speed;

@@ -1,0 +1,37 @@
+id = "000000000CYQJV69MG1FDFM6PG"
+slug = "ball"
+attributes = []
+metaKeys = []
+type = "Circle2D"
+script = "NULL"
+path = "0"
+index = 0
+nodes = []
+addons = []
+
+[options]
+description = ""
+title = ""
+cursor = "default"
+hovered = true
+lock = false
+selectable = true
+visible = true
+alpha = 1
+rotation = 0
+height = 200
+originX = "center"
+originY = "center"
+position = "Vec2(300, 300)"
+scale = "Vec2(1, 1)"
+skew = "Vec2(0, 0)"
+width = 200
+flipX = false
+flipY = false
+fill = "green"
+stroke = ""
+lineWidth = 0
+radius = 100
+counterclockwise = false
+startAngle = 0
+endAngle = 6.283185307179586

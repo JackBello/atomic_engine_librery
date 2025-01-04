@@ -29,14 +29,15 @@ export class RootNode {
 		return new Function("nodes", `return nodes${path}`);
 	}
 
-	private _updateNodes_(nodes: GlobalNode[]) {
+	private _updateNodes_(nodes: GlobalNode[], parent?: GlobalNode) {
 		for (let index = 0; index < nodes.length; index++) {
 			const node = nodes[index];
 
 			node[NodeSetIndex](index);
+			if (parent) node[NodeSetParent](parent);
 
 			if (node.$nodes.size > 0) {
-				this._updateNodes_(node.$nodes.all);
+				this._updateNodes_(node.$nodes.all, node);
 			}
 		}
 	}
@@ -136,7 +137,7 @@ export class RootNode {
 
 		$parent.$nodes[NodePropHandlerNodes][$node.index] = value;
 
-		this._updateNodes_($parent.$nodes[NodePropHandlerNodes]);
+		this._updateNodes_($parent.$nodes[NodePropHandlerNodes], $parent);
 
 		return true;
 	}
@@ -155,7 +156,7 @@ export class RootNode {
 
 		$parent.$nodes[NodePropHandlerNodes][$node.index] = value;
 
-		this._updateNodes_($parent.$nodes[NodePropHandlerNodes]);
+		this._updateNodes_($parent.$nodes[NodePropHandlerNodes], $parent);
 
 		return true;
 	}
@@ -177,18 +178,22 @@ export class RootNode {
 		if ($parentFrom === undefined) return false;
 		if ($parentTo === undefined) return false;
 
-		insert === "before"
-			? $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, {
-				...$nodeFrom,
-			} as GlobalNode)
-			: $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, {
-				...$nodeFrom,
-			} as GlobalNode);
-
 		$parentFrom.$nodes[NodePropHandlerNodes].splice($nodeFrom.index, 1);
 
-		this._updateNodes_($parentFrom.$nodes[NodePropHandlerNodes]);
-		this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes]);
+		if (insert === "before") {
+			$parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, $nodeFrom)
+		} else {
+			$parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, $nodeFrom);
+		}
+
+		if ($parentFrom.id === $parentTo.id) {
+			this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes], $parentTo);
+		} else {
+			this._updateNodes_($parentFrom.$nodes[NodePropHandlerNodes], $parentFrom);
+			this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes], $parentTo);
+		}
+
+		this.$app[_Render].draw = true;
 
 		return true;
 	}
@@ -210,18 +215,22 @@ export class RootNode {
 		if ($parentFrom === undefined) return false;
 		if ($parentTo === undefined) return false;
 
-		insert === "before"
-			? $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, {
-				...$nodeFrom,
-			} as GlobalNode)
-			: $parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, {
-				...$nodeFrom,
-			} as GlobalNode);
-
 		$parentFrom.$nodes[NodePropHandlerNodes].splice($nodeFrom.index, 1);
 
-		this._updateNodes_($parentFrom.$nodes[NodePropHandlerNodes]);
-		this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes]);
+		if (insert === "before") {
+			$parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index, 0, $nodeFrom)
+		} else {
+			$parentTo.$nodes[NodePropHandlerNodes].splice($nodeTo.index + 1, 0, $nodeFrom);
+		}
+
+		if ($parentFrom.id === $parentTo.id) {
+			this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes], $parentTo);
+		} else {
+			this._updateNodes_($parentFrom.$nodes[NodePropHandlerNodes], $parentFrom);
+			this._updateNodes_($parentTo.$nodes[NodePropHandlerNodes], $parentTo);
+		}
+
+		this.$app[_Render].draw = true;
 
 		return true;
 	}

@@ -33,3 +33,5 @@ export const _Script = Symbol();
 export const _Camera = Symbol()
 export const _Collision = Symbol();
 export const _Distribution = Symbol();
+
+export const SetID = Symbol()

@@ -20,6 +20,8 @@ import { circle_2D } from "./nodes/circle";
 import type { GlobalNode } from "@/nodes";
 import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 import { collision_shape } from "./components/collision-shape";
+import { image_2d } from "./nodes/image";
+import { sprite_2d } from "./nodes/sprite";
 
 export const handleComponent2D = (
 	node: GlobalNode,
@@ -60,7 +62,8 @@ export const handleDrawContext2D = (
 		"2D/selection": selection_2D,
 		"2D/line-flow-effect": effect_line_flow_2D,
 		"2D/control-edition": control_edition_2D,
-		"2D/image": () => undefined,
+		"2D/image": image_2d,
+		"2D/sprite": sprite_2d,
 		"canvas:clear": clear_canvas_2D,
 		"canvas:rotation": clear_canvas_2D,
 		"canvas:scale": scale_canvas_2D,

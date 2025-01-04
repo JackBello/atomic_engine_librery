@@ -1,6 +1,7 @@
-import type { TExportNode } from "../types";
+import type { TAddonTuple, TExportNode } from "../types";
 import type { GlobalNode } from "../global-node";
 import type { TAnything, TClass } from "@/app/types";
+import { ResourceImage } from "../../../app/services/resources/image.resource"
 
 import {
 	NodeSetHandlerAttributes,
@@ -10,10 +11,56 @@ import {
 	NodeSetIndex,
 	NodeSetParent,
 } from "../../symbols";
+import type { TExportResource } from "@/app/services/types";
+import { SetID } from "@/app/symbols";
+import { ResourceSpriteSheet } from "@/app/services/resources/sprite-sheet.resource";
 
 export class ConstructorNodes {
+	private static helpers: Map<string, TClass<TAnything>> = new Map()
 	private static nodesTypes: Map<string, TClass<GlobalNode>> = new Map();
-	private static reserveNodes = [""];
+	private static reserveHelpers = ["Vector2", "Vector3", "Vector4", "Transform2D", "Transform3D", "Matrix2D", "Matrix3D"]
+	private static reserveNodes = ["GlobalNode", "CanvasNode", "Node2D", "Rectangle2D", "Circle2D", "Text2D", "Selection2D", "ControlEdition2D", "LineFlowEffect2D"];
+
+	static addHelper(name: string, construct: TClass<TAnything>) {
+		if (ConstructorNodes.reserveHelpers.includes(name)) {
+			throw new Error(
+				`You can't add this helper '${name}' because it is already part of the engine `,
+			);
+		}
+
+		ConstructorNodes.helpers.set(name, construct);
+	}
+
+	static addHelpers(helpers: Record<string, TClass<TAnything>>) {
+		for (const name in helpers) {
+			if (ConstructorNodes.helpers.has(name)) continue;
+
+			ConstructorNodes.helpers.set(name, helpers[name]);
+		}
+	}
+
+	static getHelper(name: string) {
+		return ConstructorNodes.helpers.get(name);
+	}
+
+	static getHelpers() {
+		return Object.fromEntries(ConstructorNodes.helpers);
+	}
+
+	static hasHelper(name: string) {
+		return ConstructorNodes.helpers.has(name);
+	}
+
+	static deleteHelper(name: string) {
+		if (ConstructorNodes.reserveHelpers.includes(name)) {
+			throw new Error(
+				`You can't delete this helper '${name}' because it is already part of the engine `,
+			);
+		}
+
+		ConstructorNodes.helpers.delete(name);
+	}
+
 
 	static addNode(name: string, construct: TClass<GlobalNode>) {
 		if (ConstructorNodes.reserveNodes.includes(name)) {
@@ -74,14 +121,20 @@ export class ConstructorNodes {
 		})
 	}
 
-	public makeNode(node: TExportNode<TAnything>): GlobalNode {
+	public async makeNode(node: TExportNode<TAnything>): Promise<GlobalNode> {
 		const construct = ConstructorNodes.nodesTypes.get(node.type);
 
 		if (!construct) {
 			throw Error(`this is constructor not found ${node.type}`);
 		}
 
+		const addons = await this.makeAddons(node.addons)
+
 		const instance = new construct(node.slug, node.options);
+
+		await this.applyAddons(addons, instance)
+
+		instance.wrap = node.wrap
 
 		instance[NodeSetIndex](node.index);
 		instance[NodeSetId](node.id);
@@ -95,17 +148,17 @@ export class ConstructorNodes {
 
 		if (node.nodes.length > 0) {
 			instance.$nodes[NodeSetHandlerNodes](
-				this.makeNodes(node.nodes, instance),
+				await this.makeNodes(node.nodes, instance),
 			);
 		}
 
 		return instance;
 	}
 
-	public makeNodes(
+	public async makeNodes(
 		nodes: TExportNode<TAnything>[],
 		parent?: GlobalNode,
-	): GlobalNode[] {
+	): Promise<GlobalNode[]> {
 		const instances: GlobalNode[] = [];
 
 		for (const node of nodes) {
@@ -115,9 +168,15 @@ export class ConstructorNodes {
 				throw Error(`this is constructor not found ${node.type}`);
 			}
 
+			const addons = await this.makeAddons(node.addons)
+
 			const instance = new construct(node.slug, node.options);
 
+			await this.applyAddons(addons, instance)
+
 			if (parent) instance[NodeSetParent](parent);
+
+			instance.wrap = node.wrap
 
 			instance[NodeSetIndex](node.index);
 			instance[NodeSetId](node.id);
@@ -131,7 +190,7 @@ export class ConstructorNodes {
 
 			if (node.nodes.length > 0) {
 				instance.$nodes[NodeSetHandlerNodes](
-					this.makeNodes(node.nodes, instance),
+					await this.makeNodes(node.nodes, instance),
 				);
 			}
 
@@ -139,5 +198,51 @@ export class ConstructorNodes {
 		}
 
 		return instances;
+	}
+
+	protected async applyAddons(addons: Map<string, TAnything>, node: GlobalNode) {
+		if (addons.size === 0) return
+
+		if (node.NODE_NAME === "Image2D" && addons.has("resource/ResourceImage")) {
+			node.changeResource(addons.get("resource/ResourceImage"))
+		}
+
+		if (node.NODE_NAME === "Sprite2D" && addons.has("resource/ResourceSpriteSheet")) {
+			node.changeResource(addons.get("resource/ResourceSpriteSheet"))
+		}
+	}
+
+	protected async makeAddons(addons: TAddonTuple[]) {
+		const map = new Map()
+
+		if (addons.length === 0) return map
+
+		for (const [name, addon] of addons) {
+			if (addon.type === "resource" && addon.name_class === "ResourceImage") {
+				const structure: TExportResource = addon
+
+				const resource = new ResourceImage(structure.slug, structure.options)
+
+				resource[SetID](structure.id)
+
+				await resource.load()
+
+				map.set(name, resource)
+			}
+
+			if (addon.type === "resource" && addon.name_class === "ResourceSpriteSheet") {
+				const structure: TExportResource = addon
+
+				const resource = new ResourceSpriteSheet(structure.slug, structure.options)
+
+				resource[SetID](structure.id)
+
+				await resource.load()
+
+				map.set(name, resource)
+			}
+		}
+
+		return map
 	}
 }

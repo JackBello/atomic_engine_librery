@@ -18,7 +18,6 @@ export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
 	fontStyle: "normal",
 	fontVariant: "normal",
 	fontWeight: "normal",
-	lineHeight: "normal",
 	textBaseline: "alphabetic",
 	textDirection: "ltr",
 	text: "Atomic Engine",
@@ -26,8 +25,6 @@ export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
 	fill: "#000000",
 	stroke: "",
 	lineWidth: 0,
-	wordSpacing: "0px",
-	letterSpacing: "0px",
 	flipX: false,
 	flipY: false,
 	lock: false,
@@ -35,4 +32,5 @@ export const DEFAULT_CONFIG_TEXT_2D: TCanvasNodeOptions["2D/text"] = {
 	title: "",
 	description: "",
 	hovered: true,
+	compositeOperation: "source-over"
 };

@@ -18,6 +18,9 @@ export * from "./nodes/matrix/matrix-2"
 export * from "./nodes/matrix/matrix-3"
 
 export * from "./nodes/class/2D/node";
+export * from "./nodes/class/2D/sprite";
+
+export * from "./nodes/class/2D/source/image"
 
 export * from "./nodes/class/2D/shapes/rectangle";
 export * from "./nodes/class/2D/shapes/circle";

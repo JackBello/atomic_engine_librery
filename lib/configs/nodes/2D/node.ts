@@ -19,4 +19,5 @@ export const DEFAULT_CONFIG_NODE_2D: TCanvasNodeOptions["2D/node"] = {
 	flipX: false,
 	flipY: false,
 	hovered: true,
+	compositeOperation: "source-over"
 };

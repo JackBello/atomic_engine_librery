@@ -42,6 +42,10 @@ export abstract class CanvasNode<T extends TCanvasNodeOptions["global/abstract/c
 		return this._options.alpha;
 	}
 
+	get compositeOperation() {
+		return this._options.compositeOperation
+	}
+
 	set visible(value: boolean) {
 		this._options.visible = value;
 
@@ -74,6 +78,37 @@ export abstract class CanvasNode<T extends TCanvasNodeOptions["global/abstract/c
 
 	set alpha(value: number) {
 		this._options.alpha = value;
+
+		this[GetApp][_Render].draw = true;
+	}
+
+	set compositeOperation(value: "source-over" |
+		"source-in" |
+		"source-out" |
+		"source-atop" |
+		"destination-over" |
+		"destination-in" |
+		"destination-out" |
+		"destination-atop" |
+		"lighter" |
+		"copy" |
+		"xor" |
+		"multiply" |
+		"screen" |
+		"overlay" |
+		"darken" |
+		"lighten" |
+		"color-dodge" |
+		"color-burn" |
+		"hard-light" |
+		"soft-light" |
+		"difference" |
+		"exclusion" |
+		"hue" |
+		"saturation" |
+		"color" |
+		"luminosity") {
+		this._options.compositeOperation = value
 
 		this[GetApp][_Render].draw = true;
 	}

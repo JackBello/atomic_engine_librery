@@ -10,6 +10,7 @@ import {
 	NodeFunctionReset,
 	NodeFunctionSet,
 	NodePropType,
+	PreloadResourcesFromScene,
 	ScriptsNodeFromScene,
 } from "../symbols";
 import { _Render, _Worker } from "@/app/symbols";
@@ -29,11 +30,17 @@ export class Scene extends GlobalNode {
 	) {
 		super(slug, options);
 
+		GlobalNode._top = this
+
 		this[ScriptsNodeFromScene] = new Set();
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Scene;
+	[PreloadResourcesFromScene]() {
+
+	}
+
+	async clone(): Promise<Scene> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	emit(event: TEventNode | TEventScene, callback: TFunction): void {
@@ -57,11 +64,11 @@ export class Scene extends GlobalNode {
 		this[NodeFunctionSet](properties, value);
 	}
 
-	static import(data: string, format: TSerialize = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Scene;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Scene> {
+		return GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Scene;
+	static async make(structure: TExportNode<TAnything>): Promise<Scene> {
+		return GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

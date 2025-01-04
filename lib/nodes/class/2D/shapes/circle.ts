@@ -1,4 +1,4 @@
-import type { TAnything } from "@/app/types";
+import type { TAnything, TSerialize } from "@/app/types";
 import type { TCanvasNodeOptions, TCanvasNodes } from "@/nodes/types";
 import type {
 	TExportNode,
@@ -25,6 +25,7 @@ import { GlobalNode } from "@/nodes";
 import { Node2D } from "../node";
 
 import { DEFAULT_CONFIG_CIRCLE_2D } from "@/configs/nodes/2D/shapes/circle";
+import { convertOffsetRectangleToCircle } from "@/app/utils/shapes";
 
 export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOptions["2D/circle"]> extends Node2D<T> {
 	[NodePropType]: TCanvasNodes = "2D/circle";
@@ -122,7 +123,7 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 		this.processCircle(true);
 	}
 
-	protected processOrigin() {
+	protected calculateOrigin(): [number, number] {
 		const originXNumber: Record<TTypeOriginX, number> = {
 			left: .5,
 			center: 0,
@@ -135,17 +136,22 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 			bottom: -.5
 		}
 
+		let originX = 0
+		let originY = 0
+
 		if (typeof this._options.originX === "string") {
-			this._calculate.origin[0] = this._options.width * originXNumber[this._options.originX]
+			originX = this._options.width * originXNumber[this._options.originX]
 		} else {
-			this._calculate.origin[0] = this._options.width * this._options.originX
+			originX = this._options.width * convertOffsetRectangleToCircle(this._options.originX)
 		}
 
 		if (typeof this._options.originY === "string") {
-			this._calculate.origin[1] = this._options.height * originYNumber[this._options.originY]
+			originY = this._options.height * originYNumber[this._options.originY]
 		} else {
-			this._calculate.origin[1] = this._options.height * this._options.originY
+			originY = this._options.height * convertOffsetRectangleToCircle(this._options.originY)
 		}
+
+		return [originX, originY]
 	}
 
 	protected processCircle(changeInit = false) {
@@ -158,12 +164,32 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 
 		this._options.width = size;
 		this._options.height = size;
-
-		this.processOrigin()
 	}
 
-	clone() {
-		return this[NodeFunctionClone]() as Circle2D;
+	getBounds() {
+		const [originX, originY] = super.calculateOrigin()
+
+		if (this.parent && this.parent instanceof Node2D) {
+			const parentBounds = this.parent.getBounds()
+
+			return {
+				x: parentBounds.x + this.position.x - Math.abs(originX * this.scale.x),
+				y: parentBounds.y + this.position.y - Math.abs(originY * this.scale.y),
+				width: Math.abs(this.width * this.scale.x),
+				height: Math.abs(this.height * this.scale.y)
+			}
+		}
+
+		return {
+			x: this.position.x - Math.abs(originX * this.scale.x),
+			y: this.position.y - Math.abs(originY * this.scale.y),
+			width: Math.abs(this.width * this.scale.x),
+			height: Math.abs(this.height * this.scale.y)
+		}
+	}
+
+	async clone(): Promise<Circle2D> {
+		return await this[NodeFunctionClone]() as TAnything;
 	}
 
 	reset(property?: keyof TCanvasNodeOptions["2D/circle"]): void {
@@ -175,7 +201,7 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 	}
 
 	toObject(): T {
-		return { ...this._options };
+		return { ...super.toObject() };
 	}
 
 	set(property: keyof TCanvasNodeOptions["2D/circle"], value: TAnything): void;
@@ -188,11 +214,11 @@ export class Circle2D<T extends TCanvasNodeOptions["2D/circle"] = TCanvasNodeOpt
 		this[GetApp][_Render].draw = true;
 	}
 
-	static import(data: string, format: "JSON" | "YAML" = "JSON") {
-		return GlobalNode[NodeFunctionImport](data, format) as Circle2D;
+	static async import(data: string, format: TSerialize = "JSON"): Promise<Circle2D> {
+		return await GlobalNode[NodeFunctionImport](data, format) as TAnything;
 	}
 
-	static make(structure: TExportNode<TAnything>) {
-		return GlobalNode[NodeFunctionMake](structure) as Circle2D;
+	static async make(structure: TExportNode<TAnything>): Promise<Circle2D> {
+		return await GlobalNode[NodeFunctionMake](structure) as TAnything;
 	}
 }

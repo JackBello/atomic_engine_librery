@@ -1,6 +1,7 @@
+import { BaseAppAbstract } from "../abstract/base.abstract";
 import { Vector2 } from "../vectors/vector-2";
 
-export class Transform2D {
+export class Transform2D extends BaseAppAbstract {
 	public position: Vector2;
 	public rotation: number;
 	public scale: Vector2;
@@ -12,6 +13,8 @@ export class Transform2D {
 		scale = new Vector2(1, 1),
 		skew = 0,
 	) {
+		super()
+
 		this.position = position;
 		this.rotation = rotation;
 		this.scale = scale;

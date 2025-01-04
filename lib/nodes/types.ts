@@ -1,10 +1,11 @@
-import type { IControlCanvas, IControlEditor, ISourceNode } from "./global/types";
+import type { IControlCanvas, IControlEditor } from "./global/types";
 
 import type {
 	ICircle2D,
 	IControlEdition2D,
 	ICoords2D,
 	IDraw2D,
+	IImage2D,
 	ILineFlowEffect2D,
 	INode2D,
 	IRectangle2D,
@@ -12,6 +13,8 @@ import type {
 	ISelection2D,
 	ISize2D,
 	ISkew2D,
+	ISource,
+	ISprite2D,
 	IText2D,
 } from "./class/nodes-2D.types";
 
@@ -36,7 +39,8 @@ export type TCanvasNode2D =
 	| "2D/selection"
 	| "2D/line-flow-effect"
 	| "2D/control-edition"
-	| "2D/image";
+	| "2D/image"
+	| "2D/sprite";
 
 export type TCanvasOperations =
 	| "canvas:translate"
@@ -152,5 +156,17 @@ export type TCanvasNodeOptions = {
 	ISkew2D &
 	ISize2D &
 	INode2D &
-	ISourceNode<"image">
+	IImage2D &
+	ISource<"image">;
+
+	"2D/sprite": IControlEditor &
+	IControlCanvas &
+	ICoords2D &
+	IScale2D &
+	ISkew2D &
+	ISize2D &
+	INode2D &
+	ISprite2D &
+	IImage2D &
+	ISource<"image">
 };
