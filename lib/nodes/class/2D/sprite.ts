@@ -84,11 +84,15 @@ export class Sprite2D<T extends TCanvasNodeOptions["2D/sprite"] = TCanvasNodeOpt
     set width(value: number) {
         this._options.width = value;
 
+        this.processOrigin()
+
         this[GetApp][_Render].draw = true;
     }
 
     set height(value: number) {
         this._options.height = value;
+
+        this.processOrigin()
 
         this[GetApp][_Render].draw = true;
     }

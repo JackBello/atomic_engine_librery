@@ -82,17 +82,22 @@ export class Rectangle2D<T extends TCanvasNodeOptions["2D/rectangle"] = TCanvasN
 	set lineWidth(value: number) {
 		this._options.lineWidth = value;
 
+
 		this[GetApp][_Render].draw = true;
 	}
 
 	set width(value: number) {
 		this._options.width = value;
 
+		this.processOrigin()
+
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
+
+		this.processOrigin()
 
 		this[GetApp][_Render].draw = true;
 	}

@@ -58,11 +58,15 @@ export class Image2D<T extends TCanvasNodeOptions["2D/image"] = TCanvasNodeOptio
 	set width(value: number) {
 		this._options.width = value;
 
+		this.processOrigin()
+
 		this[GetApp][_Render].draw = true;
 	}
 
 	set height(value: number) {
 		this._options.height = value;
+
+		this.processOrigin()
 
 		this[GetApp][_Render].draw = true;
 	}
