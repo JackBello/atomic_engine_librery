@@ -52,7 +52,7 @@ export class HandlerAttribute implements IHandleAttribute {
 		const defaultOptions: TAttribute = { ...options }
 		defaultOptions.update = false
 
-		this[NodePropHandlerAttributes].set(name, options);
+		this[NodePropHandlerAttributes].set(name, defaultOptions);
 
 		return true
 	}
@@ -63,7 +63,7 @@ export class HandlerAttribute implements IHandleAttribute {
 		const defaultOptions: TAttribute = { ...options }
 		defaultOptions.update = true
 
-		this[NodePropHandlerAttributes].set(name, options);
+		this[NodePropHandlerAttributes].set(name, defaultOptions);
 
 		return true
 	}
