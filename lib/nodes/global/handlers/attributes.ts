@@ -44,7 +44,7 @@ export class HandlerAttribute implements IHandleAttribute {
 
 			attr.update = false
 
-			this[NodePropHandlerAttributes].set(name, options);
+			this[NodePropHandlerAttributes].set(name, attr);
 
 			return false
 		}
