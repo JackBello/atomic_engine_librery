@@ -158,6 +158,7 @@ export type TAttribute = {
 	| "time"
 	| "date-time";
 	options?: Record<string, TAnything>;
+	update?: boolean
 };
 
 export type TMode = "id" | "index" | "slug";
@@ -297,7 +298,7 @@ export interface IHandleAttribute {
 	toEntries(): TAttributeTuple[];
 	getAll(): TAttribute[];
 	get(name: string): TAttribute | undefined;
-	add(name: string, options: TAttribute): boolean;
+	set(name: string, options: TAttribute): boolean;
 	change(name: string, options: TAttribute): boolean;
 	has(name: string): boolean;
 

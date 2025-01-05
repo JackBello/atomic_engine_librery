@@ -30,28 +30,50 @@ export class HandlerAttribute implements IHandleAttribute {
 		return [...this[NodePropHandlerAttributes].entries()];
 	}
 
-	getAll(): TAttribute[] {
+	getAll(): Omit<TAttribute, 'update'>[] {
 		return [...this[NodePropHandlerAttributes].values()];
 	}
 
-	get(name: string): TAttribute | undefined {
+	get(name: string): Omit<TAttribute, 'update'> | undefined {
 		return this[NodePropHandlerAttributes].get(name);
 	}
 
-	add(name: string, options: TAttribute): boolean {
-		if (this.has(name)) return false
+	set(name: string, options: Omit<TAttribute, 'update'>): boolean {
+		if (this.has(name)) {
+			const attr = this[NodePropHandlerAttributes].get(name) as TAttribute
+
+			attr.update = false
+
+			this[NodePropHandlerAttributes].set(name, options);
+
+			return false
+		}
+
+		const defaultOptions: TAttribute = { ...options }
+		defaultOptions.update = false
 
 		this[NodePropHandlerAttributes].set(name, options);
 
 		return true
 	}
 
-	change(name: string, options: TAttribute): boolean {
+	change(name: string, options: Omit<TAttribute, 'update'>): boolean {
 		if (!this.has(name)) return false
+
+		const defaultOptions: TAttribute = { ...options }
+		defaultOptions.update = true
 
 		this[NodePropHandlerAttributes].set(name, options);
 
 		return true
+	}
+
+	clear() {
+		for (const [name, attr] of this[NodePropHandlerAttributes]) {
+			if (!attr.update) {
+				this[NodePropHandlerAttributes].delete(name)
+			}
+		}
 	}
 
 	has(name: string): boolean {

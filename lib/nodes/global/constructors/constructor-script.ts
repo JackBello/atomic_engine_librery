@@ -7,7 +7,7 @@ import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
 import { ConstructorNodes } from "./constructor-nodes";
-import { NodeDestroy, NodePropHandlerAttributes } from "@/nodes/symbols";
+import { NodeDestroy } from "@/nodes/symbols";
 
 export default class ConstructorScript {
     private $node!: GlobalNode;
@@ -240,7 +240,7 @@ export default class ConstructorScript {
 
         const responseClass = await execute(helpers, nodes);
 
-        this.$node.$attributes[NodePropHandlerAttributes].clear()
+        this.$node.$attributes.clear()
 
         if ("_preload" in responseClass) {
             await responseClass._preload.bind(this.$node)()
