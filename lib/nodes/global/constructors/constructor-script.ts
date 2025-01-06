@@ -232,10 +232,6 @@ export default class ConstructorScript {
         const $helpers = ConstructorNodes.getHelpers()
         const allClass = { ...$nodes, ...$helpers }
 
-        helpers.moveAndSlide = (vector: Vector2) => {
-            this.$node.position.add(vector)
-        }
-
         helpers.CurrentScene = this.$app[$Scenes].currentScene
 
         const destructuringHelpers = `{ ${Object.keys(helpers).join(", ")} }`
