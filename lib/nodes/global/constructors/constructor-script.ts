@@ -8,7 +8,6 @@ import type { GameCore } from "@/app/game";
 
 import { ConstructorNodes } from "./constructor-nodes";
 import { NodeDestroy } from "@/nodes/symbols";
-import type { Vector2 } from "@/nodes/vectors/vector-2";
 
 export default class ConstructorScript {
     private $node!: GlobalNode;
