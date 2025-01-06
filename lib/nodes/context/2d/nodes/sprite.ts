@@ -1,4 +1,4 @@
-import { Vector2 } from "@/nodes";
+import { Vector2 } from "@/nodes/vectors/vector-2";
 import type { TVec2 } from "@/nodes/global/types";
 import type { TCanvasNodeOptions } from "@/nodes/types";
 
