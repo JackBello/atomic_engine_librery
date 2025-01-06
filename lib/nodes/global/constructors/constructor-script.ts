@@ -8,6 +8,7 @@ import type { GameCore } from "@/app/game";
 
 import { ConstructorNodes } from "./constructor-nodes";
 import { NodeDestroy } from "@/nodes/symbols";
+import type { Vector2 } from "@/nodes/vectors/vector-2";
 
 export default class ConstructorScript {
     private $node!: GlobalNode;
@@ -230,6 +231,10 @@ export default class ConstructorScript {
         const $nodes = ConstructorNodes.getNodes()
         const $helpers = ConstructorNodes.getHelpers()
         const allClass = { ...$nodes, ...$helpers }
+
+        helpers.moveAndSlide = (vector: Vector2) => {
+            this.$node.position.add(vector)
+        }
 
         helpers.CurrentScene = this.$app[$Scenes].currentScene
 
