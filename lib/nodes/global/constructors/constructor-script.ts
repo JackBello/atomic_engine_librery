@@ -226,19 +226,22 @@ export default class ConstructorScript {
         const AsyncFunction = Object.getPrototypeOf(async () => { }).constructor;
 
         const helpers = this.$app[_Script].getHelpers();
-        const nodes = ConstructorNodes.getNodes()
+
+        const $nodes = ConstructorNodes.getNodes()
+        const $helpers = ConstructorNodes.getHelpers()
+        const allClass = { ...$nodes, ...$helpers }
 
         helpers.CurrentScene = this.$app[$Scenes].currentScene
 
         const destructuringHelpers = `{ ${Object.keys(helpers).join(", ")} }`
-        const destructuringNodes = `{${Object.keys(nodes).join(", ")}}`
+        const destructuringAllClass = `{${Object.keys(allClass).join(", ")}}`
 
         const execute: TFunction<TAnything> = new AsyncFunction(
-            `${destructuringHelpers}, ${destructuringNodes}`,
+            `${destructuringHelpers}, ${destructuringAllClass}`,
             code,
         );
 
-        const responseClass = await execute(helpers, nodes);
+        const responseClass = await execute(helpers, $nodes);
 
         this.$node.$attributes.clear()
 
