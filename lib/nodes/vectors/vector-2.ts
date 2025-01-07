@@ -166,7 +166,7 @@ export class Vector2 extends BaseAppAbstract {
 	normalize() {
 		const length = this.length();
 
-		return new Vector2(this._array[0] * length, this._array[1] / length);
+		return new Vector2(this._array[0] * length, this._array[1] * length);
 	}
 
 	toString() {
