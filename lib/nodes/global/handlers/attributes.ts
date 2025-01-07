@@ -1,4 +1,4 @@
-import type { IHandleAttribute, TAttribute, TAttributeTuple } from "../types";
+import type { IHandleAttribute, TAttribute, TAttributeTuple, TUpdateProp } from "../types";
 import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
@@ -30,17 +30,17 @@ export class HandlerAttribute implements IHandleAttribute {
 		return [...this[NodePropHandlerAttributes].entries()];
 	}
 
-	getAll(): Omit<TAttribute, 'update'>[] {
+	getAll(): TAttribute[] {
 		return [...this[NodePropHandlerAttributes].values()];
 	}
 
-	get(name: string): Omit<TAttribute, 'update'> | undefined {
+	get(name: string): TAttribute | undefined {
 		return this[NodePropHandlerAttributes].get(name);
 	}
 
-	set(name: string, options: Omit<TAttribute, 'update'>): boolean {
+	set(name: string, options: TAttribute): boolean {
 		if (this.has(name)) {
-			const attr = this[NodePropHandlerAttributes].get(name) as TAttribute
+			const attr = this[NodePropHandlerAttributes].get(name) as TAttribute & TUpdateProp
 
 			attr.update = false
 
@@ -49,7 +49,7 @@ export class HandlerAttribute implements IHandleAttribute {
 			return false
 		}
 
-		const defaultOptions: TAttribute = { ...options }
+		const defaultOptions = { ...options } as TAttribute & TUpdateProp
 		defaultOptions.update = false
 
 		this[NodePropHandlerAttributes].set(name, defaultOptions);
@@ -57,10 +57,10 @@ export class HandlerAttribute implements IHandleAttribute {
 		return true
 	}
 
-	change(name: string, options: Omit<TAttribute, 'update'>): boolean {
+	change(name: string, options: TAttribute): boolean {
 		if (!this.has(name)) return false
 
-		const defaultOptions: TAttribute = { ...options }
+		const defaultOptions = { ...options } as TAttribute & TUpdateProp
 		defaultOptions.update = true
 
 		this[NodePropHandlerAttributes].set(name, defaultOptions);
@@ -70,7 +70,7 @@ export class HandlerAttribute implements IHandleAttribute {
 
 	clear() {
 		for (const [name, attr] of this[NodePropHandlerAttributes]) {
-			if (!attr.update) {
+			if (!(attr as TAttribute & TUpdateProp).update) {
 				this[NodePropHandlerAttributes].delete(name)
 			}
 		}

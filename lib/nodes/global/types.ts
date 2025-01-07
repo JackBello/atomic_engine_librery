@@ -158,8 +158,11 @@ export type TAttribute = {
 	| "time"
 	| "date-time";
 	options?: Record<string, TAnything>;
-	update?: boolean
 };
+
+export type TUpdateProp = {
+	update: boolean
+}
 
 export type TMode = "id" | "index" | "slug";
 
