@@ -50,11 +50,11 @@ export default class FrameController {
 			this.$app.mode === "game" && this.$app.global("status") === "play";
 
 		if (isPlayingGame || isPreview) {
+			this.$app[_Collision][ExecuteProcess]();
+
 			this.$app[_Input][ExecuteProcess]();
 
 			this.$app[_Script][ExecuteProcess](deltaTime);
-
-			this.$app[_Collision][ExecuteProcess]();
 
 			this.$app[SetGlobal]("dispatch-event", false);
 
