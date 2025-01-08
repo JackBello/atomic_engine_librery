@@ -6,6 +6,7 @@ import { serializers } from "@/app/utils/serialize";
 
 export class ResourceImage<O extends IBaseResource = IBaseResource> extends Resource<"image", O> {
     readonly NAME_CLASS: string = "ResourceImage";
+    readonly HIERARCHY: string = "resource/image"
 
     constructor(slug: string, options: Omit<O, 'loaded'>) {
         super(slug, options)

@@ -1,2 +1,2 @@
-export { NodePropType, NodeDestroy, $ConstructorNodes, NodeFunctionClone, NodeFunctionImport, NodeFunctionMake, NodeFunctionReset, NodeFunctionSet } from "./nodes/symbols"
+export { NodePropType, NodeDestroy, NodeFunctionClone, NodeFunctionImport, NodeFunctionMake, NodeFunctionReset, NodeFunctionSet } from "./nodes/symbols"
 export { $Animation, $Canvas, $Resource, $Scenes, _Camera, _Collision, _Distribution, _Events, _Frame, _Input, _ROOT_, _Render, _Script, _Window, _Worker, GetApp, GetHidden, GetOptions, SetGlobal } from "./app/symbols"

@@ -4,6 +4,7 @@ import type { GlobalNode } from "@/nodes/global/global-node";
 import { AreaComponent } from "../area.component";
 import { CharacterBodyComponent } from "../body/character-body.component";
 import { StaticBodyComponent } from "../body/static-body.component";
+import type { TCollisionComponent } from "../../types";
 
 export type TCollisionShape =
 	| "rectangle-rectangle"
@@ -11,7 +12,7 @@ export type TCollisionShape =
 	| "rectangle-circle"
 	| "circle-rectangle";
 
-export class CollisionComponent extends ComponentNode {
+export class CollisionComponent<O extends TCollisionComponent = TCollisionComponent> extends ComponentNode<O> {
 	protected _name = "collision";
 	protected _description = "detect collision between nodes";
 	protected _collider: GlobalNode | null = null;

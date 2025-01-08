@@ -111,12 +111,27 @@ export type TMetaKeyTuple = [string, TMetaKey];
 
 export type TComponentTuple = [string, ComponentNode];
 
-export type TAddonTuple = [string, TAnything]
+export type TAddonTuple = [string, TExportAddons]
+
+export type TConstructorClass = "math" | "nodes" | "resources" | "components"
+
+export type TExportAddons = {
+	[key: string]: TAnything
+	category: string
+}
+
+export type TExportComponent<O = TAnything> = {
+	type: string
+	name: string
+	description: string
+	options: O
+}
 
 export type TExportNode<O> = {
 	id: string;
 	slug: string;
 	attributes: TAttributeTuple[];
+	components: TExportComponent[]
 	metaKeys: TMetaKeyTuple[];
 	type: TTypeNodes | TTypeNode2D | TTypeNode3D;
 	script: string | URL | null;

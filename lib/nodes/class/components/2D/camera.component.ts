@@ -4,47 +4,106 @@ import { Node2D } from "@/nodes/class/2D/node";
 import { ComponentNode } from "@/nodes/global/class/component-node";
 import { NodeDestroy } from "@/nodes/symbols";
 import { Vector2 } from "@/nodes/vectors/vector-2";
+import type { TCameraComponent } from "../types";
+import type { TVec2 } from "@/nodes/global/types";
 
-export class CameraComponent extends ComponentNode {
+export class CameraComponent extends ComponentNode<TCameraComponent> {
     protected _name = "camera";
     protected _description = "control with camera view";
 
     get scale(): Vector2 {
-        return this._options.scale
+        return this._options.scale as Vector2
     }
 
     get position(): Vector2 {
-        return this._options.position
+        return this._options.position as Vector2
     }
 
-    init(): void {
+    get offset(): Vector2 {
+        return this._options.offset as Vector2
+    }
+
+    set scale(value: Vector2 | TVec2) {
+        if (typeof value === "string") {
+            this._options.scale = Vector2.import(value)
+        } else {
+            this._options.scale = value
+        }
+    }
+
+    set position(value: Vector2 | TVec2) {
+        if (typeof value === "string") {
+            this._options.position = Vector2.import(value)
+        } else {
+            this._options.position = value
+        }
+    }
+
+    set offset(value: Vector2 | TVec2) {
+        if (typeof value === "string") {
+            this._options.offset = Vector2.import(value)
+        } else {
+            this._options.offset = value
+        }
+    }
+
+    protected parseOptions(options: TCameraComponent): TCameraComponent {
+        const parse = { ...options }
+
+        if (typeof parse.scale === "string") {
+            parse.scale = Vector2.import(parse.scale)
+        }
+
+        if (typeof parse.position === "string") {
+            parse.position = Vector2.import(parse.position)
+        }
+
+        if (typeof parse.offset === "string") {
+            parse.offset = Vector2.import(parse.offset)
+        }
+
+        return parse;
+    }
+
+    getOptions(): TCameraComponent {
+        const options = { ...this._options }
+
+        if (options.scale instanceof Vector2) {
+            options.scale = options.scale.export() as TVec2
+        }
+
+        if (options.position instanceof Vector2) {
+            options.position = options.position.export() as TVec2
+        }
+
+        if (options.offset instanceof Vector2) {
+            options.offset = options.offset.export() as TVec2
+        }
+
+        return options
+    }
+
+    startOptions(): void {
         this._options = {
             scale: Vector2.one(),
             position: Vector2.zero(),
             offset: Vector2.zero(),
             rotation: 0,
         }
+    }
 
+    init(): void {
         this.$node.camera = {
-            move(x: number, y: number) {
-                this._options.position.x += x;
-                this._options.position.y += y;
+            move: (x: number, y: number) => {
+                this.position.x += x;
+                this.position.y += y;
             },
             zoom: (scale: number) => {
-                this._options.scale.scale(scale)
+                this.scale.scale(scale)
             }
         }
 
         this.$app[_Camera].addCamera(this)
-    }
-
-    reset(): void {
-        this._options = {
-            scale: Vector2.one(),
-            position: Vector2.zero(),
-            offset: Vector2.zero(),
-            rotation: 0,
-        }
     }
 
     process(): void {
@@ -56,18 +115,18 @@ export class CameraComponent extends ComponentNode {
             const renderY = this.$node.position.y;
 
             if (renderX < halfWidth) {
-                this._options.offset.x = 0;
+                this.offset.x = 0;
             } else {
-                this._options.offset.x = this.$node.position.x - halfWidth;
+                this.offset.x = this.$node.position.x - halfWidth;
             }
 
             if (renderY < halfHeight) {
-                this._options.offset.y = 0;
+                this.offset.y = 0;
             } else {
-                this._options.offset.y = this.$node.position.y - halfHeight;
+                this.offset.y = this.$node.position.y - halfHeight;
             }
 
-            this._options.position = this._options.offset;
+            this.position = this.offset;
         }
     }
 

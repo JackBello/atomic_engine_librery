@@ -3,10 +3,11 @@ slug = "effect-1"
 attributes = []
 metaKeys = []
 type = "LineFlowEffect2D"
-script = "\nclass MyNode extends LineFlowEffect2D {\n\t_ready() {\n\t\tthis.$attributes.add(\"vr\", {\n\t\t\tvalue: 0.03\n\t\t})\n\n\t\tLogger.message(\"effect ready\")\n\t}\n\n\t_process() {\n\t\tif (this.radius > 5 || this.radius < -5) this.$attributes.get(\"vr\").value *= -1\n\n\t\tthis.radius += this.$attributes.get(\"vr\").value\n\t}\n}\n"
+script = "\nclass MyNode extends LineFlowEffect2D {\n\t_ready() {\n\t\tthis.$attributes.set(\"vr\", {\n\t\t\tvalue: 0.03\n\t\t})\n\n\t\tLogger.message(\"effect ready\")\n\t}\n\n\t_process() {\n\t\tif (this.radius > 5 || this.radius < -5) this.$attributes.get(\"vr\").value *= -1\n\n\t\tthis.radius += this.$attributes.get(\"vr\").value\n\t}\n}\n"
 path = "0"
 index = 0
 nodes = []
+components = []
 addons = []
 
 [options]

@@ -3,5 +3,5 @@ import type { TClass } from "./types";
 import { ConstructorNodes } from "@/nodes/global/constructors/constructor-nodes";
 
 export function RegisterNode(target: TClass<GlobalNode>) {
-    ConstructorNodes.addNode(target.name, target)
+    ConstructorNodes.add("nodes", target.name, target)
 }

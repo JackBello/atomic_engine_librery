@@ -16,8 +16,9 @@ export class Resource<S extends SourceType = SourceType, O extends IBaseResource
     protected _format: MapFormatSource[S]
     protected _options: O
 
-    readonly TYPE: string = "resource"
+    readonly CATEGORY: string = "resource"
     readonly NAME_CLASS: string = "Resource"
+    readonly HIERARCHY: string = "resource"
 
     get id() {
         return this._id
@@ -115,8 +116,8 @@ export class Resource<S extends SourceType = SourceType, O extends IBaseResource
         return {
             id: this._id,
             slug: this._slug,
-            type: this.TYPE,
-            name_class: this.NAME_CLASS,
+            type: this.NAME_CLASS,
+            category: this.CATEGORY,
             options: this.toObject()
         }
     }

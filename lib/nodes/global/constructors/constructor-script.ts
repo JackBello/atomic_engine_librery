@@ -227,9 +227,9 @@ export default class ConstructorScript {
 
         const helpers = this.$app[_Script].getHelpers();
 
-        const $nodes = ConstructorNodes.getNodes()
-        const $helpers = ConstructorNodes.getHelpers()
-        const allClass = { ...$nodes, ...$helpers }
+        const $nodes = ConstructorNodes.getAll("nodes")
+        const $math = ConstructorNodes.getAll("math")
+        const allClass = { ...$nodes, ...$math }
 
         helpers.CurrentScene = this.$app[$Scenes].currentScene
 

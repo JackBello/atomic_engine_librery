@@ -1,9 +1,8 @@
 import type { TAnything } from "@/app/types";
 
 import { GetApp } from "@/app/symbols";
-import { $ConstructorNodes, $ConstructorScript } from "../symbols";
+import { $ConstructorScript } from "../symbols";
 
-import { ConstructorNodes } from "../global/constructors/constructor-nodes";
 import ConstructorScript from "../global/constructors/constructor-script";
 import { BaseAppAbstract } from "./base.abstract";
 
@@ -14,7 +13,6 @@ export default abstract class AbstractNode extends BaseAppAbstract {
 		"2d",
 	) as CanvasRenderingContext2D;
 
-	static [$ConstructorNodes] = new ConstructorNodes();
 	[$ConstructorScript] = new ConstructorScript();
 
 	protected readonly utils = {

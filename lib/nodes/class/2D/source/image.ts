@@ -104,7 +104,7 @@ export class Image2D<T extends TCanvasNodeOptions["2D/image"] = TCanvasNodeOptio
 		this._options.format = this._initial.format
 		this._options.type = this._initial.type
 
-		this._addons.set(`${this._resource.TYPE}/${this._resource.NAME_CLASS}`, this._resource)
+		this._addons.set(`${this._resource.CATEGORY}/${this._resource.NAME_CLASS}`, this._resource)
 	}
 
 	removeResource() {
@@ -120,7 +120,7 @@ export class Image2D<T extends TCanvasNodeOptions["2D/image"] = TCanvasNodeOptio
 		this._options.format = this._initial.format
 		this._options.type = this._initial.type
 
-		this._addons.delete(`${this._resource.TYPE}/${this._resource.NAME_CLASS}`)
+		this._addons.delete(`${this._resource.CATEGORY}/${this._resource.NAME_CLASS}`)
 
 		this._resource = undefined
 

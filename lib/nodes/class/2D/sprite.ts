@@ -138,7 +138,7 @@ export class Sprite2D<T extends TCanvasNodeOptions["2D/sprite"] = TCanvasNodeOpt
         this._options.type = this._initial.type
         this._options.settings = this._initial.settings
 
-        this._addons.set(`${this._resource.TYPE}/${this._resource.NAME_CLASS}`, this._resource)
+        this._addons.set(`${this._resource.CATEGORY}/${this._resource.NAME_CLASS}`, this._resource)
     }
 
     removeResource() {
@@ -156,7 +156,7 @@ export class Sprite2D<T extends TCanvasNodeOptions["2D/sprite"] = TCanvasNodeOpt
         this._options.type = this._initial.type
         this._options.settings = this._initial.settings
 
-        this._addons.delete(`${this._resource.TYPE}/${this._resource.NAME_CLASS}`)
+        this._addons.delete(`${this._resource.CATEGORY}/${this._resource.NAME_CLASS}`)
 
         this._resource = undefined
 

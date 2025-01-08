@@ -13,7 +13,6 @@ import type { TCanvasNodeOptions, TCanvasNodes } from "../types";
 import type { TAnything, TFunction, TSerialize } from "@/app/types";
 
 import {
-	$ConstructorNodes,
 	$ConstructorScript,
 	NodeDestroy,
 	NodeFunctionClone,
@@ -51,6 +50,7 @@ import { DEFAULT_CONFIG_PRIMITIVE_NODE } from "@/configs/nodes/global/node";
 import { HandlerScript } from "./handlers/script";
 import { serializers } from "@/app/utils/serialize";
 import type { Scene } from "./scene";
+import { ConstructorNodes } from "@/nodes";
 
 export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNodeOptions["global/node"]>
 	extends AbstractNode
@@ -262,13 +262,13 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 	}
 
 	static async [NodeFunctionMake](structure: TExportNode<TAnything>) {
-		return await GlobalNode[$ConstructorNodes].makeNode(structure);
+		return await ConstructorNodes.makeNode(structure);
 	}
 
 	static async [NodeFunctionImport](data: string, format: TSerialize) {
 		const structure: TExportNode<TAnything> = serializers[format].parse(data);
 
-		return await GlobalNode[$ConstructorNodes].makeNode(structure);
+		return await ConstructorNodes.makeNode(structure);
 	}
 
 	[NodeFunctionReset](property?: TAnything) {
@@ -306,7 +306,7 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 	}
 
 	async [NodeFunctionClone]() {
-		const node = await GlobalNode[$ConstructorNodes].makeNode(this[ExportData](true));
+		const node = await ConstructorNodes.makeNode(this[ExportData](true));
 
 		node[NodeSetId](stdUlid.ulid(12));
 
@@ -351,6 +351,7 @@ export class GlobalNode<T extends TCanvasNodeOptions["global/node"] = TCanvasNod
 			slug: this.slug,
 			attributes: this.$attributes.toEntries(),
 			metaKeys: this.$metaKeys.toEntries(),
+			components: this.$components[ExportData](),
 			type: this.NODE_NAME,
 			script: script,
 			path: this.path,

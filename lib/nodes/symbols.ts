@@ -1,5 +1,4 @@
 // Global nodes
-export const $ConstructorNodes = Symbol();
 export const $ConstructorScript = Symbol();
 
 export const NodePropType = Symbol();

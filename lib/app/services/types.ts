@@ -20,7 +20,7 @@ export type TExportResource<O extends TAnything = TAnything> = {
     id: string,
     slug: string,
     type: string,
-    name_class: string,
+    category: string,
     options: O
 }
 

@@ -1,4 +1,4 @@
-import type { IHandleComponent, TComponentTuple } from "../types";
+import type { IHandleComponent, TComponentTuple, TExportComponent } from "../types";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
 import type { GlobalNode } from "../global-node";
@@ -8,7 +8,7 @@ import {
 	NodePropHandlerComponents,
 	NodeSetHandlerComponents,
 } from "@/nodes/symbols";
-import { _Collision, GetApp } from "@/app/symbols";
+import { _Collision, ExportData, GetApp } from "@/app/symbols";
 import type { ComponentNode } from "../class/component-node";
 import type { TAnything, TClass } from "@/app/types";
 import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
@@ -51,6 +51,9 @@ export class HandlerComponent implements IHandleComponent {
 	add(component: TClass<ComponentNode>): void {
 		const abstract = new component(this.$node);
 
+		abstract.startOptions()
+		abstract.init()
+
 		this[NodePropHandlerComponents].set(abstract.name, abstract);
 	}
 
@@ -72,6 +75,16 @@ export class HandlerComponent implements IHandleComponent {
 
 	clear(): void {
 		this[NodePropHandlerComponents].clear();
+	}
+
+	[ExportData]() {
+		const components: TExportComponent[] = []
+
+		for (const [_, component] of this[NodePropHandlerComponents]) {
+			components.push(component[ExportData]())
+		}
+
+		return components;
 	}
 
 	[NodeSetHandlerComponents](components: TComponentTuple[]): void {

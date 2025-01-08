@@ -48,6 +48,7 @@ import { RootNode } from "../nodes/global/root/root-node";
 
 import {
 	Circle2D,
+	ComponentNode,
 	ControlEdition2D,
 	GlobalNode,
 	Image2D,
@@ -65,6 +66,12 @@ import {
 	Vector3,
 	Vector4,
 } from "@/nodes";
+
+import { CameraComponent, CharacterBodyComponent, CollisionComponent, CollisionShapeComponent, RigidBodyComponent, StaticBodyComponent } from "@/components";
+
+import { Resource } from "./services/resources/resource";
+import { ResourceImage } from "./services/resources/image.resource";
+import { ResourceSpriteSheet } from "./services/resources/sprite-sheet.resource";
 
 import { DEFAULT_CONFIG_ATOMIC_GAME } from "../configs/engine/game";
 
@@ -201,7 +208,13 @@ export class GameCore {
 
 		BaseAppAbstract[SetApp](this);
 
-		ConstructorNodes.addHelpers({
+		ConstructorNodes.multiple("resources", {
+			Resource,
+			ResourceImage,
+			ResourceSpriteSheet
+		})
+
+		ConstructorNodes.multiple("math", {
 			Vector2,
 			Vector3,
 			Vector4,
@@ -210,7 +223,7 @@ export class GameCore {
 			Transform3D
 		})
 
-		ConstructorNodes.addNodes({
+		ConstructorNodes.multiple("nodes", {
 			GlobalNode,
 			ControlEdition2D,
 			LineFlowEffect2D,
@@ -223,6 +236,16 @@ export class GameCore {
 			Circle2D,
 			Sprite2D
 		});
+
+		ConstructorNodes.multiple("components", {
+			ComponentNode,
+			CollisionComponent,
+			CollisionShapeComponent,
+			StaticBodyComponent,
+			RigidBodyComponent,
+			CharacterBodyComponent,
+			CameraComponent
+		})
 
 		this[$Animation] = new AnimationService(this);
 		this[$Canvas] = new CanvasService(this);
