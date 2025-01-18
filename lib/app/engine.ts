@@ -22,6 +22,7 @@ import {
 	_Script,
 	_Window,
 	_Worker,
+	ClearData,
 	DispatchEvent,
 	GetOptions,
 	SetApp,
@@ -47,7 +48,7 @@ import FrameController from "./controllers/frame.controller";
 import InputController from "./controllers/input.controller";
 import CameraController from "./controllers/camera.controller";
 
-import { ConstructorNodes } from "../nodes/global/constructors/constructor-nodes";
+import { ConstructorClasses } from "../nodes/constructor-classes";
 
 import { RootNode } from "../nodes/global/root/root-node";
 
@@ -213,13 +214,15 @@ export class EngineCore {
 
 		BaseAppAbstract[SetApp](this);
 
-		ConstructorNodes.multiple("resources", {
+		ConstructorClasses[ClearData]()
+
+		ConstructorClasses.multiple("resources", {
 			Resource,
 			ResourceImage,
 			ResourceSpriteSheet
 		})
 
-		ConstructorNodes.multiple("math", {
+		ConstructorClasses.multiple("math", {
 			Vector2,
 			Vector3,
 			Vector4,
@@ -228,7 +231,7 @@ export class EngineCore {
 			Transform3D
 		})
 
-		ConstructorNodes.multiple("nodes", {
+		ConstructorClasses.multiple("nodes", {
 			GlobalNode,
 			ControlEdition2D,
 			LineFlowEffect2D,
@@ -242,7 +245,7 @@ export class EngineCore {
 			Sprite2D
 		});
 
-		ConstructorNodes.multiple("components", {
+		ConstructorClasses.multiple("components", {
 			ComponentNode,
 			CollisionComponent,
 			CollisionShapeComponent,

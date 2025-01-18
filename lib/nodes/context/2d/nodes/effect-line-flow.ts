@@ -7,8 +7,10 @@ export const effect_line_flow_2D = (
 ) => {
 	if (options.alpha <= 0) return
 
+	if (!options.stroke) return
+
 	context.lineWidth = options.lineWidth;
-	context.strokeStyle = validColor(options.fill, context, {
+	context.strokeStyle = validColor(options.stroke, context, {
 		width: options.width,
 		height: options.height,
 	});

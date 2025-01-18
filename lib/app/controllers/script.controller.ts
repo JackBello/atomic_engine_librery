@@ -17,6 +17,7 @@ import { NodePropType, ScriptsNodeFromScene } from "@/nodes/symbols";
 import EventObserver from "@/app/utils/observer";
 import { ExecuteProcess } from "./symbols";
 import type { CameraComponent } from "@/nodes/class/components/2D/camera.component";
+import type { TransitionComponent } from "@/components";
 
 export default class ScriptController {
 	private $app: EngineCore | GameCore;
@@ -71,7 +72,7 @@ export default class ScriptController {
 	public modifyHelper(name: string, helper: TAnything, force = false) {
 		const defaultHelpers = "Timers,Game,Logger,Window,Time,Input,CurrentScene,$import,preload"
 
-		if (defaultHelpers.includes(name) && force) throw new Error("You cannot modify the helpers that are defective unless you pass the last parameter as true")
+		if (defaultHelpers.includes(name) && !force) throw new Error("You cannot modify the helpers that are defective unless you pass the last parameter as true")
 
 		this._helpers.set(
 			name,
@@ -231,15 +232,21 @@ export default class ScriptController {
 				_draw.bind(node)();
 			}
 
-			this.handlerComponents(node)
+			this.handlerComponents(node, delta)
 		}
 	}
 
-	protected handlerComponents(node: GlobalNode) {
+	protected handlerComponents(node: GlobalNode, delta: number) {
 		if (node.$components.has("camera")) {
 			const camera = node.$components.get("camera") as CameraComponent
 
 			camera.process();
+		}
+
+		if (node.$components.has("transition")) {
+			const transition = node.$components.get("transition") as TransitionComponent
+
+			transition.process(delta)
 		}
 	}
 

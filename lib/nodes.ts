@@ -32,6 +32,6 @@ export * from "./nodes/class/2D/effects/line-flow-effect";
 export * from "./nodes/class/2D/edition/selection";
 export * from "./nodes/class/2D/edition/control-edition";
 
-export * from "./nodes/global/constructors/constructor-nodes"
+export * from "./nodes/constructor-classes"
 
 export * from "./nodes/global/root/root-node"

@@ -1,5 +1,14 @@
+import type { TAnything } from "@/app/types"
 import type { TVec2 } from "@/nodes/global/types"
 import type { Vector2 } from "@/nodes/vectors/vector-2"
+
+export type TTransitionComponent = {
+    target: string
+    to: TAnything
+    start: TAnything
+    duration: number
+    elapsed: number
+}
 
 export type TCameraComponent = {
     scale: Vector2 | TVec2

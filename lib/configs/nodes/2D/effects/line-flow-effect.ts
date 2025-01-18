@@ -11,7 +11,7 @@ export const DEFAULT_CONFIG_LINE_FLOW_EFFECT_2D: TCanvasNodeOptions["2D/line-flo
 	lineWidth: 5,
 	spacing: 5,
 	radius: 0,
-	fill: "#000000",
+	stroke: "#000000",
 	description: "",
 	title: "",
 	rotation: 0,

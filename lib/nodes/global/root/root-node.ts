@@ -1,4 +1,4 @@
-import type { TMode } from "../types";
+import type { TModeSearch } from "../types";
 import type { GlobalNode } from "../global-node";
 
 import {
@@ -116,7 +116,7 @@ export class RootNode {
 		}
 	}
 
-	replaceNode(from: string | number, value: GlobalNode, mode: TMode = "index") {
+	replaceNode(from: string | number, value: GlobalNode, mode: TModeSearch = "index") {
 		const $node = this.getNode(from, mode);
 
 		if ($node === undefined) return false;
@@ -142,7 +142,7 @@ export class RootNode {
 		return true;
 	}
 
-	replaceNodeByPath(from: string, value: GlobalNode, mode: TMode = "index") {
+	replaceNodeByPath(from: string, value: GlobalNode, mode: TModeSearch = "index") {
 		const $node = this.getNodeByPath(from, mode);
 
 		if ($node === undefined) return false;
@@ -162,8 +162,8 @@ export class RootNode {
 	}
 
 	moveNodeByPath(
-		from: { search: string; mode: TMode },
-		to: { search: string; mode: TMode },
+		from: { search: string; mode: TModeSearch },
+		to: { search: string; mode: TModeSearch },
 		insert: "after" | "before" = "before",
 	) {
 		const $nodeFrom = this.getNodeByPath(from.search, from.mode);
@@ -199,8 +199,8 @@ export class RootNode {
 	}
 
 	moveNode(
-		from: { search: string | number; mode: TMode },
-		to: { search: string | number; mode: TMode },
+		from: { search: string | number; mode: TModeSearch },
+		to: { search: string | number; mode: TModeSearch },
 		insert: "after" | "before" = "before",
 	) {
 		const $nodeFrom = this.getNode(from.search, from.mode);
@@ -235,7 +235,7 @@ export class RootNode {
 		return true;
 	}
 
-	clearNodesByPath(path: string, mode: TMode = "index") {
+	clearNodesByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.clearNodesByPathId(path);
 
 		if (mode === "slug") return this.clearNodesByPathSlug(path);
@@ -279,7 +279,7 @@ export class RootNode {
 		return true;
 	}
 
-	clearNodes(location: string | number, mode: TMode = "index") {
+	clearNodes(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.clearNodesById(location);
 		}
@@ -328,7 +328,7 @@ export class RootNode {
 		return true;
 	}
 
-	getNodesByPath(path: string, mode: TMode = "index") {
+	getNodesByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.getNodesByPathId(path);
 
 		if (mode === "slug") return this.getNodesByPathSlug(path);
@@ -348,7 +348,7 @@ export class RootNode {
 		return this.getNodeByPathIndex(path)?.$nodes.all;
 	}
 
-	getNodes(location: string | number, mode: TMode = "index") {
+	getNodes(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.getNodesById(location);
 		}
@@ -372,7 +372,7 @@ export class RootNode {
 		return this.getNodeByIndex(location)?.$nodes.all;
 	}
 
-	deleteNodeByPath(path: string, mode: TMode = "index") {
+	deleteNodeByPath(path: string, mode: TModeSearch = "index") {
 		const modes = {
 			id: {
 				child: this.getNodeByPathId.bind(this),
@@ -405,7 +405,7 @@ export class RootNode {
 		return true;
 	}
 
-	deleteNode(location: string | number, mode: TMode = "index") {
+	deleteNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.deleteNodeById(location);
 		}
@@ -469,7 +469,7 @@ export class RootNode {
 	addNodeByPath(
 		path: string,
 		value: GlobalNode,
-		mode: TMode = "index",
+		mode: TModeSearch = "index",
 		insert: "after" | "before" = "before",
 	) {
 		if (mode === "id") return this.addNodeByPathId(path, value, insert);
@@ -530,7 +530,7 @@ export class RootNode {
 	addNode(
 		location: string,
 		value: GlobalNode,
-		mode: TMode,
+		mode: TModeSearch,
 		insert: "after" | "before" = "before",
 	) {
 		if (typeof location === "string" && mode === "id") {
@@ -597,9 +597,9 @@ export class RootNode {
 		from: string,
 		search: {
 			value: string;
-			mode: TMode;
+			mode: TModeSearch;
 		},
-		mode: TMode = "index",
+		mode: TModeSearch = "index",
 	) {
 		if (mode === "id") return this.searchNodeByPathId(from, search);
 
@@ -612,7 +612,7 @@ export class RootNode {
 		from: string,
 		search: {
 			value: string;
-			mode: TMode;
+			mode: TModeSearch;
 		},
 	) {
 		const $node = this.getNodeByPathId(from);
@@ -658,7 +658,7 @@ export class RootNode {
 		from: string,
 		search: {
 			value: string;
-			mode: TMode;
+			mode: TModeSearch;
 		},
 	) {
 		const $node = this.getNodeByPathSlug(from);
@@ -704,7 +704,7 @@ export class RootNode {
 		from: string,
 		search: {
 			value: string | number;
-			mode: TMode;
+			mode: TModeSearch;
 		},
 	) {
 		const $node = this.getNodeByPathIndex(from);
@@ -748,8 +748,8 @@ export class RootNode {
 
 	searchNode(
 		from: string | number,
-		search: { value: string | number; mode: TMode },
-		mode: TMode = "index",
+		search: { value: string | number; mode: TModeSearch },
+		mode: TModeSearch = "index",
 	) {
 		if (typeof from === "string" && mode === "id") {
 			return this.searchNodeById(from, search);
@@ -764,7 +764,7 @@ export class RootNode {
 
 	protected searchNodeById(
 		from: string,
-		search: { value: string | number; mode: TMode },
+		search: { value: string | number; mode: TModeSearch },
 	) {
 		const $node = this.getNodeById(from);
 
@@ -807,7 +807,7 @@ export class RootNode {
 
 	protected searchNodeBySlug(
 		from: string,
-		search: { value: string | number; mode: TMode },
+		search: { value: string | number; mode: TModeSearch },
 	) {
 		const $node = this.getNodeBySlug(from);
 
@@ -850,7 +850,7 @@ export class RootNode {
 
 	protected searchNodeByIndex(
 		from: number,
-		search: { value: string | number; mode: TMode },
+		search: { value: string | number; mode: TModeSearch },
 	) {
 		const $node = this.getNodeByIndex(from);
 
@@ -891,7 +891,7 @@ export class RootNode {
 		return undefined;
 	}
 
-	getNodeByPath(path: string, mode: TMode = "index"): GlobalNode | undefined {
+	getNodeByPath(path: string, mode: TModeSearch = "index"): GlobalNode | undefined {
 		if (mode === "id") return this.getNodeByPathId(path);
 
 		if (mode === "slug") return this.getNodeByPathSlug(path);
@@ -949,7 +949,7 @@ export class RootNode {
 
 	getNode(
 		location: string | number,
-		mode: TMode = "index",
+		mode: TModeSearch = "index",
 	): GlobalNode | undefined {
 		if (typeof location === "string" && mode === "id") {
 			return this.getNodeById(location);
@@ -1004,7 +1004,7 @@ export class RootNode {
 		return undefined;
 	}
 
-	hasNodeByPath(path: string, mode: TMode = "index") {
+	hasNodeByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.hasNodeByPathId(path);
 
 		if (mode === "slug") return this.hasNodeByPathSlug(path);
@@ -1024,7 +1024,7 @@ export class RootNode {
 		return this.getNodeByPathIndex(path) !== undefined;
 	}
 
-	hasNode(location: string | number, mode: TMode = "index") {
+	hasNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.hasNodeById(location);
 		}
@@ -1051,7 +1051,7 @@ export class RootNode {
 
 	getParentNodeByPath(
 		path: string,
-		mode: TMode = "index",
+		mode: TModeSearch = "index",
 	): GlobalNode | undefined {
 		if (mode === "id") return this.getParentNodeByPathId(path);
 
@@ -1092,7 +1092,7 @@ export class RootNode {
 
 	getParentNode(
 		location: string | number,
-		mode: TMode = "index",
+		mode: TModeSearch = "index",
 	): GlobalNode | undefined {
 		if (typeof location === "string" && mode === "id") {
 			return this.getParentNodeById(location);
@@ -1135,7 +1135,7 @@ export class RootNode {
 		return $node.parent;
 	}
 
-	getPreviousSiblingNodeByPath(path: string, mode: TMode = "index") {
+	getPreviousSiblingNodeByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.getPreviousSiblingNodeByPathId(path);
 
 		if (mode === "slug") return this.getPreviousSiblingNodeByPathSlug(path);
@@ -1173,7 +1173,7 @@ export class RootNode {
 		return $node.parent?.$nodes.all[$node.index - 1];
 	}
 
-	getPreviousSiblingNode(location: string | number, mode: TMode = "index") {
+	getPreviousSiblingNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.getPreviousSiblingNodeById(location);
 		}
@@ -1215,7 +1215,7 @@ export class RootNode {
 		return $node.parent?.$nodes.all[$node.index - 1];
 	}
 
-	getNextSiblingNodeByPath(path: string, mode: TMode = "index") {
+	getNextSiblingNodeByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.getNextSiblingNodeByPathId(path);
 
 		if (mode === "slug") return this.getNextSiblingNodeByPathSlug(path);
@@ -1253,7 +1253,7 @@ export class RootNode {
 		return $node.parent?.$nodes.all[$node.index + 1];
 	}
 
-	getNextSiblingNode(location: string | number, mode: TMode = "index") {
+	getNextSiblingNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.getNextSiblingNodeById(location);
 		}
@@ -1295,7 +1295,7 @@ export class RootNode {
 		return $node.parent?.$nodes.all[$node.index + 1];
 	}
 
-	getFirstChildNodeByPath(path: string, mode: TMode = "index") {
+	getFirstChildNodeByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.getFirstChildNodeByPathId(path);
 
 		if (mode === "slug") return this.getFirstChildNodeByPathSlug(path);
@@ -1327,7 +1327,7 @@ export class RootNode {
 		return $node.$nodes.all[0];
 	}
 
-	getFirstChildNode(location: string | number, mode: TMode = "index") {
+	getFirstChildNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.getFirstChildNodeById(location);
 		}
@@ -1363,7 +1363,7 @@ export class RootNode {
 		return $node.$nodes.all[0];
 	}
 
-	getLastChildNodeByPath(path: string, mode: TMode = "index") {
+	getLastChildNodeByPath(path: string, mode: TModeSearch = "index") {
 		if (mode === "id") return this.getLastChildNodeByPathId(path);
 
 		if (mode === "slug") return this.getLastChildNodeByPathSlug(path);
@@ -1395,7 +1395,7 @@ export class RootNode {
 		return $node.$nodes.all[$node.$nodes.size - 1];
 	}
 
-	getLastChildNode(location: string | number, mode: TMode = "index") {
+	getLastChildNode(location: string | number, mode: TModeSearch = "index") {
 		if (typeof location === "string" && mode === "id") {
 			return this.getLastChildNodeById(location);
 		}

@@ -41,8 +41,8 @@ export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"
 		return this._options.spacing;
 	}
 
-	get fill() {
-		return this._options.fill;
+	get stroke() {
+		return this._options.stroke;
 	}
 
 	get radius() {
@@ -75,8 +75,8 @@ export class LineFlowEffect2D<T extends TCanvasNodeOptions["2D/line-flow-effect"
 		this[GetApp][_Render].draw = true;
 	}
 
-	set fill(value: string) {
-		this._options.fill = value;
+	set stroke(value: string | undefined) {
+		this._options.stroke = value;
 
 		this[GetApp][_Render].draw = true;
 	}

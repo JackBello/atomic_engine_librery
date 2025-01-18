@@ -1,7 +1,7 @@
 import type { GlobalNode } from "@/nodes/global/global-node";
 import type { TClass } from "./types";
-import { ConstructorNodes } from "@/nodes/global/constructors/constructor-nodes";
+import { ConstructorClasses } from "@/nodes/constructor-classes";
 
 export function RegisterNode(target: TClass<GlobalNode>) {
-    ConstructorNodes.add("nodes", target.name, target)
+    ConstructorClasses.add("nodes", target.name, target)
 }

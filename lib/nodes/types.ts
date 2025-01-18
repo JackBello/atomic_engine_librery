@@ -123,7 +123,7 @@ export type TCanvasNodeOptions = {
 	IScale2D &
 	ISkew2D &
 	ISize2D &
-	Pick<IDraw2D, "fill" | "lineWidth"> &
+	Pick<IDraw2D, "stroke" | "lineWidth"> &
 	INode2D &
 	ILineFlowEffect2D;
 

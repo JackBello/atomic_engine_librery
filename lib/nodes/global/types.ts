@@ -179,7 +179,7 @@ export type TUpdateProp = {
 	update: boolean
 }
 
-export type TMode = "id" | "index" | "slug";
+export type TModeSearch = "id" | "index" | "slug";
 
 export interface IGlobalNode {
 	get index(): number;
@@ -282,6 +282,8 @@ export interface IHandleNode {
 	get all(): GlobalNode[];
 	get size(): number;
 
+	path(path: string | number, mode: TModeSearch): GlobalNode | undefined
+	find(search: string | number, mode: TModeSearch): GlobalNode | undefined
 	get(index: number): GlobalNode | undefined;
 	add(...nodes: GlobalNode[]): void;
 	has(index: number): boolean;
@@ -291,6 +293,7 @@ export interface IHandleNode {
 	search(slug: string): GlobalNode | undefined;
 	move(from: number, to: number): boolean;
 	traverse(callback: (node: GlobalNode) => void): void;
+	print(indent: string): void
 
 	[NodeSetHandlerNodes](nodes: GlobalNode[]): void;
 }

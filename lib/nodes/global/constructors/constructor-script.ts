@@ -6,7 +6,7 @@ import { $Scenes, _Frame, _Input, _Script } from "@/app/symbols";
 import type { EngineCore } from "@/app/engine";
 import type { GameCore } from "@/app/game";
 
-import { ConstructorNodes } from "./constructor-nodes";
+import { ConstructorClasses } from "../../constructor-classes";
 import { NodeDestroy } from "@/nodes/symbols";
 
 export default class ConstructorScript {
@@ -227,8 +227,8 @@ export default class ConstructorScript {
 
         const helpers = this.$app[_Script].getHelpers();
 
-        const $nodes = ConstructorNodes.getAll("nodes")
-        const $math = ConstructorNodes.getAll("math")
+        const $nodes = ConstructorClasses.getAll("nodes")
+        const $math = ConstructorClasses.getAll("math")
         const allClass = { ...$nodes, ...$math }
 
         helpers.CurrentScene = this.$app[$Scenes].currentScene

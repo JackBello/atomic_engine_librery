@@ -1,5 +1,5 @@
-import type { TAddonTuple, TConstructorClass, TExportComponent, TExportNode } from "../types";
-import type { GlobalNode } from "../global-node";
+import type { TAddonTuple, TConstructorClass, TExportComponent, TExportNode } from "./global/types";
+import type { GlobalNode } from "./global/global-node";
 import type { TAnything, TClass } from "@/app/types";
 
 import {
@@ -10,13 +10,13 @@ import {
 	NodeSetId,
 	NodeSetIndex,
 	NodeSetParent,
-} from "../../symbols";
+} from "./symbols";
 import type { TExportResource } from "@/app/services/types";
-import { SetID, SetOptions } from "@/app/symbols";
+import { ClearData, SetID, SetOptions } from "@/app/symbols";
 import type { ComponentNode } from "@/nodes/global/class/component-node";
 import type { Resource } from "@/app/services/resources/resource";
 
-export class ConstructorNodes {
+export class ConstructorClasses {
 	private static names: Record<TConstructorClass, string> = {
 		components: "components",
 		math: "math",
@@ -44,39 +44,39 @@ export class ConstructorNodes {
 	}
 
 	static add(type: TConstructorClass, name: string, construct: TClass<TAnything>) {
-		if (ConstructorNodes.reserve[type].includes(name) && ConstructorNodes.has(type, name))
+		if (ConstructorClasses.reserve[type].includes(name) && ConstructorClasses.has(type, name))
 			throw new Error(
-				`You can't add this ${ConstructorNodes.names[type]} '${name}' because it is already part of the engine`,
+				`You can't add this ${ConstructorClasses.names[type]} '${name}' because it is already part of the engine`,
 			);
 
-		ConstructorNodes.classes[type].set(name, construct)
+		ConstructorClasses.classes[type].set(name, construct)
 	}
 
 	static multiple(type: TConstructorClass, constructs: Record<string, TClass<TAnything>>) {
 		for (const name in constructs) {
-			ConstructorNodes.add(type, name, constructs[name])
+			ConstructorClasses.add(type, name, constructs[name])
 		}
 	}
 
 	static get(type: TConstructorClass, name: string) {
-		return ConstructorNodes.classes[type].get(name)
+		return ConstructorClasses.classes[type].get(name)
 	}
 
 	static getAll(type: TConstructorClass) {
-		return Object.fromEntries(ConstructorNodes.classes[type]);
+		return Object.fromEntries(ConstructorClasses.classes[type]);
 	}
 
 	static has(type: TConstructorClass, name: string) {
-		return ConstructorNodes.classes[type].has(name)
+		return ConstructorClasses.classes[type].has(name)
 	}
 
 	static delete(type: TConstructorClass, name: string) {
-		if (ConstructorNodes.reserve[type].includes(name))
+		if (ConstructorClasses.reserve[type].includes(name))
 			throw new Error(
-				`You can't delete this ${ConstructorNodes.names[type]} '${name}' because it is already part of the engine`,
+				`You can't delete this ${ConstructorClasses.names[type]} '${name}' because it is already part of the engine`,
 			);
 
-		ConstructorNodes.classes[type].delete(name)
+		ConstructorClasses.classes[type].delete(name)
 	}
 
 	static defineProperty(type: TConstructorClass, name: string, property: string | symbol, value?: TAnything, options: {
@@ -88,7 +88,7 @@ export class ConstructorNodes {
 			writable: true,
 			enumerable: true
 		}) {
-		const abstract = ConstructorNodes.classes[type].get(name)
+		const abstract = ConstructorClasses.classes[type].get(name)
 
 		if (!abstract) return false
 
@@ -99,19 +99,19 @@ export class ConstructorNodes {
 	}
 
 	static async makeNode(node: TExportNode<TAnything>): Promise<GlobalNode> {
-		const construct = ConstructorNodes.classes.nodes.get(node.type);
+		const construct = ConstructorClasses.classes.nodes.get(node.type);
 
 		if (!construct) {
 			throw Error(`this is constructor not found ${node.type}`);
 		}
 
-		const addons = await ConstructorNodes.makeAddons(node.addons);
+		const addons = await ConstructorClasses.makeAddons(node.addons);
 
 		const instance = new construct(node.slug, node.options);
 
-		ConstructorNodes.applyComponents(node.components, instance);
+		ConstructorClasses.applyComponents(node.components, instance);
 
-		await ConstructorNodes.applyAddons(addons, instance)
+		await ConstructorClasses.applyAddons(addons, instance)
 
 		instance.wrap = node.wrap
 
@@ -127,7 +127,7 @@ export class ConstructorNodes {
 
 		if (node.nodes.length > 0) {
 			instance.$nodes[NodeSetHandlerNodes](
-				await ConstructorNodes.makeNodes(node.nodes, instance),
+				await ConstructorClasses.makeNodes(node.nodes, instance),
 			);
 		}
 
@@ -141,19 +141,19 @@ export class ConstructorNodes {
 		const instances: GlobalNode[] = [];
 
 		for (const node of nodes) {
-			const construct = ConstructorNodes.classes.nodes.get(node.type);
+			const construct = ConstructorClasses.classes.nodes.get(node.type);
 
 			if (!construct) {
 				throw Error(`this is constructor not found ${node.type}`);
 			}
 
-			const addons = await ConstructorNodes.makeAddons(node.addons)
+			const addons = await ConstructorClasses.makeAddons(node.addons)
 
 			const instance = new construct(node.slug, node.options);
 
-			ConstructorNodes.applyComponents(node.components, instance);
+			ConstructorClasses.applyComponents(node.components, instance);
 
-			await ConstructorNodes.applyAddons(addons, instance)
+			await ConstructorClasses.applyAddons(addons, instance)
 
 			if (parent) instance[NodeSetParent](parent);
 
@@ -171,7 +171,7 @@ export class ConstructorNodes {
 
 			if (node.nodes.length > 0) {
 				instance.$nodes[NodeSetHandlerNodes](
-					await ConstructorNodes.makeNodes(node.nodes, instance),
+					await ConstructorClasses.makeNodes(node.nodes, instance),
 				);
 			}
 
@@ -202,7 +202,7 @@ export class ConstructorNodes {
 			if (addon.category === "resource") {
 				const structure = addon as TExportResource
 
-				const construct = ConstructorNodes.classes.resources.get(structure.type);
+				const construct = ConstructorClasses.classes.resources.get(structure.type);
 
 				if (!construct) {
 					throw Error(`this is constructor not found ${structure.type}`);
@@ -229,7 +229,7 @@ export class ConstructorNodes {
 		if (components.length === 0) return
 
 		for (const component of components) {
-			const construct = ConstructorNodes.classes.components.get(component.type)
+			const construct = ConstructorClasses.classes.components.get(component.type)
 
 			if (!construct) {
 				throw Error(`this is constructor not found ${component.type}`);
@@ -253,5 +253,11 @@ export class ConstructorNodes {
 
 	async makeMultiple() {
 
+	}
+
+	static [ClearData]() {
+		for (const type in ConstructorClasses.classes) {
+			(ConstructorClasses.classes as TAnything)[type].clear()
+		}
 	}
 }

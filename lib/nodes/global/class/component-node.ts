@@ -16,6 +16,7 @@ export class ComponentNode<O extends Record<string, TAnything> = Record<string, 
 	protected _name = "";
 	protected _description = "";
 	protected _options!: O;
+	protected _active = true
 
 	get NODE() {
 		return this.$node;
@@ -42,7 +43,7 @@ export class ComponentNode<O extends Record<string, TAnything> = Record<string, 
 
 	startOptions() { }
 
-	process() { }
+	process(delta: number) { delta }
 
 	reset() { }
 

@@ -1,4 +1,4 @@
-import type { IHandleNode } from "../types";
+import type { IHandleNode, TModeSearch } from "../types";
 import type { GlobalNode } from "../global-node";
 import type { GameCore } from "@/app/game";
 import type { EngineCore } from "@/app/engine";
@@ -52,6 +52,27 @@ export class HandlerNode implements IHandleNode {
 		}
 	}
 
+	path(path: string, mode: TModeSearch): GlobalNode | undefined {
+		const currentPath = this.$node.getPath(mode)
+		const searchPath = path.startsWith("/") ? `${currentPath}${path}` : `${currentPath}/${path}`;
+
+		return this.$app.ROOT.getNodeByPath(searchPath, mode)
+	}
+
+	find(search: string | number, mode: TModeSearch): GlobalNode | undefined {
+		if (mode === "id" && search === this.$node.id) return this.$node
+		if (mode === "index" && search === this.$node.index) return this.$node
+		if (mode === "slug" && search === this.$node.slug) return this.$node
+
+		for (const child of this[NodePropHandlerNodes]) {
+			const node = child.$nodes.find(search, mode);
+
+			if (node) return node;
+		}
+
+		return undefined
+	}
+
 	get(index: number): GlobalNode | undefined {
 		let left = 0;
 		let right = this[NodePropHandlerNodes].length - 1;
@@ -97,17 +118,7 @@ export class HandlerNode implements IHandleNode {
 
 		if ($node === undefined) return false;
 
-		this[NodePropHandlerNodes].splice($node.index, 1);
-
-		this.$app[_Script].removeScript($node);
-
-		this._updateNodes_(this[NodePropHandlerNodes]);
-
-		if (this.$app.scenes.currentScene) {
-			this.$app[_Render].draw = true;
-		}
-
-		this.$node.ROOT.TOP?.[DispatchEvent]("scene:remove_node", $node);
+		$node.destroy()
 
 		return true;
 	}
@@ -196,6 +207,14 @@ export class HandlerNode implements IHandleNode {
 			for (const child of this[NodePropHandlerNodes]) {
 				child.$nodes.traverse(callback);
 			}
+		}
+	}
+
+	print(indent = ""): void {
+		console.log(`${indent}${this.$node.slug}`);
+
+		for (const child of this[NodePropHandlerNodes]) {
+			child.$nodes.print(`${indent}  `);
 		}
 	}
 

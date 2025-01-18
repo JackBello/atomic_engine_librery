@@ -1,3 +1,5 @@
+export const ClearData = Symbol()
+
 export const ExportData = Symbol();
 export const ExportWorker = Symbol();
 
