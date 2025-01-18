@@ -57,6 +57,10 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
     }
 
     process(delta: number): void {
+        if (!this.duration) return
+
+        if (!this.target) return
+
         if (this._status.completed) return
 
         this._options.elapsed += delta;
