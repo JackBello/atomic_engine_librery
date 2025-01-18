@@ -12,6 +12,11 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
         completed: false
     }
 
+    protected _state = {
+        play: false,
+        pause: false
+    }
+
     get target() {
         return this._options.target
     }
@@ -46,6 +51,22 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
         this._options.start = value
     }
 
+    play() {
+        this._state.play = true
+        this._state.pause = false
+    }
+
+    pause() {
+        this._state.play = true
+        this._state.pause = false
+    }
+
+    reset() {
+        this._state.play = true
+        this._state.pause = false
+        this._status.completed = false
+    }
+
     startOptions(): void {
         this._options = {
             target: "",
@@ -58,10 +79,9 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
 
     process(delta: number): void {
         if (!this.duration) return
-
         if (!this.target) return
-
         if (this._status.completed) return
+        if (!this._state.play && this._state.pause) return
 
         this._options.elapsed += delta;
 
