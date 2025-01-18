@@ -3,8 +3,8 @@ import type { EngineCore } from "../engine";
 import type { GameCore } from "../game";
 
 import { ExecuteProcess } from "./symbols";
-import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
-import { CollisionComponent } from "@/nodes/class/components/2D/collisions/collision.component";
+import type { CollisionShape2DComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
+import { Collision2DComponent } from "@/nodes/class/components/2D/collisions/collision.component";
 import type { GlobalNode } from "@/nodes";
 
 export default class CollisionController {
@@ -36,8 +36,8 @@ export default class CollisionController {
 
 	[ExecuteProcess]() {
 		const collisions = new Set<{
-			firstCollision: CollisionShapeComponent;
-			secondCollision: CollisionShapeComponent;
+			firstCollision: CollisionShape2DComponent;
+			secondCollision: CollisionShape2DComponent;
 		}>();
 
 		const potentialNodes = this.quadTree.retrieve({
@@ -49,27 +49,27 @@ export default class CollisionController {
 
 		for (let i = 0; i < potentialNodes.length; i++) {
 			const firstNode = potentialNodes[i]
-			const firstCollision = firstNode.$components.get("collision-shape") as CollisionShapeComponent;
+			const firstCollision = firstNode.$components.get("collision-shape") as CollisionShape2DComponent;
 
 			if (firstCollision.disabled) continue
 			for (let j = i + 1; j < potentialNodes.length; j++) {
 				const secondNode = potentialNodes[j]
-				const secondCollision = secondNode.$components.get("collision-shape") as CollisionShapeComponent
+				const secondCollision = secondNode.$components.get("collision-shape") as CollisionShape2DComponent
 
 				if (firstNode.id === secondNode.id) continue
 
 				if (secondCollision.disabled) continue
 
-				if (CollisionComponent.isColliding(firstCollision, secondCollision)) {
+				if (Collision2DComponent.isColliding(firstCollision, secondCollision)) {
 					collisions.add({ firstCollision, secondCollision });
 				} else {
-					CollisionComponent.removeCollider(firstCollision, secondCollision);
+					Collision2DComponent.removeCollider(firstCollision, secondCollision);
 				}
 			}
 		}
 
 		for (const { firstCollision, secondCollision } of collisions) {
-			CollisionComponent.resolveCollision(firstCollision, secondCollision);
+			Collision2DComponent.resolveCollision(firstCollision, secondCollision);
 		}
 	}
 }

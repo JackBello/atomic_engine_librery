@@ -1,7 +1,7 @@
 import type { GlobalNode } from "@/nodes/global/global-node";
 import { ComponentNode } from "@/nodes/global/class/component-node";
 
-export class AreaComponent extends ComponentNode {
+export class Area2DComponent extends ComponentNode {
     protected _name = "area-detect";
     protected _description = "detect node entered o leaving this area";
 

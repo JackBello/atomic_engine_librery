@@ -3,7 +3,7 @@ import { ComponentNode } from "@/nodes/global/class/component-node";
 import type { TCharacterBodyComponent } from "../../types";
 import type { TVec2 } from "@/nodes/global/types";
 
-export class CharacterBodyComponent extends ComponentNode<TCharacterBodyComponent> {
+export class CharacterBody2DComponent extends ComponentNode<TCharacterBodyComponent> {
     protected _name = "character-body";
     protected _description = "movement node and apply gravity";
 

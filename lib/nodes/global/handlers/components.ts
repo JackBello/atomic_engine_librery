@@ -11,7 +11,6 @@ import {
 import { _Collision, ExportData, GetApp } from "@/app/symbols";
 import type { ComponentNode } from "../class/component-node";
 import type { TAnything, TClass } from "@/app/types";
-import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 
 export class HandlerComponent implements IHandleComponent {
 	private $node: GlobalNode;
@@ -93,10 +92,6 @@ export class HandlerComponent implements IHandleComponent {
 
 	[NodeDestroy]() {
 		for (const [_, component] of this[NodePropHandlerComponents]) {
-			if (component instanceof CollisionShapeComponent) {
-				this.$app[_Collision].removeCollision(this.$node);
-			}
-
 			component[NodeDestroy]();
 		}
 

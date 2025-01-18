@@ -7,7 +7,7 @@ import { Vector2 } from "@/nodes/vectors/vector-2";
 import type { TCameraComponent } from "../types";
 import type { TVec2 } from "@/nodes/global/types";
 
-export class CameraComponent extends ComponentNode<TCameraComponent> {
+export class Camera2DComponent extends ComponentNode<TCameraComponent> {
     protected _name = "camera";
     protected _description = "control with camera view";
 

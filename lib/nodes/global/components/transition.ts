@@ -14,7 +14,7 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
 
     protected _state = {
         play: false,
-        pause: false
+        pause: true
     }
 
     get target() {
@@ -62,6 +62,9 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
     }
 
     reset() {
+        this.$node[this.target] = this.start
+
+        this._options.elapsed = 0
         this._state.play = true
         this._state.pause = false
         this._status.completed = false
@@ -77,11 +80,19 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
         }
     }
 
+    init(): void {
+        this.$node.transition = {
+            play: this.play.bind(this),
+            pause: this.pause.bind(this),
+            reset: this.reset.bind(this)
+        }
+    }
+
     process(delta: number): void {
-        if (!this.duration) return
-        if (!this.target) return
+        if (this.duration === 0) return
+        if (this.target === "") return
         if (this._status.completed) return
-        if (!this._state.play && this._state.pause) return
+        if (this._state.play === false && this._state.pause) return
 
         this._options.elapsed += delta;
 
@@ -89,7 +100,11 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
 
         this.$node[this.target] = this.start + (this.to - this.start) * progress
 
-        if (progress >= 1) this._status.completed = true
+        if (progress >= 1) {
+            this._status.completed = true
+            this._state.pause = true
+            this._state.play = false
+        }
     }
 
     [NodeDestroy]() {

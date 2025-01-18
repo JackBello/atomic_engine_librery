@@ -3,7 +3,7 @@ import { Vector2 } from "@/nodes/vectors/vector-2";
 import type { TRigidBodyComponent } from "../../types";
 import type { TVec2 } from "@/nodes/global/types";
 
-export class RigidBodyComponent extends ComponentNode<TRigidBodyComponent> {
+export class RigidBody2DComponent extends ComponentNode<TRigidBodyComponent> {
     protected _name = "rigid-body";
     protected _description = "add physics to object node";
 

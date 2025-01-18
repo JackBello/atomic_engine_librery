@@ -68,7 +68,7 @@ import {
 	Vector4,
 } from "@/nodes";
 
-import { CameraComponent, CharacterBodyComponent, CollisionComponent, CollisionShapeComponent, RigidBodyComponent, StaticBodyComponent } from "@/components";
+import { Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
 
 import { Resource } from "./services/resources/resource";
 import { ResourceImage } from "./services/resources/image.resource";
@@ -242,12 +242,13 @@ export class GameCore {
 
 		ConstructorClasses.multiple("components", {
 			ComponentNode,
-			CollisionComponent,
-			CollisionShapeComponent,
-			StaticBodyComponent,
-			RigidBodyComponent,
-			CharacterBodyComponent,
-			CameraComponent
+			Collision2DComponent: CollisionComponent,
+			CollisionShape2DComponent: CollisionShapeComponent,
+			StaticBody2DComponent: StaticBodyComponent,
+			RigidBody2DComponent: RigidBodyComponent,
+			CharacterBody2DComponent: CharacterBodyComponent,
+			Camera2DComponent: CameraComponent,
+			TransitionComponent
 		})
 
 		this[$Animation] = new AnimationService(this);

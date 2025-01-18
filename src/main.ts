@@ -1,4 +1,4 @@
-import { EngineCore, ResourceSpriteSheet } from "../lib/";
+import { EngineCore, ResourceSpriteSheet, TransitionComponent } from "../lib/";
 import {
 	type GlobalNode,
 	Node2D,
@@ -6,11 +6,11 @@ import {
 	Scene,
 	Sprite2D
 } from "../lib/nodes";
-import { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
-import { AreaComponent } from "@/nodes/class/components/2D/area.component";
-import { CharacterBodyComponent } from "@/nodes/class/components/2D/body/character-body.component";
-import { StaticBodyComponent } from "@/nodes/class/components/2D/body/static-body.component";
-import { CameraComponent } from "@/nodes/class/components/2D/camera.component";
+import { CollisionShape2DComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
+import { Area2DComponent } from "@/nodes/class/components/2D/area.component";
+import { CharacterBody2DComponent } from "@/nodes/class/components/2D/body/character-body.component";
+import { StaticBody2DComponent } from "@/nodes/class/components/2D/body/static-body.component";
+import { Camera2DComponent } from "@/nodes/class/components/2D/camera.component";
 
 const buttonAddRect = document.querySelector(
 	`[data-id="button-add-rect"]`,
@@ -214,8 +214,8 @@ const floor = new Node2D("floor", {
 
 floor.centerX()
 
-floor.$components.add(CollisionShapeComponent);
-floor.$components.add(StaticBodyComponent);
+floor.$components.add(CollisionShape2DComponent);
+floor.$components.add(StaticBody2DComponent);
 
 const areaDestroy = new Node2D("area-dead", {
 	height: 100,
@@ -225,12 +225,12 @@ const areaDestroy = new Node2D("area-dead", {
 
 areaDestroy.centerX()
 
-areaDestroy.$components.add(CollisionShapeComponent);
-areaDestroy.$components.add(AreaComponent);
+areaDestroy.$components.add(CollisionShape2DComponent);
+areaDestroy.$components.add(Area2DComponent);
 
 const AreaCollision = areaDestroy.$components.get(
 	"collision-shape",
-) as CollisionShapeComponent;
+) as CollisionShape2DComponent;
 
 AreaCollision.fill = "rgba(0,255,0,0.3)";
 
@@ -274,17 +274,25 @@ const alien = new Sprite2D("alien", {
 	position: "Vec2(0, 500)",
 }, spriteAlien)
 
-alien.$components.add(CameraComponent)
-alien.$components.add(CollisionShapeComponent);
-alien.$components.add(CharacterBodyComponent);
+alien.$components.add(TransitionComponent);
+alien.$components.add(Camera2DComponent)
+alien.$components.add(CollisionShape2DComponent);
+alien.$components.add(CharacterBody2DComponent);
 
 const alienCollision = alien.$components.get(
 	"collision-shape",
-) as CollisionShapeComponent;
+) as CollisionShape2DComponent;
 
 alienCollision.debug = true
 alienCollision.width = 7
 alienCollision.position.x = 5
+
+const alienTransition = alien.$components.get("transition") as TransitionComponent
+
+alienTransition.start = alien.rotation
+alienTransition.to = 360
+alienTransition.target = "rotation"
+alienTransition.duration = 1
 
 alien.frameCoords.x = 0
 alien.frameCoords.y = 2
@@ -321,6 +329,14 @@ class MyNode extends Sprite2D {
 	this.animation(delta)
 
 	this.frame = 0
+
+	if (Input.hasKeyPressed("keyT")) {
+		this.transition.play()
+	}
+
+	if (Input.hasKeyPressed("keyR")) {
+		this.transition.reset()
+	}
 
   	if (!touch.right && Input.isActionPressed("move_right") && !this.isDead) {
 		this.frame = this.framesMove[this.step]
@@ -419,7 +435,7 @@ class MyNode extends Rectangle2D {
 }
 `);
 
-	randomRect.$components.add(CollisionShapeComponent);
+	randomRect.$components.add(CollisionShape2DComponent);
 
 	lv1.$nodes.add(randomRect);
 

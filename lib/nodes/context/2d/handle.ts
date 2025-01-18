@@ -18,7 +18,7 @@ import { selection_2D } from "./nodes/selection";
 import { text_2D } from "./nodes/text";
 import { circle_2D } from "./nodes/circle";
 import type { GlobalNode } from "@/nodes";
-import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
+import type { CollisionShape2DComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 import { collision_shape } from "./components/collision-shape";
 import { image_2d } from "./nodes/image";
 import { sprite_2d } from "./nodes/sprite";
@@ -30,7 +30,7 @@ export const handleComponent2D = (
 	if (node.$components.has("collision-shape")) {
 		const component = node.$components.get(
 			"collision-shape",
-		) as CollisionShapeComponent;
+		) as CollisionShape2DComponent;
 
 		if (component.debug) collision_shape(context, component);
 	}

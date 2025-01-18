@@ -16,7 +16,7 @@ import { NodePropType, ScriptsNodeFromScene } from "@/nodes/symbols";
 
 import EventObserver from "@/app/utils/observer";
 import { ExecuteProcess } from "./symbols";
-import type { CameraComponent } from "@/nodes/class/components/2D/camera.component";
+import type { Camera2DComponent } from "@/nodes/class/components/2D/camera.component";
 import type { TransitionComponent } from "@/components";
 
 export default class ScriptController {
@@ -238,7 +238,7 @@ export default class ScriptController {
 
 	protected handlerComponents(node: GlobalNode, delta: number) {
 		if (node.$components.has("camera")) {
-			const camera = node.$components.get("camera") as CameraComponent
+			const camera = node.$components.get("camera") as Camera2DComponent
 
 			camera.process();
 		}

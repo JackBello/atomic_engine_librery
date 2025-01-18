@@ -1,10 +1,10 @@
-import type { CameraComponent } from "@/nodes/class/components/2D/camera.component";
+import type { Camera2DComponent } from "@/nodes/class/components/2D/camera.component";
 import type { GameCore } from "../game";
 import type { EngineCore } from "../engine";
 
 export default class CameraController {
     protected $app: EngineCore | GameCore;
-    protected cameras: Set<CameraComponent>
+    protected cameras: Set<Camera2DComponent>
     protected context!: CanvasRenderingContext2D;
 
     constructor(app: EngineCore | GameCore) {
@@ -16,11 +16,11 @@ export default class CameraController {
         this.context = context
     }
 
-    addCamera(camera: CameraComponent) {
+    addCamera(camera: Camera2DComponent) {
         this.cameras.add(camera)
     }
 
-    removeCamera(camera: CameraComponent) {
+    removeCamera(camera: Camera2DComponent) {
         this.cameras.delete(camera)
     }
 

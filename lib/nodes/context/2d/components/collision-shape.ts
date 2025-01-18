@@ -1,8 +1,8 @@
-import type { CollisionShapeComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
+import type { CollisionShape2DComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
 
 export const collision_shape = (
 	context: CanvasRenderingContext2D,
-	collisionShape: CollisionShapeComponent,
+	collisionShape: CollisionShape2DComponent,
 ) => {
 	context.beginPath();
 

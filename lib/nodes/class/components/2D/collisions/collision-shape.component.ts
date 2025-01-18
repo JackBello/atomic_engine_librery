@@ -1,10 +1,12 @@
 import { Vector2 } from "@/nodes/vectors/vector-2";
-import { CollisionComponent } from "./collision.component";
+import { Collision2DComponent } from "./collision.component";
 import { _Collision } from "@/app/symbols";
 import type { TCollisionComponent, TCollisionShapeComponent } from "../../types";
 import type { TVec2 } from "@/nodes/global/types";
+import type { TAnything } from "@/app/types";
+import { NodeDestroy } from "@/symbols";
 
-export class CollisionShapeComponent extends CollisionComponent<TCollisionComponent & TCollisionShapeComponent> {
+export class CollisionShape2DComponent extends Collision2DComponent<TCollisionComponent & TCollisionShapeComponent> {
 	protected _name = "collision-shape";
 	protected _description = "detect collision between nodes with shape";
 
@@ -113,7 +115,7 @@ export class CollisionShapeComponent extends CollisionComponent<TCollisionCompon
 
 				if (!collision) return null;
 
-				if (!(collision instanceof CollisionShapeComponent)) return null;
+				if (!(collision instanceof CollisionShape2DComponent)) return null;
 
 				return this._collider;
 			},
@@ -125,7 +127,7 @@ export class CollisionShapeComponent extends CollisionComponent<TCollisionCompon
 
 				if (!collision) return null;
 
-				if (!(collision instanceof CollisionShapeComponent)) return null;
+				if (!(collision instanceof CollisionShape2DComponent)) return null;
 
 				return this._touch;
 			},
@@ -135,5 +137,11 @@ export class CollisionShapeComponent extends CollisionComponent<TCollisionCompon
 		};
 
 		this.$app[_Collision].addCollision(this.$node);
+	}
+
+	[NodeDestroy]() {
+		this.$app[_Collision].removeCollision(this.$node);
+		this.$node = null as TAnything;
+		this.$app = null as TAnything;
 	}
 }

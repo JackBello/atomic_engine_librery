@@ -75,7 +75,7 @@ import {
 	Vector4,
 } from "@/nodes";
 
-import { CameraComponent, CharacterBodyComponent, CollisionComponent, CollisionShapeComponent, RigidBodyComponent, StaticBodyComponent } from "@/components";
+import { Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
 
 import { Resource } from "./services/resources/resource";
 import { ResourceImage } from "./services/resources/image.resource";
@@ -247,12 +247,13 @@ export class EngineCore {
 
 		ConstructorClasses.multiple("components", {
 			ComponentNode,
-			CollisionComponent,
-			CollisionShapeComponent,
-			StaticBodyComponent,
-			RigidBodyComponent,
-			CharacterBodyComponent,
-			CameraComponent
+			Collision2DComponent,
+			CollisionShape2DComponent,
+			StaticBody2DComponent,
+			RigidBody2DComponent,
+			CharacterBody2DComponent,
+			Camera2DComponent,
+			TransitionComponent
 		})
 
 		this[$Animation] = new AnimationService(this);
