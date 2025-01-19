@@ -1,4 +1,4 @@
-export * from "./nodes/global/components/transition"
+export * from "./nodes/global/components/transition.component"
 
 export * from "./nodes/class/components/2D/camera.component"
 export * from "./nodes/class/components/2D/area.component"

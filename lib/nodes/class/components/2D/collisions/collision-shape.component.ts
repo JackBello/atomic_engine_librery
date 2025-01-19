@@ -7,6 +7,8 @@ import type { TAnything } from "@/app/types";
 import { NodeDestroy } from "@/symbols";
 
 export class CollisionShape2DComponent extends Collision2DComponent<TCollisionComponent & TCollisionShapeComponent> {
+	readonly NAME_CLASS = "CollisionShape2DComponent";
+
 	protected _name = "collision-shape";
 	protected _description = "detect collision between nodes with shape";
 

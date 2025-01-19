@@ -4,6 +4,8 @@ import type { TRigidBodyComponent } from "../../types";
 import type { TVec2 } from "@/nodes/global/types";
 
 export class RigidBody2DComponent extends ComponentNode<TRigidBodyComponent> {
+    readonly NAME_CLASS = "RigidBody2DComponent";
+
     protected _name = "rigid-body";
     protected _description = "add physics to object node";
 

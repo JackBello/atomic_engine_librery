@@ -242,12 +242,12 @@ export class GameCore {
 
 		ConstructorClasses.multiple("components", {
 			ComponentNode,
-			Collision2DComponent: CollisionComponent,
-			CollisionShape2DComponent: CollisionShapeComponent,
-			StaticBody2DComponent: StaticBodyComponent,
-			RigidBody2DComponent: RigidBodyComponent,
-			CharacterBody2DComponent: CharacterBodyComponent,
-			Camera2DComponent: CameraComponent,
+			Collision2DComponent,
+			CollisionShape2DComponent,
+			StaticBody2DComponent,
+			RigidBody2DComponent,
+			CharacterBody2DComponent,
+			Camera2DComponent,
 			TransitionComponent
 		})
 

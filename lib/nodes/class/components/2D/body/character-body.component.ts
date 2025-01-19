@@ -4,6 +4,8 @@ import type { TCharacterBodyComponent } from "../../types";
 import type { TVec2 } from "@/nodes/global/types";
 
 export class CharacterBody2DComponent extends ComponentNode<TCharacterBodyComponent> {
+    readonly NAME_CLASS = "CharacterBody2DComponent";
+
     protected _name = "character-body";
     protected _description = "movement node and apply gravity";
 

@@ -8,6 +8,8 @@ import type { TCameraComponent } from "../types";
 import type { TVec2 } from "@/nodes/global/types";
 
 export class Camera2DComponent extends ComponentNode<TCameraComponent> {
+    readonly NAME_CLASS = "Camera2DComponent";
+
     protected _name = "camera";
     protected _description = "control with camera view";
 

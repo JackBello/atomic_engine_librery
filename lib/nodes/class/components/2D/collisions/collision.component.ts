@@ -13,6 +13,8 @@ export type TCollisionShape =
 	| "circle-rectangle";
 
 export class Collision2DComponent<O extends TCollisionComponent = TCollisionComponent> extends ComponentNode<O> {
+	readonly NAME_CLASS: string = "Collision2DComponent";
+
 	protected _name = "collision";
 	protected _description = "detect collision between nodes";
 	protected _collider: GlobalNode | null = null;

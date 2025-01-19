@@ -5,6 +5,8 @@ import { NodeDestroy } from "@/nodes/symbols";
 import type { TTransitionComponent } from "@/nodes/class/components/types";
 
 export class TransitionComponent extends ComponentNode<TTransitionComponent> {
+    readonly NAME_CLASS = "TransitionComponent";
+
     protected _name = "transition";
     protected _description = "control with camera view";
 
