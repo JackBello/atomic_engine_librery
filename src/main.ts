@@ -289,7 +289,7 @@ alienCollision.position.x = 5
 
 const alienTransition = alien.$components.get("transition") as TransitionComponent
 
-alienTransition.start = alien.rotation
+alienTransition.from = alien.rotation
 alienTransition.to = 360
 alienTransition.target = "rotation"
 alienTransition.duration = 1

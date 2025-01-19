@@ -5,9 +5,9 @@ import type { Vector2 } from "@/nodes/vectors/vector-2"
 export type TTransitionComponent = {
     target: string
     to: TAnything
-    start: TAnything
+    from: TAnything
     duration: number
-    elapsed: number
+    timingFunction: string | ((t: number) => number)
 }
 
 export type TCameraComponent = {
