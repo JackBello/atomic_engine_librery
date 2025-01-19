@@ -65,10 +65,7 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
 
     reset() {
         this.$node[this.target] = this.start
-
         this._options.elapsed = 0
-        this._state.play = true
-        this._state.pause = false
         this._status.completed = false
     }
 
