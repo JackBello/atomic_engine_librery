@@ -54,16 +54,22 @@ export class TransitionComponent extends ComponentNode<TTransitionComponent> {
     }
 
     play() {
+        if (this._status.completed) return
+
         this._state.play = true
         this._state.pause = false
     }
 
     pause() {
+        if (this._status.completed) return
+
         this._state.play = true
         this._state.pause = false
     }
 
     reset() {
+        if (!this._status.completed) return
+
         this.$node[this.target] = this.start
         this._options.elapsed = 0
         this._status.completed = false
