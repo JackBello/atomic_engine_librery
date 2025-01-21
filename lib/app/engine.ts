@@ -75,7 +75,7 @@ import {
 	Vector4,
 } from "@/nodes";
 
-import { Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
+import { Area2DComponent, Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
 
 import { Resource } from "./services/resources/resource";
 import { ResourceImage } from "./services/resources/image.resource";
@@ -249,6 +249,7 @@ export class EngineCore {
 			ComponentNode,
 			Collision2DComponent,
 			CollisionShape2DComponent,
+			Area2DComponent,
 			StaticBody2DComponent,
 			RigidBody2DComponent,
 			CharacterBody2DComponent,
