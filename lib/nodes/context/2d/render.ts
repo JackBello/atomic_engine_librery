@@ -62,6 +62,7 @@ export class Render2D extends AbstractRender {
 
 			if (!nodeRef[NodePropType].startsWith("2D")) {
 				this.executeDraw(nodeRef, parentTransform);
+				continue
 			}
 
 			if (!nodeRef.visible) continue;
