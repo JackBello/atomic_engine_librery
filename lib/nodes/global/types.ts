@@ -34,8 +34,6 @@ export type TTypeNode2D =
 	| "LineFlowEffect2D"
 	| "Selection2D"
 	| "ControlEdition2D"
-	| "Collision2D"
-	| "CollisionShape2D"
 	| "Image2D"
 	| "Sprite2D";
 
