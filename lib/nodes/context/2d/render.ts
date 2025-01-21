@@ -60,9 +60,11 @@ export class Render2D extends AbstractRender {
 		for (let index = 0; index < node.$nodes.size; index++) {
 			const nodeRef = node.$nodes.all[index];
 
-			if (!nodeRef.visible) continue;
+			if (!nodeRef[NodePropType].startsWith("2D")) {
+				this.executeDraw(nodeRef, parentTransform);
+			}
 
-			if (!nodeRef[NodePropType].startsWith("2D")) continue;
+			if (!nodeRef.visible) continue;
 
 			const accumulativeTransform = RootNode.calculateTransforms(
 				{
