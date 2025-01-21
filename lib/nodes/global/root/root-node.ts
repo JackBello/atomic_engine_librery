@@ -912,7 +912,7 @@ export class RootNode {
 			if ($node) {
 				$node = $node.$nodes.all.find((node) => node.id === part);
 			} else {
-				$node = root.find((node) => node.id === part);
+				$node = root[0].$nodes.all.find((node) => node.id === part);
 			}
 		}
 
@@ -932,7 +932,7 @@ export class RootNode {
 			if ($node) {
 				$node = $node.$nodes.all.find((node) => node.slug === part);
 			} else {
-				$node = root.find((node) => node.slug === part);
+				$node = root[0].$nodes.all.find((node) => node.slug === part);
 			}
 		}
 
@@ -967,7 +967,7 @@ export class RootNode {
 
 		if (!root[0]) return undefined;
 
-		return root.find((node) => node.id === location);
+		return root[0].$nodes.all.find((node) => node.id === location);
 	}
 
 	protected getNodeBySlug(location: string): GlobalNode | undefined {
@@ -975,7 +975,7 @@ export class RootNode {
 
 		if (!root[0]) return undefined;
 
-		return root.find((node) => node.slug === location);
+		return root[0].$nodes.all.find((node) => node.slug === location);
 	}
 
 	protected getNodeByIndex(location: number): GlobalNode | undefined {
