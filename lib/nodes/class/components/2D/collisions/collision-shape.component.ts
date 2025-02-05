@@ -113,24 +113,12 @@ export class CollisionShape2DComponent extends Collision2DComponent<TCollisionCo
 	init(): void {
 		this.$node.collision = {
 			getCollider: () => {
-				const collision = this.$node.$components.get("collision-shape");
-
-				if (!collision) return null;
-
-				if (!(collision instanceof CollisionShape2DComponent)) return null;
-
-				return this._collider;
+				return this._colliders.values().next().value;
 			},
 			getColliders: () => {
-				return [];
+				return [...this._colliders.values()];
 			},
 			getTouch: () => {
-				const collision = this.$node.$components.get("collision-shape");
-
-				if (!collision) return null;
-
-				if (!(collision instanceof CollisionShape2DComponent)) return null;
-
 				return this._touch;
 			},
 			disabled: () => {
