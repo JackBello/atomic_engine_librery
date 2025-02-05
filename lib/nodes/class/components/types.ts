@@ -19,7 +19,11 @@ export type TCameraComponent = {
 
 export type TCharacterBodyComponent = {
     isFloor: boolean
-    velocity: Vector2 | TVec2
+    isWall: boolean
+    isCeiling: boolean
+    motionMode: "grounded" | "floating"
+    wallMinSlideAngle: number
+    floorMaxAngle: number
 }
 
 export type TRigidBodyComponent = {
