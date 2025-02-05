@@ -7,7 +7,7 @@ import {
 	Sprite2D
 } from "../lib/nodes";
 import { CollisionShape2DComponent } from "@/nodes/class/components/2D/collisions/collision-shape.component";
-import { Area2DComponent } from "@/nodes/class/components/2D/area.component";
+import { DetectionArea2DComponent } from "@/nodes/class/components/2D/detection-area.component";
 import { CharacterBody2DComponent } from "@/nodes/class/components/2D/body/character-body.component";
 import { StaticBody2DComponent } from "@/nodes/class/components/2D/body/static-body.component";
 import { Camera2DComponent } from "@/nodes/class/components/2D/camera.component";
@@ -94,19 +94,19 @@ lv1.$script.defineScript(`
 			let ball = await preload("/objects/ball.object")
 			let counterFPS = await preload("/objects/countFPS.object")
 			let effect1 = await preload("/objects/effect-1.object")
-			let raton = await preload("/objects/raton.object")
+			// let raton = await preload("/objects/raton.object")
 
 			CurrentScene.$nodes.add(borderWindow);
 			CurrentScene.$nodes.add(ball);
 			CurrentScene.$nodes.add(counterFPS);
 			CurrentScene.$nodes.add(effect1);
-			CurrentScene.$nodes.add(raton);
+			// CurrentScene.$nodes.add(raton);
 
 			borderWindow = undefined
 			ball = undefined
 			counterFPS = undefined
 			effect1 = undefined
-			raton = undefined
+			// raton = undefined
 		}		
 	}
 `)
@@ -209,13 +209,22 @@ class MyNode extends Rectangle2D {
 const floor = new Node2D("floor", {
 	height: 100,
 	width: 450,
-	position: "Vec2(0, 495)"
+	position: "Vec2(0, 495)",
 });
 
 floor.centerX()
 
 floor.$components.add(CollisionShape2DComponent);
 floor.$components.add(StaticBody2DComponent);
+
+const wall = new Node2D("wall", {
+	height: 200,
+	width: 50,
+	position: "Vec2(500, 345)",
+})
+
+wall.$components.add(CollisionShape2DComponent);
+wall.$components.add(StaticBody2DComponent);
 
 const areaDestroy = new Node2D("area-dead", {
 	height: 100,
@@ -226,7 +235,7 @@ const areaDestroy = new Node2D("area-dead", {
 areaDestroy.centerX()
 
 areaDestroy.$components.add(CollisionShape2DComponent);
-areaDestroy.$components.add(Area2DComponent);
+areaDestroy.$components.add(DetectionArea2DComponent);
 
 const AreaCollision = areaDestroy.$components.get(
 	"collision-shape",
@@ -239,18 +248,18 @@ areaDestroy.$script.modeExecute = "none";
 areaDestroy.$script.defineScript(`
 class MyNode extends Node2D {
 	_body_entering_area(body) {
-		if (body.slug === "alien")
-			body.dead()
+		// if (body.slug === "alien")
+			// body.dead()
 		Logger.info("entered", body.slug)
 	}
 
 	_body_leaving_area(body) {
 		Logger.info("exited", body.slug)
 
-		if (body.slug === "alien" && body.delete) {
-			body.destroy()
-			Logger.info(CurrentScene.$nodes.all)
-		}
+		// if (body.slug === "alien" && body.delete) {
+		// 	body.destroy()
+		// 	Logger.info(CurrentScene.$nodes.all)
+		// }
 	}
 }
 `);
@@ -271,7 +280,7 @@ const alien = new Sprite2D("alien", {
 	width: 16,
 	height: 18,
 	frame: 0,
-	position: "Vec2(0, 500)",
+	position: "Vec2(127, 391)",
 }, spriteAlien)
 
 alien.$components.add(TransitionComponent);
@@ -284,8 +293,8 @@ const alienCollision = alien.$components.get(
 ) as CollisionShape2DComponent;
 
 alienCollision.debug = true
-alienCollision.width = 7
-alienCollision.position.x = 5
+// alienCollision.width = 7
+// alienCollision.position.x = 5
 
 const alienTransition = alien.$components.get("transition") as TransitionComponent
 
@@ -296,16 +305,16 @@ alienTransition.duration = 1
 
 alien.frameCoords.x = 0
 alien.frameCoords.y = 2
-alien.center()
+alien.centerY()
 alien.setScale(6)
 alien.$script.modeExecute = "none"
 
 alien.$script.defineScript(`
 class MyNode extends Sprite2D {
-  speed = 200
+  speed = 100
   speedY = 0;
   jump_force = 300
-  gravity = 800
+  gravity = 1000
   isDead = false
   delete = false;
   framesMove = [0, 1, 0, 2]
@@ -324,8 +333,6 @@ class MyNode extends Sprite2D {
   }
 
   _process(delta) {
-	const touch = this.collision.getTouch()
-
 	this.animation(delta)
 
 	this.frame = 0
@@ -338,30 +345,26 @@ class MyNode extends Sprite2D {
 		this.transition.reset()
 	}
 
-  	if (!touch.right && Input.isActionPressed("move_right") && !this.isDead) {
-		this.frame = this.framesMove[this.step]
-		this.flipX = true;
-    	this.position.x += this.speed * delta
-	}
-	if (!touch.left && Input.isActionPressed("move_left") && !this.isDead) {
-		this.frame = this.framesMove[this.step]
-		this.flipX = false;
-    	this.position.x -= this.speed * delta
-	}
-	
-	if (this.collision.isOnFloor()) {
-		if (Input.isActionPressed("move_up") && !this.isDead) {
-			this.speedY = -this.jump_force
-		}
-		else {
-			this.speedY = 0
-		}
-	}
-	else {
-		this.speedY += this.gravity * delta
+	if (Input.hasKeyPressed("space")) {
+		this.flipX = !this.flipX;
 	}
 
-	this.position.y += this.speedY * delta;
+  	if (Input.isActionPressed("move_right") && !this.isDead) {
+		this.frame = this.framesMove[this.step]
+		this.flipX = true;
+    	this.velocity.x += this.speed
+	}
+	if (Input.isActionPressed("move_left") && !this.isDead) {
+		this.frame = this.framesMove[this.step]
+		this.flipX = false;
+    	this.velocity.x -= this.speed
+	}
+	if (Input.isActionPressed("move_up") && !this.isDead) {
+    	this.velocity.y -= this.speed
+	}
+	if (Input.isActionPressed("move_down") && !this.isDead) {
+    	this.velocity.y += this.speed
+	}
   }
 
   dead() {
@@ -388,6 +391,7 @@ await lv1.$script.executeScript()
 
 // lv1.$nodes.add(objects.player);
 lv1.$nodes.add(floor);
+lv1.$nodes.add(wall);
 lv1.$nodes.add(areaDestroy);
 lv1.$nodes.add(alien);
 
