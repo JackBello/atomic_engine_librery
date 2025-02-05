@@ -170,6 +170,21 @@ export class Node2D<T extends TCanvasNodeOptions["2D/node"] = TCanvasNodeOptions
 		this.processVector()
 		this.processOrigin()
 		this.processRotation()
+		this.processFlip()
+	}
+
+	protected processFlip() {
+		if (this._initial.flipX) {
+			this.scale.x = -Math.abs(this.scale.x)
+		} else {
+			this.scale.x = Math.abs(this.scale.x)
+		}
+
+		if (this._initial.flipY) {
+			this.scale.y = -Math.abs(this.scale.y)
+		} else {
+			this.scale.y = Math.abs(this.scale.y)
+		}
 	}
 
 	protected calculateOrigin(): [number, number] {
