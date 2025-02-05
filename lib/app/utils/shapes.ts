@@ -14,15 +14,95 @@
 //   ]
 // }
 
-import type { Node2D, Rectangle2D } from "@/nodes";
+import type { CollisionShape2DComponent } from "@/components";
+import type { Node2D } from "@/nodes";
 
-export function isInsideRect(x: number, y: number, node: Rectangle2D) {
-	return (
-		x > node.x &&
-		x < node.x + node.width &&
-		y > node.y &&
-		y < node.y + node.height
-	);
+export const calculateRectangleWithRectangle = (
+	firstCollision: CollisionShape2DComponent,
+	secondCollision: CollisionShape2DComponent,
+) => {
+	const firstCollisionWidth =
+		Math.abs(firstCollision.width * firstCollision.NODE.scale.x);
+	const firstCollisionHeight =
+		Math.abs(firstCollision.height * firstCollision.NODE.scale.y);
+	let firstCollisionX = firstCollision.NODE.position.x - (firstCollision.NODE.origin[0] * firstCollision.NODE.scale.x);
+	if (firstCollision.NODE.scale.x < 0) {
+		firstCollisionX += firstCollision.width * firstCollision.NODE.scale.x;
+	}
+	firstCollisionX = (firstCollision.position.x * firstCollision.NODE.scale.x) + firstCollisionX;
+	let firstCollisionY = firstCollision.NODE.position.y - (firstCollision.NODE.origin[1] * firstCollision.NODE.scale.y);
+	if (firstCollision.NODE.scale.y < 0) {
+		firstCollisionY += firstCollision.height * firstCollision.NODE.scale.y;
+	}
+	firstCollisionY = (firstCollision.position.y * firstCollision.NODE.scale.y) + firstCollisionY;
+
+	const secondCollisionWidth =
+		Math.abs(secondCollision.width * secondCollision.NODE.scale.x);
+	const secondCollisionHeight =
+		Math.abs(secondCollision.height * secondCollision.NODE.scale.y);
+	let secondCollisionX = secondCollision.NODE.position.x - (secondCollision.NODE.origin[0] * secondCollision.NODE.scale.x);
+	if (secondCollision.NODE.scale.x < 0) {
+		secondCollisionX += secondCollision.width * secondCollision.NODE.scale.x;
+	}
+	secondCollisionX = (secondCollision.position.x * secondCollision.NODE.scale.x) + secondCollisionX;
+	let secondCollisionY = secondCollision.NODE.position.y - (secondCollision.NODE.origin[1] * secondCollision.NODE.scale.y);
+	if (secondCollision.NODE.scale.y < 0) {
+		secondCollisionY += secondCollision.height * secondCollision.NODE.scale.y;
+	}
+	secondCollisionY = (secondCollision.position.y * secondCollision.NODE.scale.y) + secondCollisionY;
+
+	return {
+		first: {
+			firstCollisionWidth,
+			firstCollisionHeight,
+			firstCollisionX,
+			firstCollisionY,
+		},
+		second: {
+			secondCollisionWidth,
+			secondCollisionHeight,
+			secondCollisionX,
+			secondCollisionY,
+		}
+	}
+}
+
+export const calculateRectangleTouchWithRectangle = (first: {
+	firstCollisionWidth: number;
+	firstCollisionHeight: number;
+	firstCollisionX: number;
+	firstCollisionY: number;
+}, second: {
+	secondCollisionWidth: number;
+	secondCollisionHeight: number;
+	secondCollisionX: number;
+	secondCollisionY: number;
+}) => {
+	const collisionInfo = {
+		top: false,
+		bottom: false,
+		left: false,
+		right: false,
+	};
+
+	const bottomDist = second.secondCollisionY + second.secondCollisionHeight - first.firstCollisionY;
+	const topDist = first.firstCollisionY + first.firstCollisionHeight - second.secondCollisionY;
+	const rightDist = second.secondCollisionX + second.secondCollisionWidth - first.firstCollisionX;
+	const leftDist = first.firstCollisionX + first.firstCollisionWidth - second.secondCollisionX;
+
+	const minDist = Math.min(bottomDist, topDist, rightDist, leftDist);
+
+	if (minDist === bottomDist) {
+		collisionInfo.bottom = true;
+	} else if (minDist === topDist) {
+		collisionInfo.top = true;
+	} else if (minDist === rightDist) {
+		collisionInfo.right = true;
+	} else if (minDist === leftDist) {
+		collisionInfo.left = true;
+	}
+
+	return collisionInfo;
 }
 
 export function isInsideArc(x: number, y: number, node: Node2D) {
