@@ -61,7 +61,7 @@ import {
 	GlobalNode,
 	Image2D,
 	LineFlowEffect2D,
-	Matrix2D,
+	Matrix3,
 	Node2D,
 	Rectangle2D,
 	Scene,
@@ -75,7 +75,7 @@ import {
 	Vector4,
 } from "@/nodes";
 
-import { Area2DComponent, Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
+import { DetectionArea2DComponent, Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
 
 import { Resource } from "./services/resources/resource";
 import { ResourceImage } from "./services/resources/image.resource";
@@ -202,7 +202,7 @@ export class EngineCore {
 		this.init();
 	}
 
-	protected init() {
+	protected async init() {
 		this._global.set("mode", "edition"); // "edition" = 0 | "game" = 1 | "preview" = 2
 		this._global.set("status", null); //  null | "play" | "pause" | "game-over" | "stop" | "start" | "intro" | "cinematic"
 		this._global.set("fps", null);
@@ -226,7 +226,7 @@ export class EngineCore {
 			Vector2,
 			Vector3,
 			Vector4,
-			Matrix2D,
+			Matrix3,
 			Transform2D,
 			Transform3D
 		})
@@ -249,7 +249,7 @@ export class EngineCore {
 			ComponentNode,
 			Collision2DComponent,
 			CollisionShape2DComponent,
-			Area2DComponent,
+			DetectionArea2DComponent,
 			StaticBody2DComponent,
 			RigidBody2DComponent,
 			CharacterBody2DComponent,
@@ -282,7 +282,8 @@ export class EngineCore {
 			dimension: this._options.dimension,
 			mode: this.mode,
 		});
-		this[_Render].init(this._options.width, this._options.height);
+
+		await this[_Render].init(this._options.width, this._options.height);
 
 		this.setSize(this._options.width, this._options.height);
 

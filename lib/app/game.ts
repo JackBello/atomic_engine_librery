@@ -54,7 +54,7 @@ import {
 	GlobalNode,
 	Image2D,
 	LineFlowEffect2D,
-	Matrix2D,
+	Matrix3,
 	Node2D,
 	Rectangle2D,
 	Scene,
@@ -68,7 +68,7 @@ import {
 	Vector4,
 } from "@/nodes";
 
-import { Area2DComponent, Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
+import { DetectionArea2DComponent, Camera2DComponent, CharacterBody2DComponent, Collision2DComponent, CollisionShape2DComponent, RigidBody2DComponent, StaticBody2DComponent, TransitionComponent } from "@/components";
 
 import { Resource } from "./services/resources/resource";
 import { ResourceImage } from "./services/resources/image.resource";
@@ -221,7 +221,7 @@ export class GameCore {
 			Vector2,
 			Vector3,
 			Vector4,
-			Matrix2D,
+			Matrix3,
 			Transform2D,
 			Transform3D
 		})
@@ -244,7 +244,7 @@ export class GameCore {
 			ComponentNode,
 			Collision2DComponent,
 			CollisionShape2DComponent,
-			Area2DComponent,
+			DetectionArea2DComponent,
 			StaticBody2DComponent,
 			RigidBody2DComponent,
 			CharacterBody2DComponent,
@@ -273,7 +273,8 @@ export class GameCore {
 			dimension: this._options.dimension,
 			mode: this.mode,
 		});
-		this[_Render].init(
+
+		await this[_Render].init(
 			this.options.viewport.width,
 			this.options.viewport.height,
 		);
