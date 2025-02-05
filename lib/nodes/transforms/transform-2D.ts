@@ -5,16 +5,15 @@ export class Transform2D extends BaseAppAbstract {
 	public position: Vector2;
 	public rotation: number;
 	public scale: Vector2;
-	public skew: number;
+	public skew: Vector2;
 
 	constructor(
-		position = new Vector2(0, 0),
+		position = Vector2.zero(),
 		rotation = 0,
-		scale = new Vector2(1, 1),
-		skew = 0,
+		scale = Vector2.one(),
+		skew = Vector2.one(),
 	) {
 		super()
-
 		this.position = position;
 		this.rotation = rotation;
 		this.scale = scale;
@@ -22,33 +21,26 @@ export class Transform2D extends BaseAppAbstract {
 	}
 
 	applyTranslate(vector: Vector2) {
-		this.position = this.position.add(vector);
+		this.position.add(vector);
+
+		return this
 	}
 
 	applyRotate(angle: number) {
 		this.rotation += angle;
+
+		return this
 	}
 
 	applyScale(vector: Vector2) {
-		this.scale = this.scale.multiply(vector);
+		this.scale.multiply(vector);
+
+		return this
 	}
 
-	applyTransform(vector: Vector2) {
-		let transformed = new Vector2(
-			vector.x * this.scale.x,
-			vector.y * this.scale.y,
-		);
+	applySkew(vector: Vector2) {
+		this.skew.add(vector)
 
-		const cos = Math.cos(this.rotation);
-		const sin = Math.sin(this.rotation);
-
-		transformed = new Vector2(
-			transformed.x * cos - transformed.y * sin,
-			transformed.x * sin + transformed.y * cos,
-		);
-
-		transformed = transformed.add(this.position);
-
-		return transformed;
+		return this
 	}
 }

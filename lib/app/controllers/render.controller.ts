@@ -13,6 +13,7 @@ import { ExecuteProcess } from "./symbols";
 import { Render2D } from "@/nodes/context/2d/render";
 import { $Canvas, $Scenes, _Camera } from "../symbols";
 import type { OperationNode } from "@/nodes/global/class/operation-node";
+import { RenderWebGPU } from "@/nodes/context/web-gpu/render";
 
 export default class RenderController {
 	private $app: EngineCore | GameCore;
@@ -35,6 +36,20 @@ export default class RenderController {
 		before: new Map<string, OperationNode>(),
 		after: new Map<string, OperationNode>(),
 	};
+
+	protected _modules: {
+		"web-gpu": {
+			adapter?: GPUAdapter,
+			device?: GPUDevice,
+			format?: GPUTextureFormat
+		}
+	} = {
+			"web-gpu": {
+				adapter: undefined,
+				device: undefined,
+				format: undefined
+			}
+		}
 
 	public draw = true;
 	public scaleViewport = 1;
@@ -96,16 +111,50 @@ export default class RenderController {
 		this._options.context = context;
 	}
 
-	public init(width: number, height: number) {
+	public async init(width: number, height: number) {
 		if (!this._options.context) return;
 
-		this._canvas = new globalThis.OffscreenCanvas(width, height);
+		if (this._options.context === "2d") {
+			this._canvas = new globalThis.OffscreenCanvas(width, height);
 
-		this._drawer = this._canvas.getContext(
-			this._options.context.replace("-", "") as TContextNameCanvas,
-		) as TContextObject[TContextName];
+			this._drawer = this._canvas.getContext(
+				this._options.context.replace("-", "") as TContextNameCanvas,
+			) as TContextObject[TContextName];
 
-		this.$app[_Camera].setContext(this._drawer as CanvasRenderingContext2D)
+			this.$app[_Camera].setContext(this._drawer as CanvasRenderingContext2D)
+		}
+
+		if (this._options.context === "web-gpu") {
+			const adapter = await navigator.gpu.requestAdapter();
+
+			if (!adapter) return
+
+			const device = await adapter.requestDevice();
+
+			this._canvas = new globalThis.OffscreenCanvas(width, height);
+
+			this._drawer = this._canvas.getContext(
+				this._options.context.replace("-", "") as TContextNameCanvas,
+			) as TContextObject[TContextName];
+
+			if (!this._drawer) {
+				throw new Error("WebGPU no está soportado en este navegador.");
+			}
+
+			const format = navigator.gpu.getPreferredCanvasFormat();
+
+			(this._drawer as GPUCanvasContext).configure({
+				device,
+				format,
+				alphaMode: 'premultiplied',
+			});
+
+			this._modules["web-gpu"] = {
+				device,
+				adapter,
+				format
+			}
+		}
 	}
 
 	public setSize(width: number, height: number) {
@@ -125,6 +174,8 @@ export default class RenderController {
 		const _: Record<string, () => AbstractRender> = {
 			"2d": () =>
 				new Render2D(this._drawer as CanvasRenderingContext2D),
+			"web-gpu": () =>
+				new RenderWebGPU(this._drawer as GPUCanvasContext, this._modules["web-gpu"].device as GPUDevice, this._modules['web-gpu'].format as GPUTextureFormat)
 		};
 
 		const render = _[this._options.context]();
