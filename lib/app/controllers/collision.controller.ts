@@ -35,11 +35,6 @@ export default class CollisionController {
 	}
 
 	[ExecuteProcess]() {
-		const collisions = new Set<{
-			firstCollision: CollisionShape2DComponent;
-			secondCollision: CollisionShape2DComponent;
-		}>();
-
 		const potentialNodes = this.quadTree.retrieve({
 			x: 0,
 			y: 0,
@@ -60,16 +55,20 @@ export default class CollisionController {
 
 				if (secondCollision.disabled) continue
 
+				const isFirstDetectionArea = firstNode.$components.has("detection-area");
+				const isSecondDetectionArea = secondNode.$components.has("detection-area");
+
+				if (isFirstDetectionArea || isSecondDetectionArea) {
+					Collision2DComponent.resolveArea(firstCollision, secondCollision);
+					continue;
+				}
+
 				if (Collision2DComponent.isColliding(firstCollision, secondCollision)) {
-					collisions.add({ firstCollision, secondCollision });
+					Collision2DComponent.resolve(firstCollision, secondCollision);
 				} else {
-					Collision2DComponent.removeCollider(firstCollision, secondCollision);
+					Collision2DComponent.reset(firstCollision, secondCollision);
 				}
 			}
-		}
-
-		for (const { firstCollision, secondCollision } of collisions) {
-			Collision2DComponent.resolveCollision(firstCollision, secondCollision);
 		}
 	}
 }

@@ -17,7 +17,7 @@ import { NodePropType, ScriptsNodeFromScene } from "@/nodes/symbols";
 import EventObserver from "@/app/utils/observer";
 import { ExecuteProcess } from "./symbols";
 import type { Camera2DComponent } from "@/nodes/class/components/2D/camera.component";
-import type { TransitionComponent } from "@/components";
+import type { CharacterBody2DComponent, TransitionComponent } from "@/components";
 
 export default class ScriptController {
 	private $app: EngineCore | GameCore;
@@ -247,6 +247,12 @@ export default class ScriptController {
 			const transition = node.$components.get("transition") as TransitionComponent
 
 			transition.process(delta)
+		}
+
+		if (node.$components.has("character-body")) {
+			const characterBody = node.$components.get("character-body") as CharacterBody2DComponent
+
+			characterBody.process(delta)
 		}
 	}
 
